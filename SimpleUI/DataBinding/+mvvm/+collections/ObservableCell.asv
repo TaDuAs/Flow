@@ -1,0 +1,83 @@
+classdef ObservableCell < mvvm.ICollection
+    %OBSERVABLECELL Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+        array;
+        indexingMethod;
+    end
+    
+    methods % property accessors
+        function set.array(this, value)
+            assert(iscell(value), 'mvvm.collections.ObservableCell only wraps cell arrays');
+            
+            this.array = value;
+        end
+        
+        function set.indexingMethod(this, value)
+            this.validateIndexingMethod(value);
+            this.indexingMethod = value;
+        end
+    end
+    
+    methods % mvvm.ICollection
+        function b = containsIndex(this, i)
+            if numel(i) > 1
+                for dimI = i
+                    if 
+                end
+            end
+            
+            switch (this.indexingMethod)
+                case 'cells'
+                case 'rows'
+                case 'cols'
+            end
+            [n,m] = size(this.array);
+        end
+%         removeAt     	% defined in mvvm.ICollection
+%         set          	% defined in mvvm.ICollection
+%         get          	% defined in mvvm.ICollection
+%         size         	% defined in mvvm.ICollection
+%         isempty      	% defined in mvvm.ICollection
+%         length       	% defined in mvvm.ICollection
+    end
+    
+    methods
+        function this = ObservableCell(varargin)
+            if mod(nargin, 2) == 1
+                this.array = arg1;
+            else
+                this.array = {};
+            end
+            
+            if nargin > 1
+                this.parseConfiguration(varargin(2:end));
+            end
+        end
+    end
+    
+    methods (Access=protected)
+        function parseConfiguration(this, args)
+            % configure input parser
+            parser = inputParser();
+            parser.CaseSensitive = false;
+            parser.FunctionName = 'mvvm.collections.ObservableCell';
+            
+            % define parameters
+            addParameter(parser, 'IndexingMethod', 'cells', @(x) this.validateIndexingMethod(x));
+            
+            % parse input
+            parse(parser, args{:});
+            
+            % first of all, get binding manager
+            this.indexingMethod = parser.Results.IndexingMethod;
+        end
+        
+        function validateIndexingMethod(this, method)
+            assert(any(strcmp(method, {'cells', 'rows', 'cols'})), ...
+                   'mvvm.collections.ObservableCell Indexing method must be either ''cells'', ''rows'' or ''cols'''))
+        end
+    end
+end
+
