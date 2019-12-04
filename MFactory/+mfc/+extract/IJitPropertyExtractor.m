@@ -1,5 +1,5 @@
 classdef (Abstract) IJitPropertyExtractor < handle
-    % MFactory.IJitPropertyExtractor is an interface for just-in-time
+    % MFactory.extract.IJitPropertyExtractor is an interface for just-in-time
     % property extraction from data for the purpose of object construction
     
     methods (Abstract)
