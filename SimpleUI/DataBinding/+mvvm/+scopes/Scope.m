@@ -59,7 +59,7 @@ classdef Scope < mvvm.ModelPathObserver & mvvm.providers.IModelProvider
             list = mvvm.getobj(model, this.ModelPath);
         end
         
-        function doHandleModelUpdate(this, src, args, setPathIndex, raisedListenerIndex)
+        function doHandleModelUpdate(this, src, setPathIndex, raisedListenerIndex)
             if ~this.hasKey(this.getList())
                 notify(this, 'scopeRemoved');
             else

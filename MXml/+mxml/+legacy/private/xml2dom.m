@@ -1,7 +1,7 @@
 % Generates a DOM object from an XML string using JAVA XML parser.
 % Original code by Yair Altman available at: https://undocumentedmatlab.com/blog/parsing-xml-strings
 % Minor revisions by TADA to generate a temp file name using timestamp, at
-% the Simple.IO.MXML package folder, in fallback functionality.
+% the mxml.legacy package folder, in fallback functionality.
 function dom = xml2dom(xmlString)
     try
         % The following avoids the need for file I/O:
@@ -19,9 +19,9 @@ function dom = xml2dom(xmlString)
         % Fallback to standard xmlread usage, using a temporary XML file:
 
         % Store the XML data in a temp *.xml file
-        Simple.IO.MXMLPath = which('Simple.IO.MXML.load');
-        Simple.IO.MXMLPath = Simple.IO.MXMLPath(1:end-6);
-        filename = [Simple.IO.MXMLPath 'temp_' datestr(now, 'yyyy-mm-dd.HH.MM.SS.FFF') '.xml'];
+        mxmlPath = which('mxml.legacy.load');
+        mxmlPath = mxmlPath(1:end-6);
+        filename = [mxmlPath 'temp_' datestr(now, 'yyyy-mm-dd.HH.MM.SS.FFF') '.xml'];
         fid = fopen(filename,'Wt');
         fwrite(fid,xmlString);
         fclose(fid);

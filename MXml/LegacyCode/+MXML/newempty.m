@@ -11,7 +11,7 @@ function empty = newempty(value)
     elseif iscell(value)
         empty = {};
     else
-        factory = Simple.IO.MXML.Factory.instance;
+        factory = MXML.Factory.instance;
         datatype = class(value);
         
         if factory.hasCtor(datatype)

@@ -1,4 +1,4 @@
-classdef IterableImplForTest < Simple.IO.MXML.IIterable & handle
+classdef IterableImplForTest < mxml.legacy.IIterable & handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -17,16 +17,36 @@ classdef IterableImplForTest < Simple.IO.MXML.IIterable & handle
             n = length(this.arr);
         end
         function b = isempty(this)
-            b = isempty(this.arr);
+            b = builtin('isempty', this) | cellfun('isempty', {this.arr});
         end
         function b = any(this)
             b = any(this.arr);
         end
-        function s = size(this, dim)
-            if nargin < 2
-                s = size(this.arr);
+        function varargout = size(this, dim)
+            if isempty(this)
+                if nargin < 2
+                    s = builtin('size', this);
+                else
+                    s = builtin('size', this, dim);
+                end
             else
-                s = size(this.arr, dim);
+                if nargin < 2
+                    s = size(this.arr);
+                else
+                    s = size(this.arr, dim);
+                end
+            end
+            
+            if nargout > 1
+                for i = nargout:-1:1
+                    if i > numel(s)
+                        varargout{i} = 0;
+                    else
+                        varargout{i} = s(i);
+                    end
+                end
+            else
+                varargout = {s};
             end
         end
         function value = get(this, i)

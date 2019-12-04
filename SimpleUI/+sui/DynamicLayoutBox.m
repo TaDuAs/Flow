@@ -1,4 +1,4 @@
-classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
+classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn & sui.IRedrawSuppressable
     %DynamicLayoutBox  - A box expected to resize to fit it's contents. 
     %                 ** When using derived classes, Set BasePosition 
     %                 ** instead of Position property.
@@ -13,7 +13,7 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
     end
     
     properties (Access=protected)
-        StopRedraw;
+        TempPosition;
     end
     
     properties (GetAccess=public, SetAccess=private)
@@ -125,6 +125,10 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
             end
         end
         
+        function setDirty(this)
+            this.Dirty = true;
+        end
+        
         function redraw(this)
             if this.StopRedraw
                 return;
@@ -140,20 +144,20 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
             try
                 % return to the base size to allow box rearrangement
                 if ~isempty(this.BasePosition)
-                    sui.setPos(this, this.BasePosition, this.BasePosUnits);
+                    this.TempPosition = this.convertPosUnits(this.BasePosition, this.BasePosUnits, 'pixels');
+                else
+                    this.TempPosition = sui.getPos(this, 'pixels');
                 end
 
-                % get children in sequential order
-                boxes = flip(this.Children);
-                
                 % do redraw
-                [positions, calculatedSize] = this.findBoxesPositions(boxes);
+                visibleBoxesMask = strcmp(get(this.Contents_, 'Visible'), 'on');
+                [positions, calculatedSize] = this.findBoxesPositions(this.Contents_(visibleBoxesMask));
                 
                 % resize self
                 finalSize = this.resizeToAccomodateChildren(calculatedSize);
                 
                 % set the calculated positions to all children
-                this.setChildrentPositions(boxes, positions, finalSize);
+                this.setChildrentPositions(this.Contents_(visibleBoxesMask), positions, finalSize);
             catch e
                 this.StopRedraw = false;
                 e.throwAsCaller();
@@ -176,12 +180,19 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
             % Resizes the DynamicLayoutBox to fit its children using the
             % size calculated by derived class in findBoxesPositions method
             
-            originalSize = sui.getSize(this,'pixels');
-
+            baseSize = this.TempPosition(3:4);
+            originalLocation = this.TempPosition(1:2);
+            necessarySize = baseSize;
+            originalSize = sui.getSize(this, 'pixels');
+            
+            % if calculated size is bigger than that, use calculated size
+            if any(calculatedSize > necessarySize)
+                necessarySize = calculatedSize;
+            end
+            
             % stretch FlowBox vertically if necesary
-            if any(calculatedSize > originalSize)
-                finalSize = calculatedSize;
-                pos = sui.getPos(this, 'pixels');
+            if any(necessarySize ~= originalSize)
+                finalSize = necessarySize;
                 
                 % screen y coordinates are bottom to top and window layout 
                 % flow is top to bottom.
@@ -189,9 +200,9 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
                 %
                 % x coordinates don't need to be adjusted because screen x
                 % coordinates are left to right same as window layout flow
-                sui.setPos(this, [pos(1), pos(2) - (calculatedSize(2) - originalSize(2)) calculatedSize], 'pixels');
+                sui.setPos(this, [originalLocation(1), originalLocation(2) - (necessarySize(2) - baseSize(2)), necessarySize], 'pixels');
             else
-                finalSize = originalSize;
+                finalSize = necessarySize;
             end
         end
         
@@ -213,7 +224,7 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
                 end
                 finalPosY = this.calculatePositionY(boxSize, positions(i, [1,2]), positions(i, [4,5]), selfSize);
                 
-                sui.setPos(box, [finalPosX, finalPosY boxSize], 'pixels');
+                sui.setPos(box, [finalPosX, finalPosY, boxSize], 'pixels');
             end
         end
         
@@ -268,6 +279,7 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
             tf = this.Contents_ == child;
             
             % Remove listeners
+            cellfun(@delete, this.childResizedListeners(tf));
             this.childResizedListeners(tf) = [];
             
             removeChild@uix.Box(this, child);
@@ -275,6 +287,19 @@ classdef (Abstract) DynamicLayoutBox < uix.Box & sui.INotifyRedrawn
         
         function onChildResized(this)
             this.Dirty = true;
+        end
+        
+        function newPos = convertPosUnits(this, pos, u1, u2)
+            % get this box size in u1 units and u2 units
+            v1 = sui.getPos(this, u1);
+            v2 = sui.getPos(this, u2);
+            
+            % calculate the conversion factor between u1 and u2 units
+            cf = v2./v1;
+            cf(v1 == 0) = 0;
+            
+            % convert pos vector using the conversion factor
+            newPos = pos.*cf;
         end
     end
 end

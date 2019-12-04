@@ -29,19 +29,26 @@ classdef (Abstract) ModelPathObserver < handle
         end
         
         function init(this, modelPath, modelProvider)
+            this.ModelPath = this.checkModelPathValidity(modelPath);
+            
+            % add model changed listener
+            this.ModelProvider = modelProvider;
+            this.ModelListeners{1} = this.ModelProvider.addlistener('modelChanged', ...
+                @(src, args) this.handleModelChanged(src.getModel(), args, 1, 1));
+            
+            % model 2 control data binding
+            this.bindModelEvents();
+        end
+        
+        function validPath = checkModelPathValidity(~, modelPath)
             if ischar(modelPath)
-                this.ModelPath = strsplit(modelPath, '.');
+                validPath = strsplit(modelPath, '.');
             elseif iscellstr(modelPath)
-                this.ModelPath = modelPath;
+                validPath = modelPath;
             else
                 throw(MException('mvvm:ModelPathObserver:InvalidModelPath', ...
                     'ModelPath must be a list of property names as a cell array of character vectors or as a character vector separated by ''.'''));
             end
-            
-            this.ModelProvider = modelProvider;
-            
-            % model 2 control data binding
-            this.bindModelEvents();
         end
         
         function bindModelEvents(this, startAt)
@@ -50,39 +57,54 @@ classdef (Abstract) ModelPathObserver < handle
             % the scope is the current object in the watched field path,
             % start from the model itself
             scope = this.ModelProvider.getModel();
+            if startAt > 1
+                scope = mvvm.getobj(scope, this.ModelPath(1:startAt-1));
+            end
             
-            for fieldIdx = startAt:length(this.ModelPath)
+            for fieldIdx = startAt:numel(this.ModelPath)
                 % stop adding listeners once reached null reference
                 if isempty(scope)
                     break;
                 end
                 
-                % if this is not a handle continue searching for handles up
-                % the field path
-                if ~isa(scope, 'handle')
-                    continue;
-                end
-                
                 % get current field name
                 field = this.ModelPath{fieldIdx};
 
+                % if this is not a handle continue searching for handles up
+                % the field path
+                if ~isa(scope, 'handle')
+                    % scope on child
+                    scope = mvvm.getobj(scope, field);
+                    continue;
+                end
+                
+                if isempty(findprop(scope, field))
+                    MException('mvvm:ModelPathObserver:HandleNotObseravable',...
+                            'Class ''%s'' has no field or property with the name ''%s'' at the model path ''%s''',...
+                            class(scope), field, strjoin(this.ModelPath(1:fieldIdx), '.'))...
+                            .throw();
+                end
+                
                 try
-                    listenerIdx = length(this.ModelListeners)+1;
+                    listenerIdx = numel(this.ModelListeners)+1;
                     % listen to current field postset event
                     this.ModelListeners{listenerIdx} = ...
                         this.generateModelListener(scope, field, fieldIdx, listenerIdx);
                 catch ex % this ex variable is here for debugging
                     % This exception should be thrown only if the property
                     % is not observable.
-                    MException('mvvm:ModelPathObserver:HandleNotObseravable',...
-                        [   'Can''t observe handle property at the model path "',...
-                            strjoin(this.ModelPath(1:fieldIdx), '.'),...
-                            '". Add SetObservable attribute to all properties used for data binding.'   ])...
-                        .throw();
+                    if strcmp(ex.identifier, 'MATLAB:class:nonSetObservableProp')
+                        MException('mvvm:ModelPathObserver:HandleNotObseravable',...
+                            'The property ''%s'' of handle class ''%s'' Can''t be observed at the model path ''%s''. Add SetObservable attribute to all properties used for data binding.',...
+                            class(scope), field, strjoin(this.ModelPath(1:fieldIdx), '.'))...
+                            .throw();
+                    else
+                        rethrow(ex);
+                    end
                 end
                 
                 % scope on child
-                scope = scope.(field);
+                scope = mvvm.getobj(scope, field);
             end
             
         end
@@ -102,19 +124,25 @@ classdef (Abstract) ModelPathObserver < handle
         function handleModelUpdate(this, src, args, setPathIndex, raisedListeberIndex)
             this.manageListenersUpTheFieldPath(setPathIndex, raisedListeberIndex+1);
             
-            this.doHandleModelUpdate(src, args, setPathIndex, raisedListeberIndex);
+            this.doHandleModelUpdate(args.AffectedObject, setPathIndex, raisedListeberIndex);
+        end
+        
+        function handleModelChanged(this, src, args, setPathIndex, raisedListeberIndex)
+            this.manageListenersUpTheFieldPath(setPathIndex, raisedListeberIndex+1);
+            
+            this.doHandleModelUpdate(src, setPathIndex, raisedListeberIndex);
         end
         
         function manageListenersUpTheFieldPath(this, setPathIndex, listenerIndex)
-            if listenerIndex > length(this.ModelListeners)
-                return;
+            if listenerIndex < numel(this.ModelListeners)
+                % remove all listeners to removed objects
+                this.cleanListeners(listenerIndex);
             end
             
-            % remove all listeners to removed objects
-            this.cleanListeners(listenerIndex);
-            
-            % rebind up the field path
-            this.bindModelEvents(setPathIndex);
+            if setPathIndex < numel(this.ModelPath)
+                % rebind up the field path
+                this.bindModelEvents(setPathIndex);
+            end
         end
         
         function cleanListeners(this, startAt)
@@ -132,6 +160,30 @@ classdef (Abstract) ModelPathObserver < handle
             
             % delete this
             delete@handle(this);
+        end
+        
+        function start(this)
+            if ~isvalid(this)
+                return;
+            end
+            
+            function enableListener(l)
+                l.Enabled = true;
+            end
+            
+            cellfun(@enableListener, this.ModelListeners); 
+        end
+        
+        function stop(this)
+            if ~isvalid(this)
+                return;
+            end
+            
+            function disableListener(l)
+                l.Enabled = false;
+            end
+            
+            cellfun(@disableListener, this.ModelListeners); 
         end
     end
 end

@@ -1,4 +1,4 @@
-classdef (Abstract) ITemplate
+classdef (Abstract) ITemplate < handle
     % mvvm.ITemplate is the API interface for generating UI components in
     % an mvvm.Repeater data binder.
     % Author: TADA

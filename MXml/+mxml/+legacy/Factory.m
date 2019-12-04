@@ -58,10 +58,10 @@ classdef Factory < handle
             persistent factoryInstance;
             
             if isempty(factoryInstance)
-                factoryInstance = Simple.IO.MXML.Factory();
+                factoryInstance = mxml.legacy.Factory();
             elseif nargin >= 1 && shouldReset
                 delete(factoryInstance);
-                factoryInstance = Simple.IO.MXML.Factory();
+                factoryInstance = mxml.legacy.Factory();
             end
             
             factory = factoryInstance;
@@ -70,15 +70,15 @@ classdef Factory < handle
     
     methods (Static)
         function factory = instance()
-            factory = Simple.IO.MXML.Factory.singletonInstance();
+            factory = mxml.legacy.Factory.singletonInstance();
         end
         
         function factory = terminate()
-            factory = Simple.IO.MXML.Factory.singletonInstance(true);
+            factory = mxml.legacy.Factory.singletonInstance(true);
         end
         
         function init(factoryInitializer)
-            factory = Simple.IO.MXML.Factory.instance();
+            factory = mxml.legacy.Factory.instance();
             factoryInitializer.initFactory(factory);
         end
     end

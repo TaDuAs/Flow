@@ -7,6 +7,7 @@ classdef HandleModel < handle
         child2;
         id;
         list;
+        didSomething;
     end
     
     methods
@@ -24,6 +25,24 @@ classdef HandleModel < handle
                     end
                 end
             end
+        end
+        
+        function doSomething(this, a, b, c)
+            this.didSomething = struct();
+            this.didSomething.n = nargin;
+            if nargin >= 2
+                this.didSomething.a = a;
+            end
+            if nargin >= 3
+                this.didSomething.b = b;
+            end
+            if nargin >= 4
+                this.didSomething.c = c;
+            end
+        end
+        
+        function x = random(this, n)
+            x = rand(1,n);
         end
     end
 end

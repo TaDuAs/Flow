@@ -12,7 +12,7 @@ function pos = getPos(h, units)
         changeBack = true;
         set(h, 'Units', units);
     end
-    
+
     % get position
     pos = get(h, 'Position');
     

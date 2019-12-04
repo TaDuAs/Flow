@@ -23,7 +23,7 @@ classdef FlowBox < sui.DynamicLayoutBox
     methods (Access=protected)
         function [positions, calculatedSize] = findBoxesPositions(this, boxes)
             % Prepare inner drawable area matrix in points
-            originalSize = sui.getSize(this, 'pixels');
+            originalSize = this.TempPosition(3:4);
             boxPadding = get(this, 'Padding');
             boxMargin = get(this, 'Spacing');
             posx = boxPadding;
@@ -39,7 +39,7 @@ classdef FlowBox < sui.DynamicLayoutBox
                 boxSize = sui.getSize(box, 'pixels');
                 
                 % check if reached end of line
-                if (posx + boxSize(1) + boxPadding) > originalSize(1) && i > 1
+                if ((posx + boxSize(1) + boxPadding) > originalSize(1) && i > 1)
                     % Set row specs to entire row
                     positions(childrenInCurrentRowIdx) = repmat(...
                         [rowIndex, posx - boxMargin - boxPadding, rowHeight],...
@@ -58,6 +58,12 @@ classdef FlowBox < sui.DynamicLayoutBox
                     rowIndex = rowIndex + 1;
                     rowHeight = 0;
                     childrenInCurrentRowIdx = false(size(positions));
+                end
+                
+                % if current element is a line break, go to end of line so
+                % that the next control will start a new line.
+                if isa(box, 'sui.LineBreak')
+                    posx = originalSize(1);
                 end
                 
                 % mark current child in the current row

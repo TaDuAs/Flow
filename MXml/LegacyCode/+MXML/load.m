@@ -2,7 +2,7 @@ function [data, metadata] = load(fileName, format)
 % loads data from a text file (xml/json) or from xml/json string.
 % Data may contain all primitive values, including struct trees, as well as
 % user defined classes as long as they allow for construction using empty 
-% ctor or are registered in the Simple.IO.MXML.Factory class
+% ctor or are registered in the MXML.Factory class
 % 
 % [data, metadata] = load('filePath/fileName.xml') - loads xml formatted file
 % [data, metadata] = load('filePath/fileName.json') - loads json formatted file

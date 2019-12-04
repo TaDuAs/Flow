@@ -19,7 +19,7 @@ classdef StackBox < sui.DynamicLayoutBox
     
     methods (Access=protected)
         function [positions, calculatedSize] = findBoxesPositions(this, boxes)
-            originalSize = sui.getSize(this, 'pixels');
+            originalSize = this.TempPosition(3:4);
             boxPadding = get(this, 'Padding');
             boxMargin = get(this, 'Spacing');
             posx = boxPadding;

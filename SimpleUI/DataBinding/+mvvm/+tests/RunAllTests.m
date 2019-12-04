@@ -1,3 +1,4 @@
+
 results = run(matlab.unittest.TestSuite.fromPackage('mvvm.tests'));
 
 %%

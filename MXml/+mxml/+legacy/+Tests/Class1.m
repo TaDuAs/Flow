@@ -15,7 +15,7 @@ classdef Class1
             if nargin >= 3
                 this.list = list;
             else
-                this.list = Simple.IO.MXML.Tests.IterableImplForTest();
+                this.list = mxml.legacy.Tests.IterableImplForTest();
             end
         end
     end

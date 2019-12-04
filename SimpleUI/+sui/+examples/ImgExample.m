@@ -1,4 +1,5 @@
-h.fig = figure();
+h.fig = figure(1);
+clf();
 set(h.fig, 'Position', get( groot, 'Screensize' ) + repelem([60 -150],1,2));
 
 h.title = annotation(h.fig,'textbox',...
@@ -10,26 +11,40 @@ h.title = annotation(h.fig,'textbox',...
     'FitBoxToText','on',...
     'EdgeColor', 'none');
 
-h.main =  sui.StackBox('Parent', h.fig,...
+h.scroll = uix.ScrollingPanel( 'Parent', h.fig, 'Position', [0.125 0.1 0.75 0.65] );
+h.main = sui.StackBox('Parent', h.scroll,...
     'Units', 'norm',...
-    'BasePosition', [0 0.25 1 0.5],...
+    'BasePosition', [0.05 0 0.98 1],...
     'BackgroundColor', 'White', ...
     'Spacing', 5, ...
     'Padding', 15, ...
     'Align', 'center');
-h.img1 = sui.Img('Units', 'pixels', 'IsCached', true, 'MaxSize', [250 200], 'Path', 'autumn.tif', 'Parent', h.main);
-h.img2 = sui.Img('Units', 'pixels', 'IsCached', true, 'Position', [0 0 300 100], 'Path', 'autumn.tif', 'Parent', h.main);
-h.img3 = sui.Img('Units', 'pixels', 'IsCached', true, 'MaxSize', [100 50], 'Path', 'autumn.tif', 'Parent', h.main);
-h.img4 = sui.Img('Units', 'pixels', 'IsCached', true, 'MaxSize', [500 500], 'Path', 'autumn.tif', 'Parent', h.main);
+h.main.suppressDraw();
+h.flowResizeListener = h.main.addlistener('SizeChanged', @(src, arg) flowResize(src, arg, h));
+h.img(1) = sui.Img('Units', 'pixels', 'IsCached', true, 'MaxSize', [250 200], 'Path', 'autumn.tif', 'Parent', h.main);
+h.img(2) = sui.Img('Units', 'pixels', 'IsCached', true, 'Position', [0 0 300 100], 'Path', 'autumn.tif', 'Parent', h.main);
+h.img(3) = sui.Img('Units', 'pixels', 'IsCached', true, 'MaxSize', [100 50], 'Path', 'autumn.tif', 'Parent', h.main);
+h.img(4) = sui.Img('Units', 'pixels', 'IsCached', true, 'MaxSize', [500 500], 'Path', 'autumn.tif', 'Parent', h.main);
 
 h.align = uibuttongroup(h.fig, 'Position', [0.02, 0.77, 0.2, 0.1]);
 h.autumn = uicontrol(h.align, 'Units', 'norm', 'Position', [0, 0.7, 1, 0.3], 'Style', 'radiobutton', 'String', 'autumn.tif', 'Callback', @(ctrl, arg) handleAlign(ctrl, arg, h));
 h.saturn = uicontrol(h.align, 'Units', 'norm', 'Position', [0, 0.35, 1, 0.3], 'Style', 'radiobutton', 'String', 'saturn.png', 'Callback', @(ctrl, arg) handleAlign(ctrl, arg, h));
 h.snowflakes = uicontrol(h.align, 'Units', 'norm', 'Position', [0, 0, 1, 0.3], 'Style', 'radiobutton', 'String', 'snowflakes.png', 'Callback', @(ctrl, arg) handleAlign(ctrl, arg, h));
 
+flowResize([],[],h);
+h.main.startDrawing();
+
 function handleAlign(ctrl, arg, h)
-    set(h.img1, 'Path', get(ctrl,'String'));
-    set(h.img2, 'Path', get(ctrl,'String'));
-    set(h.img3, 'Path', get(ctrl,'String'));
-    set(h.img4, 'Path', get(ctrl,'String'));
+    set(h.img, 'Path', get(ctrl,'String'));
+end
+function flowResize(src, arg, h)
+    scrollSize = sui.getSize(h.main, 'pixel');
+    scroller = h.scroll;
+    
+    if scrollSize(1) ~= scroller.Widths
+        scroller.Widths = scrollSize(1);
+    end
+    if scrollSize(2) ~= scroller.Heights
+        scroller.Heights = scrollSize(2);
+    end
 end

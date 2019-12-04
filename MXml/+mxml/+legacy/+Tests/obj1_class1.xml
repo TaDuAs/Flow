@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <document type="struct">
-   <data type="Simple.IO.MXML.Tests.Class1">
+   <data type="mxml.legacy.Tests.Class1">
       <x type="char">x</x>
       <y type="double">1 2 3 4 5 6 7 8 9 10</y>
-      <list isList="true" type="Simple.IO.MXML.Tests.IterableImplForTest">
+      <list isList="true" type="mxml.legacy.Tests.IterableImplForTest">
          <entry type="double">1</entry>
          <entry type="double">2</entry>
          <entry type="double">3</entry>

@@ -1,15 +1,15 @@
 function save(fileName, data, meta, format, showFileContents)
 % Saves a data array of structs\classes as an xml/json document
 % 
-% Simple.IO.MXML.save('filePath/fileName.xml', data, [meta])
+% mxml.legacy.save('filePath/fileName.xml', data, [meta])
 %           saves to xml formatted file
-% Simple.IO.MXML.save('filePath/fileName.json', data, [meta])
+% mxml.legacy.save('filePath/fileName.json', data, [meta])
 %           saves to json formatted file
-% Simple.IO.MXML.save('filePath/fileName.notXmlNorJson', data, [meta])
+% mxml.legacy.save('filePath/fileName.notXmlNorJson', data, [meta])
 %           saves to xml formatted file
-% Simple.IO.MXML.save(filename, data, format)
+% mxml.legacy.save(filename, data, format)
 %           saves to file according to specified format ('xml' or 'json')
-% Simple.IO.MXML.save(filename, data, meta, format)
+% mxml.legacy.save(filename, data, meta, format)
 %           saves to file according to specified format ('xml' or 'json')
 %
 % Author: TADA
@@ -54,7 +54,7 @@ function save(fileName, data, meta, format, showFileContents)
             fwrite(fid, json);
             fclose(fid);
         otherwise
-            throw(MException('Simple:IO:MXML:save:formatNotSupported', sprintf('Format %s not supported', format)));
+            throw(MException('MXML:save:formatNotSupported', sprintf('Format %s not supported', format)));
     end
     
     % Display xml document contents

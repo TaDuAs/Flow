@@ -39,7 +39,7 @@ function element = jsonize(obj)
         element = obj;
         return;
     % if obj is an array of reference types or structs
-    elseif (isvector(obj) && length(obj) > 1) || iscell(obj) || isa(obj, 'Simple.IO.MXML.IIterable')
+    elseif (isvector(obj) && length(obj) > 1) || iscell(obj) || isa(obj, 'mxml.legacy.IIterable')
         arraySize = length(obj);
         element = struct('type', class(obj), 'isList', true, 'value', {cell(1, arraySize)});
         for i = 1:arraySize

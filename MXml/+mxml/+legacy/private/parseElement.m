@@ -14,7 +14,7 @@ function [value, empty] = parseElement(element)
 
     [datatype, isList] = checkAttributes(element);
     if isempty(datatype)
-        ex = MException('Simple.IO.MXML:load:missingDataType', 'Cannot parse xml file. Missing element data type.');
+        ex = MException('MXML:load:missingDataType', 'Cannot parse xml file. Missing element data type.');
         throw(ex);
     end
 
@@ -33,21 +33,21 @@ function [value, empty] = parseElement(element)
                 value(vi,:) = temp;
             end
         case 'logical'
-            value = Simple.str2boolean(element.Children(1).Data);
+            value = gen.str2boolean(element.Children(1).Data);
         case 'cell'
             value = parseCellArray(element);
         otherwise
             superClassList = superclasses(datatype);
-            if any(strcmp(superClassList, 'Simple.IO.MXML.IIterable')) % implements Simple.IO.MXML.IIterable
+            if any(strcmp(superClassList, 'mxml.legacy.IIterable')) % implements MXML.IIterable
                 valueArr = parseVector(element);
 %                 if ~isempty(valueArr)
-%                     emptyValue = Simple.IO.MXML.newempty(valueArr(1));
+%                     emptyValue = mxml.legacy.newempty(valueArr(1));
 %                     iterableLength = length(valueArr);
 %                 else
 %                     emptyValue = [];
 %                     iterableLength = [];
 %                 end
-                factory = Simple.IO.MXML.Factory.instance;
+                factory = mxml.legacy.Factory.instance;
                 value = factory.construct(datatype);
 %                 struct('vector', valueArr, 'emptyValue', emptyValue, 'iterableLength', iterableLength));
                 value.setVector(valueArr);
@@ -58,7 +58,7 @@ function [value, empty] = parseElement(element)
                 value = parseGenericElement(element, datatype);
 
                 if ~strcmp(datatype, 'struct')
-                    factory = Simple.IO.MXML.Factory.instance;
+                    factory = mxml.legacy.Factory.instance;
                     value = factory.construct(datatype, value);
                 end
             end

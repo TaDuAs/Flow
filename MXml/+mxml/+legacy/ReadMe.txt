@@ -1,4 +1,4 @@
-Simple.IO.MXML package (Matlab-XML) is a standalone package designed for serializing
+mxml.legacy package (Matlab-XML) is a standalone package designed for serializing
 and deserializing objects(structs\classes) into\from XML\Json files. This format is useful
 for transfering a complete object model between Matlab and other working environments,
 such as .Net, Java, Javascript, Python, etc.
@@ -9,11 +9,11 @@ Author: TADA
 
 ***************************************************************************
 Main methods:
-obj = Simple.IO.MXML.load(filePath, [format]) (format = 'json' or 'xml')
-obj = Simple.IO.MXML.load(xmlOrJsonString, format)
-Simple.IO.MXML.save(filePath, obj, [format])
-Simple.IO.MXML.toxml(obj)
-Simple.IO.MXML.tojson(obj)
+obj = mxml.legacy.load(filePath, [format]) (format = 'json' or 'xml')
+obj = mxml.legacy.load(xmlOrJsonString, format)
+mxml.legacy.save(filePath, obj, [format])
+mxml.legacy.toxml(obj)
+mxml.legacy.tojson(obj)
 
 The load\save\toxml methods have a functionality for saving a data object and a metadata object in the same file.
 when saving to/loading from file, format is optional, if format is not specified, it will be decided from the file extension:
@@ -41,9 +41,9 @@ The general format of the generated XML looks like this:
 The package has a builtin class factory, which instantiates according to class name.
 
 Class factory public static methods:
-Simple.IO.MXML.Factory.instance - Class factory singleton instance
-Simple.IO.MXML.Factory.terminate - Clears class factory instance from all registered Ctors, Good for when a refresh of the factory is needed
-Simple.IO.MXML.Factory.init(factoryInitializer) - Initializes the class factory using a factoryInitializer object which has a method with the signature: initFactory(factory);
+mxml.legacy.Factory.instance - Class factory singleton instance
+mxml.legacy.Factory.terminate - Clears class factory instance from all registered Ctors, Good for when a refresh of the factory is needed
+mxml.legacy.Factory.init(factoryInitializer) - Initializes the class factory using a factoryInitializer object which has a method with the signature: initFactory(factory);
 
 Class factory public methods:
 addConstructor(this, className, ctorFunction) -

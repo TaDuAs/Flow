@@ -44,9 +44,9 @@ classdef RepeaterTests < matlab.unittest.TestCase & mvvm.providers.IModelProvide
                 'ModelProvider', testCase,...
                 'IndexingMethod', 'cells');
             
-            assert(numel(testCase.gui.container.Children) == numel(testCase.model.child1.child1.list));
+            assert(numel(testCase.gui.container.Contents) == numel(testCase.model.child1.child1.list));
             for i = 1:numel(testCase.model.child1.child1.list)
-                assert(strcmp(testCase.gui.container.Children(i).String, testCase.model.child1.child1.list{i}));
+                assert(strcmp(testCase.gui.container.Contents(i).String, testCase.model.child1.child1.list{i}));
             end
             
             delete(rep);
@@ -58,7 +58,53 @@ classdef RepeaterTests < matlab.unittest.TestCase & mvvm.providers.IModelProvide
                 'IndexingMethod', 'cells');
             
             testCase.model.child1.child1.list{1} = 'Changed';
-            assert(strcmp(testCase.gui.container.Children(1).String, 'Changed'));
+            assert(strcmp(testCase.gui.container.Contents(1).String, 'Changed'));
+            
+            delete(rep);
+        end
+        
+        function ListValueRemoved(testCase)
+            rep = mvvm.Repeater('child1.child1.list', testCase.gui.container, mvvm.tests.LabelsTestTemplate(),...
+                'ModelProvider', testCase,...
+                'IndexingMethod', 'cells');
+            
+            testCase.model.child1.child1.list(1) = [];
+
+            
+            assert(numel(testCase.gui.container.Contents) == numel(testCase.model.child1.child1.list));
+            for i = 1:numel(testCase.model.child1.child1.list)
+                assert(strcmp(testCase.gui.container.Contents(i).String, testCase.model.child1.child1.list{i}));
+            end
+            
+            delete(rep);
+        end
+        
+        function ListValueAdded(testCase)
+            rep = mvvm.Repeater('child1.child1.list', testCase.gui.container, mvvm.tests.LabelsTestTemplate(),...
+                'ModelProvider', testCase,...
+                'IndexingMethod', 'cells');
+            
+            testCase.model.child1.child1.list{numel(testCase.model.child1.child1.list) + 1} = 'Aha!';
+            
+            assert(numel(testCase.gui.container.Contents) == numel(testCase.model.child1.child1.list));
+            for i = 1:numel(testCase.model.child1.child1.list)
+                assert(strcmp(testCase.gui.container.Contents(i).String, testCase.model.child1.child1.list{i}));
+            end
+            
+            delete(rep);
+        end
+        
+        function ScopedBindingsWork(testCase)
+            rep = mvvm.Repeater('child1.child1.list', testCase.gui.container, mvvm.tests.TextEditAndLabelTestTemplate(0),...
+                'ModelProvider', testCase,...
+                'IndexingMethod', 'cells');
+            
+            txt = testCase.gui.container.Contents(1);
+            txt.String = 'Text Changed';
+            txt.notify('KeyRelease');
+            
+            assert(strcmp(testCase.model.child1.child1.list{1}, 'Text Changed'));
+            assert(strcmp(testCase.gui.container.Contents(2).String, 'Text Changed'));
             
             delete(rep);
         end

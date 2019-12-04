@@ -1,4 +1,4 @@
-function value = getobj(obj, fieldName, defaultValue, warnNotFound)
+function [value, foundField] = getobj(obj, fieldName, defaultValue, warnNotFound)
     if nargin < 1
         throw(MException('mvvm:getobj:Obj_Missing', 'obj must be specified'));
     elseif nargin < 2
@@ -14,6 +14,7 @@ function value = getobj(obj, fieldName, defaultValue, warnNotFound)
         throw(MException('mvvm:getobj:WarnNotFound_Invalid', 'warnNotFound must be a logical scalar'));
     end
     
+    foundField = true;
     % prep field tree
     if isempty(fieldName) || (numel(fieldName) == 1 && strcmp(fieldName, ''))
         fieldName = {};
@@ -25,7 +26,11 @@ function value = getobj(obj, fieldName, defaultValue, warnNotFound)
     % access the field tree
     for i = 1:length(fieldName)
         currField = fieldName{i};
-        if ~isfield(element, currField) && ~isprop(element, currField)
+        if isempty(element)
+            foundField = false;
+            break;
+        elseif ~hasField(element, currField)
+            foundField = false;
             element = [];
             if warnNotFound
                 warning('mvvm:getobj:fieldPathNotFound', 'Field path at ''%s'' not found', strjoin(fieldName, '.'));
@@ -40,5 +45,10 @@ function value = getobj(obj, fieldName, defaultValue, warnNotFound)
     else
         value = element;
     end
+end
+
+function l = hasField(element, field)
+    l = (istable(element) && ismember(field, element.Properties.VariableNames)) ||...
+         isfield(element, field) || isprop(element, field);
 end
 

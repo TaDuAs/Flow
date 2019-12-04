@@ -3,7 +3,8 @@ classdef XmlFieldExtractor < mfc.extract.IJitPropertyExtractor
     %   Detailed explanation goes here
     
     properties
-        Serializer mxml.XmlSerializer;
+        Interpreter mxml.IXmlInterpreter = mxml.XmlSerializer.empty();
+        ReservedAttributes string;
         Node;
         ChildNodes;
         ChildNodesIndices;
@@ -12,15 +13,16 @@ classdef XmlFieldExtractor < mfc.extract.IJitPropertyExtractor
     end
     
     methods
-        function this = XmlFieldExtractor(serializer, node, version)
-            this.Serializer = serializer;
+        function this = XmlFieldExtractor(interpreter, node, version, reservedAttr)
+            this.Interpreter = interpreter;
             this.Node = node;
             this.Version = version;
+            this.ReservedAttributes = string(reservedAttr);
         end
         
         function tf = hasProp(this, property)
         % determines if the desired property exists in the data
-            tf = this.hasAttr(property) || this.hasChild(property);
+            tf = (~ismember(property, this.ReservedAttributes) && this.hasAttr(property)) || this.hasChild(property);
         end
         
         function value = get(this, property)
@@ -35,11 +37,11 @@ classdef XmlFieldExtractor < mfc.extract.IJitPropertyExtractor
             if hasChildProp
                 children = this.Node.getChildNodes();
                 node = children.item(childNodeIndex);
-                value = this.Serializer.interpretElement(node, this.Version);
-            elseif this.hasAttr(property)
-                value = this.Serializer.interpretAttribute(this.Node.getAttribute(property), this.Version);
+                value = this.Interpreter.interpretElement(node, this.Version);
+            elseif ~ismember(property, this.ReservedAttributes) && this.hasAttr(property)
+                value = this.Interpreter.interpretAttribute(this.Node.getAttribute(property), this.Version);
             else
-                throw(MException('mxml:XmlFieldExtractor:MissingField', 'Can''t get value for field %s, as it is missing', property));
+                throw(MException('mxml:XmlFieldExtractor:MissingField', 'Can''t get value for field %s, as it is missing or invalid', property));
             end
         end
     end
@@ -110,7 +112,7 @@ classdef XmlFieldExtractor < mfc.extract.IJitPropertyExtractor
             for i = 1:nAttr
                 curr = attributeList.item(i-1);
                 currAttrName = char(curr.getName());
-                if ~startsWith(currAttrName, '_')
+                if ~ismember(currAttrName, this.ReservedAttributes)
                     attributeNameList{i} = currAttrName;
                     attrMask(i) = true;
                 end

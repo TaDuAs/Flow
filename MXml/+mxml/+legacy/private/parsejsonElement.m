@@ -12,7 +12,7 @@ function obj = parsejsonElement(element)
             inner = parsejsonElement(accessArray(element.value, i));
             if iscell(obj)
                 obj{i} = inner;
-            elseif isa(obj, 'Simple.IO.MXML.IIterable')
+            elseif isa(obj, 'mxml.legacy.IIterable')
                 if obj.isempty()
                     obj.setVector(inner);
                 else
@@ -48,7 +48,7 @@ function obj = parsejsonElement(element)
         if strcmp(type, 'struct')
             obj = copyto;
         else
-            obj = Simple.IO.MXML.Factory.instance.construct(type, copyto);
+            obj = MXML.Factory.instance.construct(type, copyto);
         end
     elseif isPrimitiveValueType(element)
         % primitive types
@@ -64,9 +64,10 @@ end
 function list = createList(type, n)
     if strcmp(type, 'cell')
         list = cell(1, n);
-    elseif any(strcmp(superclasses(type), 'Simple.IO.MXML.IIterable'))
-        list = Simple.IO.MXML.Factory.instance.construct(type);
+    elseif any(strcmp(superclasses(type), 'MXML.IIterable'))
+        list = MXML.Factory.instance.construct(type);
     else
-        list = repmat(Simple.IO.MXML.Factory.instance.cunstructEmpty(type), 1, n);
+        temp = mxml.legacy.Factory.instance.cunstructEmpty(type);
+        list = repmat(temp, 1, n);
     end
 end

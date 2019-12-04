@@ -18,6 +18,35 @@ classdef Repeater < mvvm.Binder
         function this = Repeater(modelPath, control, template, varargin)
             this@mvvm.Binder(modelPath, control, '', template, varargin{:});
         end
+        
+        function delete(this)
+            delete@mvvm.Binder(this);
+            
+            % terminate all repeater ui components
+            for i = 1:numel(this.ScopeList)
+                this.Template.teardown(this.ScopeList{i}, this.Control, this.UIComponents{i});
+            end
+            this.UIComponents = [];
+            
+            % terminate scope listeners
+            cellfun(@delete, this.ScopeRemovedListeners);
+            this.ScopeRemovedListeners = {};
+            
+            % terminate scopes
+            cellfun(@delete, this.ScopeList);
+            this.ScopeList = [];
+            
+            % terminate collection listener
+            if ~isempty(this.CollectionListener)
+                delete(this.CollectionListener)
+                this.CollectionListener = [];
+            end
+            this.Collection = [];
+            
+            % clean up the rest of it
+            this.Template = [];
+            this.ScopeFactory = [];
+        end
     end
     
     methods (Access=protected)
@@ -122,18 +151,14 @@ classdef Repeater < mvvm.Binder
             this.ScopeList(i) = [];
         end
         
-        function init(this, modelPath, control, property, args)
+        function init(this, modelPath, control, property)
             this.ScopeList = {};
+            this.ScopeRemovedListeners = {};
             
-            init@mvvm.Binder(this, modelPath, control, property, args);
+            init@mvvm.Binder(this, modelPath, control, property);
         end
         
-        function parseConfiguration(this, control, args)
-            % configure input parser
-            parser = inputParser();
-            parser.CaseSensitive = false;
-            parser.FunctionName = 'mvvm.Binder';
-            
+        function prepareParser(~, parser)
             % mvvm.Repeater ctor injects the template into the args cell
             % array in the first position.
             addRequired(parser, 'Template',...
@@ -147,10 +172,9 @@ classdef Repeater < mvvm.Binder
             addParameter(parser, 'IndexingMethod', '', @mvvm.scopes.DefaultScopeFactory.validateKeyType);
             addParameter(parser, 'ScopeFactory', mvvm.scopes.DefaultScopeFactory.empty(),...
                 @(x) assert(isa(x, 'mvvm.scopes.IScopeFactory'), 'Scope factory must implement the mvvm.scopes.IScopeFactory abstract class'));
-            
-            % parse input
-            parse(parser, args{:});
-            
+        end
+        
+        function extractParserParameters(this, parser, control)
             % first of all, get binding manager
             this.BindingManager = parser.Results.BindingManager;
             
@@ -165,7 +189,7 @@ classdef Repeater < mvvm.Binder
             if ~isempty(parser.Results.ModelProvider)
                 this.ModelProvider = parser.Results.ModelProvider;
             else
-                this.ModelProvider = this.BindingManager.getModelProvider(mvvm.getContainingFigure(control));
+                this.ModelProvider = this.BindingManager.getModelProvider(ancestor(control, 'figure'));
             end
             
             % get scope factory

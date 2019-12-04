@@ -6,7 +6,7 @@ function [datatype, isList] = checkAttributes(element)
         if strcmp('type', attr.Name)
             datatype = attr.Value;
         elseif strcmp('isList', attr.Name)
-            isList = Simple.str2boolean(attr.Value);
+            isList = gen.str2boolean(attr.Value);
         end
     end
 end

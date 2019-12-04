@@ -72,7 +72,11 @@ classdef ObservableArray < mvvm.collections.ICollection
         end
         
         function b = isempty(this)
-            b = isempty(this.Array);
+            if builtin('isempty', this)
+                b = true;
+            else
+                b = isempty(this.Array);
+            end
         end
         
         function s = size(this, dim)
@@ -180,11 +184,27 @@ classdef ObservableArray < mvvm.collections.ICollection
     end
     
     methods % indexing
-        function B = subsref(A, S)
-            if any(strcmp(S(1).type, {'()', '{}'}))
-                B = subsref(A.Array, S);
+        function varargout = subsref(A, S)
+            if nargout == 0
+                varargout = cell(1);
             else
-                B = builtin('subsref', A, S);
+                varargout = cell(1,nargout);
+            end
+            
+            if any(strcmp(S(1).type, {'()', '{}'}))
+                varargout{:} = subsref(A.Array, S);
+            else
+                subs1 = S(1).subs;
+                if ~isempty(findprop(A, subs1))
+                    out = A.(subs1);
+                    if numel(S) > 1
+                        [varargout{:}] = subsref(out, S(2:end));
+                    else
+                        varargout = {out};
+                    end
+                else
+                    [varargout{:}] = builtin('subsref', A, S);
+                end
             end
         end
         
@@ -234,9 +254,19 @@ classdef ObservableArray < mvvm.collections.ICollection
                 A = builtin('subsasgn', A, S, B);
             end
         end
+        
+        function n = numArgumentsFromSubscript(A, S, indexingContext)
+            if any(strcmp(S(1).type, {'()', '{}'}))
+                n = builtin('numArgumentsFromSubscript', A.Array, S, indexingContext);
+            elseif strcmp(S(1).type, '.') && ~isempty(findprop(A, S(1).subs))
+                n = 1;
+            else
+                n = builtin('numArgumentsFromSubscript', A, S, indexingContext);
+            end
+        end
     end
     
-    methods
+    methods % ctor
         function this = ObservableArray(varargin)
             if mod(nargin, 2) == 1
                 this.Array = varargin{1};
@@ -245,6 +275,88 @@ classdef ObservableArray < mvvm.collections.ICollection
                 this.Array = [];
                 this.parseConfiguration(varargin{:});
             end
+        end
+    end
+    
+    methods %polling methods
+        function n = numel(this)
+            n = numel(this.Array);
+        end
+        
+        function disp(this)
+            if builtin('isempty', this)
+                fprintf('  empty %s\n\r', class(this));
+            else
+                fprintf('  %s indexed by ''%s''\n\r', class(this), this.IndexingMethod);
+                disp(this.Array);
+            end
+        end
+        
+        function this = repmat(this, varargin)
+            this.Array = repmat(this.Array, varargin{:});
+        end
+        
+        function this = repelem(this, varargin)
+            this.Array = repelem(this.Array, varargin{:});
+        end
+        
+        function h = plot(this, varargin)
+            h = plot(this.Array, varargin{:});
+        end
+    end
+    
+    methods % concatenation
+        function this = vertcatself(this, varargin)
+            this.concatSelf(1, true, varargin{:});
+        end
+        
+        function newArray = vertcat(this, varargin)
+            newArray = this.concat(1, varargin{:});
+        end
+        
+        function this = horzcatself(this, varargin)
+            this.concatSelf(2, true, varargin{:});
+        end
+        
+        function newArray = horzcat(this, varargin)
+            newArray = this.concat(2, varargin{:});
+        end
+        
+        function this = concatSelf(this, dim, observeChanges, varargin)
+            if numel(dim) == 1 && dim == 1
+                catFunc = @vertcat;
+            elseif numel(dim) == 1 && dim == 2
+                catFunc = @horzcat;
+            else
+                error ('mvvm.collections.ObservableArray only supports 2D concatenation');
+            end
+            
+            nItemsStart = size(this, dim);
+            
+            for i = 1:numel(varargin)
+                elm = varargin{i};
+                if isa(elm, 'mvvm.collections.ObservableArray')
+                    this.Array = catFunc(this.Array, elm.Array);
+                else
+                    this.Array = catFunc(this.Array, elm);
+                end
+            end
+            
+            if observeChanges
+                nAddedItems = sum(cellfun(@(c) size(c, dim), varargin));
+
+                % raise collection changed event
+                addedSubscripts = {nItemsStart+(1:nAddedItems), ':'};
+                indexingMethodIndices = this.convertSubsCellToIndexingMethodIndices(addedSubscripts);
+                arg = mvvm.collections.CollectionChangedEventData('add', indexingMethodIndices, addedSubscripts);
+                this.notify('collectionChanged', arg);
+            end
+        end
+        
+        function newArray = concat(this, dim, varargin)
+            newArray = mvvm.collections.ObservableArray(this.Array);
+            
+            newArray.concatSelf(dim, false, varargin{:});
         end
     end
     
@@ -262,9 +374,9 @@ classdef ObservableArray < mvvm.collections.ICollection
                 case 'cells'
                     i = find(indFlags);
                 case 'rows'
-                    find(any(indFlags, 2));
+                    i = find(any(indFlags, 2));
                 case 'cols'
-                    find(any(indFlags, 1));
+                    i = find(any(indFlags, 1));
             end
         end
         
