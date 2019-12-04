@@ -1,5 +1,13 @@
 classdef MFactory < mfc.IFactory
-% MFactory is a class-factory.
+% mfc.MFactory is a class-factory.
+% mfc.MFactory exposes three APIs to generate class constructors.
+% 
+% 1. Class Constructor Registration
+% ctors can be registered as function handles. Registered ctors should
+% accept a mfc.extract.IJitPropertyExtractor:
+% 
+% 
+
     properties (Access=private)
         constructors containers.Map;
         IoCContainer IoC.IContainerGetter = IoC.ContainerGetter.empty();
