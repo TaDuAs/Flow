@@ -1,9 +1,9 @@
-classdef Container < handle & IoC.IContainerGetter
+classdef Container < IoC.IContainer
     % IoC.Container is an inversion of control container used to manage
     % dependency injections.
     % IoC.Container supports both mandatory and optional dependencies.
     % optonal dependencies can be managed either as property injections or
-    % as name-value pais passed to the ctor as is customary in many matlab
+    % as name-value pairs passed to the ctor as is customary in many matlab
     % funcitons/classes.
     % 
     % Dependencies are identified using strings (or character vectors)
