@@ -15,7 +15,7 @@ classdef Img < uix.Box & sui.INotifyRedrawn
     
     properties (Dependent)
         IsCached;
-        ResourceMgr;
+        ResourceMgr sui.IResourceManager = sui.ResourceManager.empty();
         Path;
         MaxSize;
     end

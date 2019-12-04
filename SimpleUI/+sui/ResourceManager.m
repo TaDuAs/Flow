@@ -1,4 +1,4 @@
-classdef ResourceManager < handle
+classdef ResourceManager < sui.IResourceManager
     %RESOURCEMANAGER Summary of this class goes here
     %   Detailed explanation goes here
     
