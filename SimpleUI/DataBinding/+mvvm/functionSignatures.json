@@ -1,0 +1,16 @@
+{
+  "_schemaVersion": "1.0.0",
+  "Binder":
+  {
+     "inputs":
+     [
+        {"name":"modelPath", "kind":"required", "type":["char"], "purpose":"Property path to bind in the model"},
+        {"name":"control", "kind":"required", "type":["handle"], "purpose":"The control to bind"},
+        {"name":"property", "kind":"required", "type":["char"], "purpose":"The property of the control to bind data to"},
+        {"name":"Event", "kind":"namevalue", "type":["char"], "purpose":"The event in control to bind to for 2-way data binding"},
+        {"name":"BindingManager", "kind":"namevalue", "type":["mvvm.BindingManager"],"purpose":"For injection the dependency on mvvm.BindingManager using dependency injection"},
+        {"name":"ModelProvider", "kind":"namevalue", "type":["mvvm.providers.IModelProvider"], "purpose":"Injecting the model provider instead of the binding manager. This is mainly used for injecting scopes in mvvm.Repeater binders"},
+        {"name":"Indexer", "kind":"namevalue", "type":["mvvm.providers.IModelIndexer"], "purpose":"For indexed binding operations. For example binding a specific column in a matrix to the X property of an sui.Graph control"}
+     ]
+  }
+}
