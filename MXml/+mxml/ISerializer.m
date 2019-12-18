@@ -75,8 +75,8 @@ classdef (Abstract) ISerializer < handle & matlab.mixin.Heterogeneous & mfc.IDes
         function item = accessArray(this, arr, i)
             if iscell(arr)
                 item = arr{i};
-            elseif isa(arr, 'mxml.ICollection')
-                item = arr.get(i);
+            elseif isa(arr, 'mcol.ICollection')
+                item = arr.getv(i);
             else
                 item = arr(i);
             end
@@ -85,7 +85,7 @@ classdef (Abstract) ISerializer < handle & matlab.mixin.Heterogeneous & mfc.IDes
         function list = createList(this, type, n)
             if strcmp(type, 'cell')
                 list = cell(1, n);
-            elseif any(strcmp(superclasses(type), 'mxml.ICollection'))
+            elseif any(strcmp(superclasses(type), 'mcol.ICollection'))
                 list = this.Factory.construct(type);
             else
                 list = repmat(this.Factory.cunstructEmpty(type), 1, n);
