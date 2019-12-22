@@ -11,7 +11,7 @@ classdef MapTests < matlab.unittest.TestCase
     
     methods (Test)
         function emptyCtorTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             assert(isequal(0, map.Count));
             assert(isequal('char', map.KeyType));
@@ -19,7 +19,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function KeyValueCtorTest(testCase)
-            map = mvvm.collections.Map({'abc', 'kmn', 'xyz'}, [1 2 3]);
+            map = scol.observable.Map({'abc', 'kmn', 'xyz'}, [1 2 3]);
             
             assert(isequal(3, map.Count));
             assert(isequal('char', map.KeyType));
@@ -30,7 +30,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function TypesCtorTest(testCase)
-            map = mvvm.collections.Map('KeyType', 'int32', 'ValueType', 'char');
+            map = scol.observable.Map('KeyType', 'int32', 'ValueType', 'char');
             
             assert(isequal(0, map.Count));
             assert(isequal('int32', map.KeyType));
@@ -38,7 +38,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function InvalidKeyTypesError(testCase)
-            map = mvvm.collections.Map('KeyType', 'int32', 'ValueType', 'char');
+            map = scol.observable.Map('KeyType', 'int32', 'ValueType', 'char');
             
             x = false;
             
@@ -53,7 +53,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function InvalidValueTypesError(testCase)
-            map = mvvm.collections.Map('KeyType', 'int32', 'ValueType', 'char');
+            map = scol.observable.Map('KeyType', 'int32', 'ValueType', 'char');
             
             x = false;
             
@@ -68,7 +68,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function ValidTypes(testCase)
-            map = mvvm.collections.Map('KeyType', 'int32', 'ValueType', 'char');
+            map = scol.observable.Map('KeyType', 'int32', 'ValueType', 'char');
             
             map(int32(1)) = 'abc';
             
@@ -77,7 +77,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function GetValue(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             map('abc') = 'abc';
             
@@ -86,7 +86,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function SetValue(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             map.setv('abc', 'abc');
             
@@ -95,7 +95,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function SizeTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             assert(isequal(map.size(), [0, 1]));
             assert(isequal(map.size(1), 0));
@@ -113,7 +113,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function LengthTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             assert(isequal(map.length(), 0));
             
@@ -125,7 +125,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function IsKeyTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             assert(~map.isKey('abc'));
             assert(~map.containsIndex('abc'));
@@ -139,7 +139,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function KeysTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             assert(isempty(map.keys()));
             
@@ -151,7 +151,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function ValuesTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             assert(isempty(map.values()));
             
@@ -164,7 +164,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function removeTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             map.setv('xyz', 'abc');
             map.setv('xyz1', 'abc1');
@@ -188,7 +188,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function removeAtTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
             map.setv('xyz', 'abc');
             map.setv('xyz1', 'abc1');
@@ -212,7 +212,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function changeEvent(testCase)
-            map = mvvm.collections.Map({'abc', 'xyz'}, [1 2]);
+            map = scol.observable.Map({'abc', 'xyz'}, [1 2]);
             x.change = 0;
             x.remove = 0;
             x.add = 0;
@@ -234,7 +234,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function removeEvent(testCase)
-            map = mvvm.collections.Map({'abc', 'xyz'}, [1 2]);
+            map = scol.observable.Map({'abc', 'xyz'}, [1 2]);
             x.change = 0;
             x.remove = 0;
             x.add = 0;
@@ -255,7 +255,7 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function addEvent(testCase)
-            map = mvvm.collections.Map({'abc', 'xyz'}, [1 2]);
+            map = scol.observable.Map({'abc', 'xyz'}, [1 2]);
             x.change = 0;
             x.remove = 0;
             x.add = 0;
@@ -276,11 +276,11 @@ classdef MapTests < matlab.unittest.TestCase
         end
         
         function isaTest(testCase)
-            map = mvvm.collections.Map();
+            map = scol.observable.Map();
             
-            assert(isa(map, 'mvvm.collections.Map'));
+            assert(isa(map, 'scol.observable.Map'));
             assert(isa(map, 'containers.Map'));
-            assert(isa(map, 'mvvm.collections.ICollection'));
+            assert(isa(map, 'scol.observable.ICollection'));
             assert(isa(map, 'handle'));
             assert(~isa(map, 'mvvm.Binder'));
         end

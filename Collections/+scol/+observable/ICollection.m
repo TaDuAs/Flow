@@ -1,4 +1,4 @@
-classdef (Abstract) ICollection < mcol.ICollection
+classdef (Abstract) ICollection < scol.ICollection
     % This abstract class can be derived to allow for data binding of list classes.
     % 
     % Author: TADA

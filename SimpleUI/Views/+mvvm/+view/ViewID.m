@@ -4,7 +4,7 @@ classdef ViewID
     
     properties
         Type string;
-        ID {gen.valid.mustBeNumericOrTextualScalar};
+        ID {gen.valid.mustBeNumericOrTextualScalar} = nan();
     end
     
     methods

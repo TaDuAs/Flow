@@ -20,13 +20,13 @@ classdef DefaultScopeFactory < mvvm.scopes.IScopeFactory
         end
         
         function scope = build(this, modelProvider, path, list, key)
-            % mvvm.collections.ICollection triumphs over all other options
+            % scol.observable.ICollection triumphs over all other options
             % because of the observability of the collection
-            if isa(list, 'mvvm.collections.ICollection')
+            if isa(list, 'scol.observable.ICollection')
                 scope = mvvm.scopes.CollectionScope(modelProvider, path, key);
                 if ~strcmp(this.KeyType, 'default')
                     warning('mvvm:scopes:DefaultScopeFactory:InvalidKeyType',...
-                        'mvvm.collections.ICollection controls its own key types, the scope has no power over mvvm.collections.ICollection indexing method');
+                        'scol.observable.ICollection controls its own key types, the scope has no power over scol.observable.ICollection indexing method');
                 end
             % for containers.Map the KeyType makes no difference
             elseif isa(list, 'containers.Map')
@@ -70,7 +70,7 @@ classdef DefaultScopeFactory < mvvm.scopes.IScopeFactory
         % The scope builder which already is strongly coupled to all the 
         % specialized scope classes because it constructs them will have 
         % to call their static methods to generate the keys.
-            if isa(list, 'mvvm.collections.ICollection')
+            if isa(list, 'scol.observable.ICollection')
                 keySet = mvvm.scopes.CollectionScope.getKeysList(list);
             % for containers.Map the KeyType makes no difference
             elseif isa(list, 'containers.Map')

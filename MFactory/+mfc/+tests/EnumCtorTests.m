@@ -3,7 +3,7 @@ classdef EnumCtorTests < matlab.unittest.TestCase
         function fromName(testCase)
             ctor = mfc.EnumCtor('mfc.tests.MyEnum');
             
-            enum = ctor.build('One');
+            enum = ctor.build(mfc.extract.ValueJitExtractor('One'));
             
             assert(isequal(enum, mfc.tests.MyEnum.One));
         end
@@ -11,7 +11,7 @@ classdef EnumCtorTests < matlab.unittest.TestCase
         function fromFunctionHandle(testCase)
             ctor = mfc.EnumCtor(@mfc.tests.MyEnum);
             
-            enum = ctor.build('One');
+            enum = ctor.build(mfc.extract.ValueJitExtractor('One'));
             
             assert(isequal(enum, mfc.tests.MyEnum.One));
         end
@@ -19,7 +19,7 @@ classdef EnumCtorTests < matlab.unittest.TestCase
         function fromIMCtor(testCase)
             ctor = mfc.EnumCtor(mfc.MCtor('mfc.tests.MyEnum'));
             
-            enum = ctor.build('One');
+            enum = ctor.build(mfc.extract.ValueJitExtractor('One'));
             
             assert(isequal(enum, mfc.tests.MyEnum.One));
         end
@@ -27,7 +27,7 @@ classdef EnumCtorTests < matlab.unittest.TestCase
         function buildFromEnumName(testCase)
             ctor = mfc.EnumCtor(@mfc.tests.MyEnum);
             
-            enum = ctor.build('Two');
+            enum = ctor.build(mfc.extract.ValueJitExtractor('Two'));
             
             assert(isequal(enum, mfc.tests.MyEnum.Two));
         end
@@ -35,7 +35,7 @@ classdef EnumCtorTests < matlab.unittest.TestCase
         function buildFromNumber(testCase)
             ctor = mfc.EnumCtor(@mfc.tests.MyEnum);
             
-            enum = ctor.build(3);
+            enum = ctor.build(mfc.extract.ValueJitExtractor(3));
             
             assert(isequal(enum, mfc.tests.MyEnum.Three));
         end
@@ -43,7 +43,7 @@ classdef EnumCtorTests < matlab.unittest.TestCase
         function buildFromNumberString(testCase)
             ctor = mfc.EnumCtor(@mfc.tests.MyEnum);
             
-            enum = ctor.build('3');
+            enum = ctor.build(mfc.extract.ValueJitExtractor('3'));
             
             assert(isequal(enum, mfc.tests.MyEnum.Three));
         end

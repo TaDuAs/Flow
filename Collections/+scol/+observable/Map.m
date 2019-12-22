@@ -1,7 +1,7 @@
-classdef Map < handle & mvvm.collections.ICollection
+classdef Map < handle & scol.observable.ICollection
     % Wrapper for containers.Map class, which implements the
-    % mvvm.collections.ICollection interface.
-    % Implements complete containers.Map API and mvvm.collections.ICollection API
+    % scol.observable.ICollection interface.
+    % Implements complete containers.Map API and scol.observable.ICollection API
     % 
     % identifies as containers.Map with isa(map, 'containers.Map')
     %
@@ -51,19 +51,19 @@ classdef Map < handle & mvvm.collections.ICollection
             args = event.EventData();
             
             if numel(S) > 1
-                throw(MException('mvvm:collections:Map:AssignmentChaining', 'mvvm.collections.Map doesn''t support assignment chaining operations'));
+                throw(MException('scol:observable:Map:AssignmentChaining', 'scol.observable.Map doesn''t support assignment chaining operations'));
             end
             
             if strcmp(S.type, '()')
                 if numel(S.subs) ~= 1
-                    throw(MException('mvvm:collections:Map:InvalidSubs', 'mvvm.collections.Map supports Only one-dimensional indexing'));
+                    throw(MException('scol:observable:Map:InvalidSubs', 'scol.observable.Map supports Only one-dimensional indexing'));
                 end
 
                 A.setv(B, S.subs{1});
             elseif strcmp(S.type, '.')
                 A = builtin('subsasgn', A, S, B);
             else
-                throw(MException('mvvm:collections:Map:InvalidAssignment', 'mvvm.collections.Map only supports ''()'' indexing assignment'))
+                throw(MException('scol:observable:Map:InvalidAssignment', 'scol.observable.Map only supports ''()'' indexing assignment'))
             end
         end
         
@@ -98,6 +98,20 @@ classdef Map < handle & mvvm.collections.ICollection
             value = this.map(i);
         end
         
+        function setVector(this, values, keys)
+            this.remove(this.keys);
+            for i = 1:numel(keys)
+                if iscell(keys); currKey = keys{i}; else currKey = keys(i); end
+                if iscell(keys); currVal = values{i}; else currVal = values(i); end
+                
+                this.add(currKey, currVal)
+            end
+        end
+        
+        function add(this, value, key)
+            this.setv(value, key);
+        end
+
         function s = size(this, dim)
             if nargin < 2
                 s = size(this.map);
@@ -150,7 +164,7 @@ classdef Map < handle & mvvm.collections.ICollection
             else
                 idx = key;
             end
-            args = mvvm.collections.CollectionChangedEventData(action, idx);
+            args = scol.observable.CollectionChangedEventData(action, idx);
 
             % raise event
             notify(this, 'collectionChanged', args);

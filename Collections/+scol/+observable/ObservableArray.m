@@ -1,4 +1,4 @@
-classdef ObservableArray < mvvm.collections.ICollection
+classdef ObservableArray < scol.observable.ICollection
     %OBSERVABLECELL Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -14,7 +14,7 @@ classdef ObservableArray < mvvm.collections.ICollection
         end
     end
     
-    methods % mvvm.collections.ICollection
+    methods % scol.observable.ICollection
         function b = containsIndex(this, varargin)
             if nargin > 2
                 i = varargin;
@@ -167,7 +167,7 @@ classdef ObservableArray < mvvm.collections.ICollection
                 end
             end
             
-            arg = mvvm.collections.CollectionChangedEventData('remove', indexingMethodIndices, i);
+            arg = scol.observable.CollectionChangedEventData('remove', indexingMethodIndices, i);
             this.notify('collectionChanged', arg);
         end
         
@@ -180,6 +180,26 @@ classdef ObservableArray < mvvm.collections.ICollection
                 case 'cols'
                     keySet = 1:size(this.Array, 2);
             end
+        end
+        
+        function setVector(this, arr)
+            this.Array = arr;
+        end
+        
+        function add(this, value)
+            switch (this.IndexingMethod)
+                case 'cells'
+                    i1 = numel(this.Array) + 1;
+                    i2 = numel(value);
+                case 'rows'
+                    i1 = this.size(1) + 1;
+                    i2 = size(value, 1);
+                case 'cols'
+                    i1 = this.size(2) + 1;
+                    i2 = size(value, 2);
+            end
+            
+            this.setv(value, i1:i2);
         end
     end
     
@@ -231,7 +251,7 @@ classdef ObservableArray < mvvm.collections.ICollection
                     if any(removedIdx)
                         isubs = A.getAvailableIndices(idx, removedIdx);
                         indexMethodIdx = this.convertSubsCellToIndexingMethodIndices(isubs);
-                        A.notify('collectionChanged', mvvm.collections.CollectionChangedEventData('remove', indexMethodIdx, isubs));
+                        A.notify('collectionChanged', scol.observable.CollectionChangedEventData('remove', indexMethodIdx, isubs));
                     end
 
                     % notify added
@@ -239,7 +259,7 @@ classdef ObservableArray < mvvm.collections.ICollection
                     if any(addedIdx)
                         isubs = A.getAvailableIndices(idx, addedIdx);
                         indexMethodIdx = this.convertSubsCellToIndexingMethodIndices(isubs);
-                        A.notify('collectionChanged', mvvm.collections.CollectionChangedEventData('add', indexMethodIdx, isubs));
+                        A.notify('collectionChanged', scol.observable.CollectionChangedEventData('add', indexMethodIdx, isubs));
                     end
 
                     % notify changed
@@ -247,7 +267,7 @@ classdef ObservableArray < mvvm.collections.ICollection
                     if any(changeIdx)
                         isubs = A.getAvailableIndices(idx, changedIdx);
                         indexMethodIdx = this.convertSubsCellToIndexingMethodIndices(isubs);
-                        A.notify('collectionChanged', mvvm.collections.CollectionChangedEventData('change', indexMethodIdx, isubs));
+                        A.notify('collectionChanged', scol.observable.CollectionChangedEventData('change', indexMethodIdx, isubs));
                     end
                 end
             else
@@ -328,14 +348,14 @@ classdef ObservableArray < mvvm.collections.ICollection
             elseif numel(dim) == 1 && dim == 2
                 catFunc = @horzcat;
             else
-                error ('mvvm.collections.ObservableArray only supports 2D concatenation');
+                error ('scol.observable.ObservableArray only supports 2D concatenation');
             end
             
             nItemsStart = size(this, dim);
             
             for i = 1:numel(varargin)
                 elm = varargin{i};
-                if isa(elm, 'mvvm.collections.ObservableArray')
+                if isa(elm, 'scol.observable.ObservableArray')
                     this.Array = catFunc(this.Array, elm.Array);
                 else
                     this.Array = catFunc(this.Array, elm);
@@ -348,13 +368,13 @@ classdef ObservableArray < mvvm.collections.ICollection
                 % raise collection changed event
                 addedSubscripts = {nItemsStart+(1:nAddedItems), ':'};
                 indexingMethodIndices = this.convertSubsCellToIndexingMethodIndices(addedSubscripts);
-                arg = mvvm.collections.CollectionChangedEventData('add', indexingMethodIndices, addedSubscripts);
+                arg = scol.observable.CollectionChangedEventData('add', indexingMethodIndices, addedSubscripts);
                 this.notify('collectionChanged', arg);
             end
         end
         
         function newArray = concat(this, dim, varargin)
-            newArray = mvvm.collections.ObservableArray(this.Array);
+            newArray = scol.observable.ObservableArray(this.Array);
             
             newArray.concatSelf(dim, false, varargin{:});
         end
@@ -385,7 +405,7 @@ classdef ObservableArray < mvvm.collections.ICollection
         %   i - cell array of subs
         %   logicIdx - a matrix of size numel(i{1}) [x numel(i{1}) x numel(i{1})...]
         %              of logical indexes which determine which indices in
-        %              i are valid. as generated by mvvm.collections.ObservableArray.containsIndex
+        %              i are valid. as generated by scol.observable.ObservableArray.containsIndex
         % returns a cell array containing only the subs in i that are valid
         % according to logicIdx
             c = cell(1, numel(i));
@@ -400,7 +420,7 @@ classdef ObservableArray < mvvm.collections.ICollection
             % configure input parser
             parser = inputParser();
             parser.CaseSensitive = false;
-            parser.FunctionName = 'mvvm.collections.ObservableCell';
+            parser.FunctionName = 'scol.observable.ObservableCell';
             
             % define parameters
             addParameter(parser, 'IndexingMethod', 'cells', @(x) this.validateIndexingMethod(x));
@@ -414,7 +434,7 @@ classdef ObservableArray < mvvm.collections.ICollection
         
         function validateIndexingMethod(this, method)
             assert(any(strcmp(method, {'cells', 'rows', 'cols'})), ...
-                   'mvvm.collections.ObservableCell Indexing method must be either ''cells'', ''rows'' or ''cols''');
+                   'scol.observable.ObservableCell Indexing method must be either ''cells'', ''rows'' or ''cols''');
         end
     end
 end

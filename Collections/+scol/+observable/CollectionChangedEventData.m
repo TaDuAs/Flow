@@ -1,5 +1,5 @@
 classdef CollectionChangedEventData < event.EventData
-% Event data for mvvm.collections.ICollection collectionChanged event.
+% Event data for scol.observable.ICollection collectionChanged event.
 % Properties:
 %   Action: Either 'add' (newly added items), 'remove' (removed items) or
 %           'change' (altered items)

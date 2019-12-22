@@ -312,7 +312,7 @@ classdef ScopeUnitTests < matlab.unittest.TestCase & mvvm.providers.IModelProvid
         end
     end
     
-    methods (Test) % mvvm.collections.ICollection scope
+    methods (Test) % scol.observable.ICollection scope
         function ICollectionScope_GetIndex(testCase)
             testCase.model = struct();
             testCase.model.list = mvvm.tests.TestCollection({'Jerusalem', 'Tel Aviv', 'Haifa'});

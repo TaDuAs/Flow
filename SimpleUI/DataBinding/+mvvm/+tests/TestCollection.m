@@ -1,4 +1,4 @@
-classdef TestCollection < mvvm.collections.ICollection
+classdef TestCollection < scol.observable.ICollection
     %TESTCOLLECTION Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -56,6 +56,9 @@ classdef TestCollection < mvvm.collections.ICollection
         end
         function keySet = keys(this)
             keySet = 1:numel(this.list);
+        end
+        function add(this, value)
+            this.setv(value, numel(this.list)+1);
         end
     end
 end
