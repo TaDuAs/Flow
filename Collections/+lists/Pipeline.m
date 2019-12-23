@@ -1,9 +1,9 @@
-classdef Pipeline < scol.ICollection
+classdef Pipeline < lists.ICollection
     %PIPELINE Summary of this class goes here
     %   Detailed explanation goes here
     
     properties (Access=private)
-        list (1,:) scol.PipelineTask;
+        list (1,:) lists.PipelineTask;
         currentTaskIndex = 1;
     end
     
@@ -116,7 +116,7 @@ classdef Pipeline < scol.ICollection
         function task = getTask(this, i)
             if isnumeric(i)
                 if i > numel(this.list)
-                    error(['index ' num2str(i) ' exceeds pipeline length']);
+                    throw(MException('lists:Pipeline:IndexOutOfRange', 'index %d exceeds pipeline length', i));
                 end
                 task = this.getv(i);
             elseif ischar(i) || isStringScalar(i)
@@ -128,9 +128,9 @@ classdef Pipeline < scol.ICollection
                         return;
                     end
                 end
-                error(['pipeline doesn''t contain specified task type ' i]);
+                throw(MException('lists:Pipeline:IndexOutOfRange', 'pipeline doesn''t contain specified task type %s', i));
             else
-                error('must specify task numeric index or type name');
+                throw(MException('lists:Pipeline:InvalidIndex', 'Must specify task numeric index or type name'));
             end
         end
         

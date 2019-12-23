@@ -1,4 +1,4 @@
-classdef TestCollection < scol.observable.ICollection
+classdef TestCollection < lists.IObservable
     %TESTCOLLECTION Summary of this class goes here
     %   Detailed explanation goes here
     

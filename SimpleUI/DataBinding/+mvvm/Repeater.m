@@ -53,17 +53,17 @@ classdef Repeater < mvvm.Binder
         function bindData(this, changedScope, path)
             list = mvvm.getobj(changedScope, path);
             
-            % observe lists implementing scol.observable.ICollection
+            % observe lists implementing lists.IObservable
             % when list changes, dispose the listener and create a new one
             % if possible.
-            if ~isa(list, 'scol.observable.ICollection') || ...
-               ~isa(this.Collection, 'scol.observable.ICollection') || ...
+            if ~isa(list, 'lists.IObservable') || ...
+               ~isa(this.Collection, 'lists.IObservable') || ...
                ~any(eq(this.Collection, list))
                 if ~isempty(this.CollectionListener) && isvalid(this.CollectionListener)
                     delete(this.CollectionListener);
                     this.CollectionListener = [];
                 end
-                if isa(list, 'scol.observable.ICollection')
+                if isa(list, 'lists.IObservable')
                     this.CollectionListener = list.addlistener('collectionChanged', @(src, arg) this.onCollectionChanged(src, arg));
                 end
                 this.Collection = list;

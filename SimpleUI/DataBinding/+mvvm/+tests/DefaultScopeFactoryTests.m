@@ -80,7 +80,7 @@ classdef DefaultScopeFactoryTests < matlab.unittest.TestCase
         function buildScopeForCollection(testCase)
             dsb = mvvm.scopes.DefaultScopeFactory('default');
             
-            s.m = scol.observable.Map();
+            s.m = lists.Map();
             mp = mvvm.providers.SimpleModelProvider(s);
             scope = dsb.build(mp, 'm', s.m, ':)');
             

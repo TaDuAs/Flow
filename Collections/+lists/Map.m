@@ -1,7 +1,7 @@
-classdef Map < handle & scol.observable.ICollection
+classdef Map < handle & lists.IObservable
     % Wrapper for containers.Map class, which implements the
-    % scol.observable.ICollection interface.
-    % Implements complete containers.Map API and scol.observable.ICollection API
+    % lists.ICollection interface.
+    % Implements complete containers.Map API and lists.ICollection API
     % 
     % identifies as containers.Map with isa(map, 'containers.Map')
     %
@@ -51,19 +51,19 @@ classdef Map < handle & scol.observable.ICollection
             args = event.EventData();
             
             if numel(S) > 1
-                throw(MException('scol:observable:Map:AssignmentChaining', 'scol.observable.Map doesn''t support assignment chaining operations'));
+                throw(MException('lists:Map:AssignmentChaining', 'lists.Map doesn''t support assignment chaining operations'));
             end
             
             if strcmp(S.type, '()')
                 if numel(S.subs) ~= 1
-                    throw(MException('scol:observable:Map:InvalidSubs', 'scol.observable.Map supports Only one-dimensional indexing'));
+                    throw(MException('lists:Map:InvalidSubs', 'lists.Map supports Only one-dimensional indexing'));
                 end
 
                 A.setv(B, S.subs{1});
             elseif strcmp(S.type, '.')
                 A = builtin('subsasgn', A, S, B);
             else
-                throw(MException('scol:observable:Map:InvalidAssignment', 'scol.observable.Map only supports ''()'' indexing assignment'))
+                throw(MException('lists:Map:InvalidAssignment', 'lists.Map only supports ''()'' indexing assignment'))
             end
         end
         
@@ -164,7 +164,7 @@ classdef Map < handle & scol.observable.ICollection
             else
                 idx = key;
             end
-            args = scol.observable.CollectionChangedEventData(action, idx);
+            args = lists.CollectionChangedEventData(action, idx);
 
             % raise event
             notify(this, 'collectionChanged', args);

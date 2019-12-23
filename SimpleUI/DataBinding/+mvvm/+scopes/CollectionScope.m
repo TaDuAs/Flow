@@ -1,11 +1,11 @@
 classdef CollectionScope < mvvm.scopes.Scope
     % A specialized scope which accesses collection classes which implement
-    % the scol.observable.ICollection abstract class
+    % the lists.IObservable abstract class
     %
     % Author: TADA
     
     properties (GetAccess=public,SetAccess=protected)
-        Collection scol.observable.ICollection = scol.observable.ObservableArray.empty();
+        Collection lists.IObservable = lists.ObservableArray.empty();
         CollectionListener;
     end
     

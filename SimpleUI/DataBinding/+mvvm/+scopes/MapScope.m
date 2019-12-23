@@ -22,13 +22,13 @@ classdef MapScope < mvvm.scopes.Scope
         function setItemInKey(this, list, value)
             % set value for the specified key
             list(this.Key) = value;
-            warning('mvvm:Scope:ContainersMapIssue', 'containers.Map doesn''t implement change events, use scol.observable.Map instead');
+            warning('mvvm:Scope:ContainersMapIssue', 'containers.Map doesn''t implement change events, use lists.Map instead');
         end
         
         function scope = getItemInKey(this, list)
             % get value for the specified key
             scope = list(this.Key);
-            warning('mvvm:Scope:ContainersMapIssue', 'containers.Map doesn''t implement change events, use scol.observable.Map instead');
+            warning('mvvm:Scope:ContainersMapIssue', 'containers.Map doesn''t implement change events, use lists.Map instead');
         end
     end
     
