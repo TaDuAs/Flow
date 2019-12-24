@@ -4,7 +4,7 @@ classdef ObservableArray < lists.IObservable
     
     properties
         Array;
-        IndexingMethod;
+        IndexingMethod ;
     end
     
     methods % property accessors
@@ -25,7 +25,7 @@ classdef ObservableArray < lists.IObservable
             % handle multidimentional subs
             if iscell(i)
                 % assume index exists
-                b = true(cellfun(@numel, i));
+                b = true(cellfun('length', i));
 
                 % go through all dimentions in the specified subs indexing
                 for j = 1:numel(i)
@@ -100,6 +100,8 @@ classdef ObservableArray < lists.IObservable
                 else
                     value = this.Array(i{:});
                 end
+            elseif islogical(i) && (all(size(i) > 1) || all(size(i) == size(this.Array)))
+                value = this.Array(i);
             else
                 switch (this.IndexingMethod)
                     case 'cells'
@@ -123,24 +125,33 @@ classdef ObservableArray < lists.IObservable
                 i = varargin{1};
             end
             
+            %
+            % DO NOT CHANGE SUBSASGN EXPLICIT INVOCATION!
+            % I Don't know why, but it doesn't work when asigning using
+            % regular indexing rather than explicitly calling subsasgn.
+            % When I debugged it, subsasgn overload was not invoked.
+            %
+            
             if iscell(i)
                 if iscell(this.Array) && all(cellfun('length', i) == 1) && all(cellfun(@(c) ~strcmp(c,':'), i))
-                    this{i{:}} = value;
+                    [~] = subsasgn(this, substruct('{}', i), value);
                 else
-                    this(i{:}) = value;
+                    [~] = subsasgn(this, substruct('()', i), value);
                 end
+            elseif islogical(i) && (all(size(i) > 1) || all(size(i) == size(this.Array)))
+                [~] = subsasgn(this, substruct('()', {i}), value);
             else
                 switch (this.IndexingMethod)
                     case 'cells'
                         if iscell(this.Array) && numel(i) == 1
-                            this{i} = value;
+                            [~] = subsasgn(this, substruct('{}', {i}), value);
                         else
-                            this(i) = value;
+                            [~] = subsasgn(this, substruct('()', {i}), value);
                         end
                     case 'rows'
-                        this(i, :) = value;
+                        [~] = subsasgn(this, substruct('()', {i, ':'}), value);
                     case 'cols'
-                        this(:, i) = value;
+                        [~] = subsasgn(this, substruct('()', {':', i}), value);
                 end
             end
         end
@@ -206,6 +217,9 @@ classdef ObservableArray < lists.IObservable
     methods % indexing
         function varargout = subsref(A, S)
             if nargout == 0
+                % this is for printing this indexing output to the command
+                % window even if no output arguments were set which is the
+                % standard behavior in matlab
                 varargout = cell(1);
             else
                 varargout = cell(1,nargout);
@@ -215,14 +229,25 @@ classdef ObservableArray < lists.IObservable
                 varargout{:} = subsref(A.Array, S);
             else
                 subs1 = S(1).subs;
+                
                 if ~isempty(findprop(A, subs1))
-                    out = A.(subs1);
-                    if numel(S) > 1
-                        [varargout{:}] = subsref(out, S(2:end));
-                    else
-                        varargout = {out};
-                    end
+                    % handle properties
+                    [varargout{:}] = builtin('subsref', A, S(1));
                 else
+                    % handle functions
+                    
+                    % this prevents an error when a method has no output
+                    % arguments
+                    mc = metaclass(A);
+                    methodMask = strcmp(subs1, {mc.MethodList.Name});
+                    if any(methodMask)
+                        methodDescriptor = mc.MethodList(methodMask);
+                        if numel(methodDescriptor.OutputNames) < 1
+                            varargout = {};
+                        end
+                    end
+                    
+                    % execute indexing
                     [varargout{:}] = builtin('subsref', A, S);
                 end
             end
@@ -282,6 +307,14 @@ classdef ObservableArray < lists.IObservable
                 n = 1;
             else
                 n = builtin('numArgumentsFromSubscript', A, S, indexingContext);
+            end
+        end
+        
+        function ind = end(A, k, n)
+            if n > 1
+                ind = size(A.Array, k);
+            else
+                ind = numel(A.Array);
             end
         end
     end
