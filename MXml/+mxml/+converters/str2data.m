@@ -25,7 +25,7 @@ function value = str2data(str, type)
     end
 
     % cast from double to whatever
-    if nargin >= 3
+    if nargin >= 2
         value = cast(value, type);
     end
 end
