@@ -82,6 +82,21 @@ classdef IoCContainerTests < matlab.unittest.TestCase
             assert(isequaln(obj.child2.id, 'value'));
         end
         
+        function simpleDependencyWithSeveralDependiesInSingleArg(testCase)
+            inj = IoC.Container();
+            inj.set("handle", @IoC.tests.HandleModel, "$id1");
+            inj.set("handle2", @IoC.tests.HandleModel, "$id2");
+            inj.set("dependentHandle", @IoC.tests.HandleModel, "$iddqd", IoC.Injectable(["handle", "handle2"]));
+            obj = inj.get("dependentHandle");
+            
+            assert(isa(obj, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.id, 'iddqd'));
+            assert(isa(obj.child1, 'IoC.tests.HandleModel'));
+            assert(isequaln(numel(obj.child1), 2));
+            assert(isequaln(obj.child1(1).id, 'id1'));
+            assert(isequaln(obj.child1(2).id, 'id2'));
+        end
+        
         function simpleDependencyIndependentArgs(testCase)
             inj = IoC.Container();
             inj.set("handle", @IoC.tests.HandleModel, "$id", [], [], []);
@@ -111,6 +126,33 @@ classdef IoCContainerTests < matlab.unittest.TestCase
             assert(isa(obj.child1.child1, 'IoC.tests.HandleModel'));
             assert(isequaln(obj.child1.child1.id, 'h2'));
             assert(isa(obj.child1.child1.child1, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.child1.child1.child1.id, 'h1'));
+            assert(isa(obj.child2, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.child2.id, 'h4'));
+            assert(isa(obj.child2.child1, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.child2.child1.id, 'h2'));
+            assert(isa(obj.child2.child1.child1, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.child2.child1.child1.id, 'h1'));
+        end
+        
+        function complexObjectGraph2(testCase)
+            inj = IoC.Container();
+            inj.set("handle1", @IoC.tests.HandleModel, "$h1", [], [], []);
+            inj.set("handle2", @IoC.tests.HandleModel, "$h2", "handle1");
+            inj.set("handle3", @IoC.tests.HandleModel, "$h3", "handle2");
+            inj.set("handle4", @IoC.tests.HandleModel, "$h4", "handle2");
+            inj.set("handle5", @IoC.tests.HandleModel, "$h5", IoC.Injectable(["handle1", "handle3"]), "handle4");
+            obj = inj.get("handle5");
+            
+            assert(isa(obj, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.id, 'h5'));
+            assert(isa(obj.child1, 'IoC.tests.HandleModel'));
+            assert(numel(obj.child1) == 2);
+            assert(isequaln(obj.child1(1).id, 'h1'));
+            assert(isequaln(obj.child1(2).id, 'h3'));
+            assert(isa(obj.child1(2).child1, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.child1(2).child1.id, 'h2'));
+            assert(isa(obj.child1(2).child1.child1, 'IoC.tests.HandleModel'));
             assert(isequaln(obj.child1.child1.child1.id, 'h1'));
             assert(isa(obj.child2, 'IoC.tests.HandleModel'));
             assert(isequaln(obj.child2.id, 'h4'));

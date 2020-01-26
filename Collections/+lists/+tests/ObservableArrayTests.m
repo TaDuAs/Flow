@@ -436,5 +436,111 @@ classdef ObservableArrayTests < matlab.unittest.TestCase
             testCase.verifyEqual(size(arr.Array, 1), 7);
         end
     end
+    
+    methods (Test) % add / remove
+        function addCellsTest1(testCase)
+            A = 1:5;
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cells');
+            
+            arr.add(6);
+            
+            testCase.verifyEqual(arr.Array, 1:6);
+        end
+        
+        function addCellsTest2(testCase)
+            A = 1:5;
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cells');
+            
+            arr.add(6:10);
+            
+            testCase.verifyEqual(arr.Array, 1:10);
+        end
+        
+        function addRowsTest1(testCase)
+            A = magic(5);
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'rows');
+            
+            arr.add(1:5);
+            A(6,:) = 1:5;
+            
+            testCase.verifyEqual(arr.Array, A);
+        end
+        
+        function addRowsTest2(testCase)
+            A = magic(5);
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'rows');
+            
+            arr.add([6:10; 11:15; 16:20]);
+            A(6:8,:) = [6:10; 11:15; 16:20];
+            
+            testCase.verifyEqual(arr.Array, A);
+        end
+        
+        function addColsTest1(testCase)
+            A = magic(5);
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cols');
+            
+            arr.add((1:5)');
+            A(:,6) = (1:5)';
+            
+            testCase.verifyEqual(arr.Array, A);
+        end
+        
+        function addColsTest2(testCase)
+            A = magic(5);
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cols');
+            
+            arr.add([6:10; 11:15; 16:20]');
+            A(:,6:8) = [6:10; 11:15; 16:20]';
+            
+            testCase.verifyEqual(arr.Array, A);
+        end
+        
+        function removeCellsTest1(testCase)
+            A = 1:5;
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cells');
+            
+            arr.removeAt(5);
+            
+            testCase.verifyEqual(arr.Array, 1:4);
+        end
+        
+        function removeCellsTest2(testCase)
+            A = 1:5;
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cells');
+            
+            arr.removeAt(2);
+            
+            testCase.verifyEqual(arr.Array, [1, 3:5]);
+        end
+        
+        function removeCellsTest3(testCase)
+            A = 1:5;
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cells');
+            
+            arr.removeAt(2:4);
+            
+            testCase.verifyEqual(arr.Array, [1, 5]);
+        end
+        
+        function removeCellsTest4(testCase)
+            A = 1:5;
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'cells');
+            
+            arr.removeAt(1);
+            arr.removeAt(2:4);
+            
+            testCase.verifyEqual(arr.Array, 2);
+        end
+        
+        function removeRowsTest1(testCase)
+            A = magic(5);
+            arr = lists.ObservableArray(A, 'IndexingMethod', 'rows');
+            
+            arr.removeAt(5);
+            
+            testCase.verifyEqual(arr.Array, 1:4);
+        end
+    end
 end
 

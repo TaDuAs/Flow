@@ -52,30 +52,17 @@ classdef (Abstract) ISerializer < handle & matlab.mixin.Heterogeneous & mfc.IDes
         end
         
         function tf = isPrimitiveValue(this, value)
-            tf = false;
-
-            if isnumeric(value) ||... % numeric values are value type
-               ischar(value) ||... % characters are value types
-               islogical(value) ||... % booleans are value types
-               isstring(value) % strings are value types
-                tf = true;
-            end
+            tf = gen.isPrimitiveValue(value);
         end
         
         function tf = isPrimitiveType(this, type)
-            mc = meta.class.fromName(type);
-            if ~isempty(mc) && (mc.Abstract || mc.Enumeration || mc.HandleCompatible)
-                tf = false;
-            else
-                x = feval([type '.empty']);
-                tf = this.isPrimitiveValue(x);
-            end
+            tf = gen.isPrimitiveType(type);
         end
         
         function item = accessArray(this, arr, i)
             if iscell(arr)
                 item = arr{i};
-            elseif isa(arr, 'mcol.ICollection')
+            elseif isa(arr, 'lists.ICollection')
                 item = arr.getv(i);
             else
                 item = arr(i);
@@ -85,7 +72,7 @@ classdef (Abstract) ISerializer < handle & matlab.mixin.Heterogeneous & mfc.IDes
         function list = createList(this, type, n)
             if strcmp(type, 'cell')
                 list = cell(1, n);
-            elseif any(strcmp(superclasses(type), 'mcol.ICollection'))
+            elseif any(strcmp(superclasses(type), 'lists.ICollection'))
                 list = this.Factory.construct(type);
             else
                 list = repmat(this.Factory.cunstructEmpty(type), 1, n);

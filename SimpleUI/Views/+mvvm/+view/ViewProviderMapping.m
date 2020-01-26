@@ -1,8 +1,8 @@
 classdef ViewProviderMapping
     properties
         BindingManager mvvm.BindingManager;
-        View mvvm.view.IView;
-        ModelProvider mvvm.providers.IModelProvider;
+        View mvvm.view.IView = mvvm.view.Window.empty();
+        ModelProvider mvvm.providers.IModelProvider = mvvm.providers.SimpleModelProvider.empty();
         onInitializedOnce event.listener;
     end
     

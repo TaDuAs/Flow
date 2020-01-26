@@ -18,7 +18,7 @@ classdef AppManager < handle
             container = appd.AppManager.getContainer();
             
             % check if id already exists
-            if container.hasEntry(id)
+            if container.hasEntry(id) && ~isempty(container.get(id))
                 prev = appd.AppManager.get(id);
                 
                 % if the new app is the old app, don't do anything
@@ -50,7 +50,7 @@ classdef AppManager < handle
             container = appd.AppManager.getContainer();
             
             % if id exists
-            if container.hasEntry(id)
+            if container.hasEntry(id) && ~isempty(container.get(id))
                 app = appd.AppManager.get(id);
                 
                 newApp = ctor();
@@ -64,7 +64,7 @@ classdef AppManager < handle
                     % instantiate.
                     % best practive is to use the actual app class ctor
                     % for loading an app
-                    appd.AppManager.removeApp(app);
+                    appd.AppManager.removeApp(app, id);
                     appd.AppManager.set(id, newApp);
                     app = newApp;
                 elseif app.Status ~= appd.AppStatus.Loaded
@@ -84,7 +84,7 @@ classdef AppManager < handle
             container = appd.AppManager.getContainer();
             
             % if id exists
-            if container.hasEntry(id)
+            if container.hasEntry(id) && ~isempty(container.get(id))
                 app = appd.AppManager.get(id);
                 
                 % remove the app
@@ -100,7 +100,7 @@ classdef AppManager < handle
             container = appd.AppManager.getContainer();
             
             % if id exists
-            if container.hasEntry(id)
+            if container.hasEntry(id) && ~isempty(container.get(id))
                 registered = appd.AppManager.get(id);
                 
                 % and the registered app is the one we want to remove,

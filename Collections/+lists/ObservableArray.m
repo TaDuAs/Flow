@@ -201,13 +201,13 @@ classdef ObservableArray < lists.IObservable
             switch (this.IndexingMethod)
                 case 'cells'
                     i1 = numel(this.Array) + 1;
-                    i2 = numel(value);
+                    i2 = i1+numel(value) - 1;
                 case 'rows'
                     i1 = this.size(1) + 1;
-                    i2 = size(value, 1);
+                    i2 = i1+size(value, 1) - 1;
                 case 'cols'
                     i1 = this.size(2) + 1;
-                    i2 = size(value, 2);
+                    i2 = i1+size(value, 2) - 1;
             end
             
             this.setv(value, i1:i2);

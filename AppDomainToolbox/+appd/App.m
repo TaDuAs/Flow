@@ -10,6 +10,12 @@ classdef App < appd.IApp
     %   Logger
     %
     
+    events
+        configuring;
+        initializing;
+        loading;
+    end
+    
     properties (Access=private)
         ControllerBuilders = [];
         Context_ appd.AppContext;
@@ -132,14 +138,18 @@ classdef App < appd.IApp
         end
         
         function initConfig(this)
+            notify(this, 'configuring');
+            
             this.IocContainer.set('App', @() this);
             this.IocContainer.setSingleton('Messenger', @(app) app.Messenger, 'App');
         end
         
         function init(this)
+            notify(this, 'initializing');
         end
         
         function load(this)
+            notify(this, 'loading');
         end
         
         function parseConfig(this, args)

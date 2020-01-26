@@ -105,10 +105,13 @@ classdef MFactory < mfc.IFactory
             
             % prepare property extraction method
             if numel(varargin) == 1
-                if isa(varargin{1}, 'mfc.extract.IJitPropertyExtractor')
-                    extractor = varargin{1};
+                objExtractor = varargin{1};
+                if isa(objExtractor, 'mfc.extract.IJitPropertyExtractor')
+                    extractor = objExtractor;
+                elseif isstruct(objExtractor) || isobject(objExtractor)
+                    extractor = mfc.extract.StructJitExtractor(objExtractor);
                 else
-                    extractor = mfc.extract.StructJitExtractor(varargin{1});
+                    extractor = mfc.extract.ValueJitExtractor(objExtractor);
                 end
             else
                 extractor = mfc.extract.NameValueJitExtractor(varargin);

@@ -1,4 +1,4 @@
-classdef (Abstract) IIterable < mcol.ICollection
+classdef (Abstract) IIterable < lists.ICollection
     % This abstract class can be derived to allow for MXML serializability of list classes.
     % 
     % Author: TADA

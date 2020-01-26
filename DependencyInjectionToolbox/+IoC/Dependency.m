@@ -132,13 +132,13 @@ classdef Dependency < handle & matlab.mixin.Heterogeneous
             % extract propety injection args and set struct
             [propInjNamesMask, propInjValueMask] = this.findNameValueArgs(args, '&');
             for i = find(propInjNamesMask)
-                propInjStruct.(strip(args{i}, 'left', '&')) = args{i+1};
+                propInjStruct.(strip(args{i}, 'left', '&')) = this.evaluateInjectionItem(args{i+1});
             end
             
             % extract ctor name-value injection args
             [ctorNVNamesMask, ctorNVValueMask] = this.findNameValueArgs(args, '@');
-            ctorNVArgs = args(ctorNVNamesMask |  ctorNVValueMask);
-            ctorNVArgs(1:2:end) = ctorNVArgs(1:2:end);
+            ctorNVArgs = args(ctorNVNamesMask | ctorNVValueMask);
+            ctorNVArgs(2:2:end) = cellfun(@this.evaluateInjectionItem, ctorNVArgs(2:2:end), 'UniformOutput', false);
             
             % extract ctor arg indexex overides
             ctorInjOverrideIndex = zeros(1,0);
@@ -146,7 +146,7 @@ classdef Dependency < handle & matlab.mixin.Heterogeneous
             [ctorIdxNamesMask, ctorIdxValueMask] = this.findNameValueArgs(args, '#');
             if any(ctorIdxNamesMask)
                 idxNames = string(args(ctorIdxNamesMask));
-                ctorInjOverrideValue = args(ctorIdxValueMask);
+                ctorInjOverrideValue = cellfun(@this.evaluateInjectionItem, args(ctorIdxValueMask), 'UniformOutput', false);
 
                 % validate indices names
                 if any(arrayfun(@isempty, regexp(idxNames, '^#\d+$')))
@@ -177,9 +177,15 @@ classdef Dependency < handle & matlab.mixin.Heterogeneous
             end
         end
         
+        function inj = evaluateInjectionItem(this, inj)
+            if ischar(inj) && ~startsWith(inj, '$')
+                inj = string(inj);
+            end
+        end
+        
         function args = setInjectionValues(this, args)
             stringsMask = cellfun(@(arg) ischar(arg) || isstring(arg), args);
-            servicesMask = cellfun(@(arg) (ischar(arg) || isstring(arg)) && ~any(regexp(arg, '^[$@]')), args);
+            servicesMask = cellfun(@(arg) isa(arg, 'IoC.Injectable') || ((ischar(arg) || isStringScalar(arg)) && ~any(regexp(arg, '^[$@]'))), args);
             byValueStrings = stringsMask & ~servicesMask;
             
             if any(servicesMask)

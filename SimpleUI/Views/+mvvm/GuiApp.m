@@ -16,7 +16,6 @@ classdef GuiApp < appd.App
             this.savePreferences();
             clear@appd.App(this);
         end
-        
     end
     
     methods (Access=protected)
@@ -59,6 +58,8 @@ classdef GuiApp < appd.App
         end
         
         function prepareParser(this, parser)
+            prepareParser@appd.App(this, parser);
+            
             % define parameters
             addParameter(parser, 'RootPath', fileparts(which(class(this))),...
                 @(x) assert((ischar(x) && isrow(x)) || isStringScalar(x), 'Root path must be a character vector or a string'));
@@ -68,6 +69,8 @@ classdef GuiApp < appd.App
         end
         
         function extractParserParameters(this, parser)
+            extractParserParameters@appd.App(this, parser);
+            
             % root path, by default the path of the app class
             if ~exist(parser.Results.RootPath, 'dir')
                 throw(MException('mvvm:GuiApp:InvalidPath', 'RootPath must be a valid directory in local file system'));
@@ -84,6 +87,9 @@ classdef GuiApp < appd.App
             end
             this.ResourcePath = regexprep(resPath, '[\\\/]', filesep());
         end
+    end
+    
+    methods (Access=private)
     end
 end
 

@@ -143,7 +143,7 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
                     jsonReady = obj;
                 end
             % if obj is an array of reference types or structs
-            elseif (isvector(obj) && numel(obj) > 1) || iscell(obj) || isa(obj, 'mcol.ICollection')
+            elseif (isvector(obj) && numel(obj) > 1) || iscell(obj) || isa(obj, 'lists.ICollection')
                 arraySize = length(obj);
                 jsonReady = struct(this.TYPE_PROP_NAME, class(obj), this.IS_LIST_PROP_NAME, true, 'value', {cell(1, arraySize)});
                 for i = 1:arraySize
@@ -175,7 +175,7 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
                 inner = this.dejsonize(this.accessArray(element.value, i), version);
                 if iscell(obj)
                     obj{i} = inner;
-                elseif isa(obj, 'mcol.ICollection')
+                elseif isa(obj, 'lists.ICollection')
                     if obj.isempty()
                         obj.setVector(inner);
                     else

@@ -1,10 +1,12 @@
 classdef (Abstract) IView < mvvm.view.IContainer
     % mvvm.view.IView is an interface for view objects
     
-    properties (Abstract) % property injections
+    properties (Abstract, GetAccess=public, SetAccess=private)
         % Application object
         App appd.IApp;
-        
+    end
+    
+    properties (Abstract) % property injections
         % Parent view
         OwnerView mvvm.view.IView;
         
@@ -61,7 +63,7 @@ classdef (Abstract) IView < mvvm.view.IContainer
         close(view);
         
         % Gets the parent view of the current view
-        ownerView = getOwnerView(view)
+        ownerView = getOwnerView(view);
     end
 end
 

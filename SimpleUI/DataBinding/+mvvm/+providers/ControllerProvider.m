@@ -3,7 +3,7 @@ classdef ControllerProvider < mvvm.providers.IModelProvider
     %   Detailed explanation goes here
     
     properties
-        App appd.App;
+        App appd.IApp = appd.App.empty();
         ControllerName;
     end
     

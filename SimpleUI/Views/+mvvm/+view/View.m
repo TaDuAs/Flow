@@ -1,10 +1,14 @@
 classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.Heterogeneous
+    properties (Access=private)
+        AppLoadingEventListener;
+    end
+    
     properties (GetAccess=public,SetAccess=private)
+        App appd.IApp = appd.App.empty();
         Status (1,1) mvvm.view.ViewStatus = mvvm.view.ViewStatus.NotActivated;
     end
     
     properties
-        App appd.IApp;
         OwnerView mvvm.view.IView = mvvm.view.Window.empty();
         Fig matlab.ui.Figure;
         Messenger appd.MessagingMediator;
@@ -16,6 +20,10 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
     methods
         function this = View(varargin)
             this.parseConfiguration(varargin);
+            
+            if ~isempty(this.App)
+                this.registerToApp(this.App);
+            end
         end
         
         function start(this)
@@ -136,6 +144,18 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             
             this.Status = mvvm.view.ViewStatus.Loaded;
             notify(this, 'loaded');
+        end
+        
+        function registerToApp(this, app)
+            if app.Status >= appd.AppStatus.Loaded
+                this.start();
+            else
+                this.AppLoadingEventListener = app.addlistener('loading', @this.onAppLoading);
+            end
+        end
+        
+        function onAppLoading(this, app, eData)
+            this.start();
         end
     end
 end

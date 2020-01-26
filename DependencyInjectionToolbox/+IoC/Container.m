@@ -336,12 +336,24 @@ classdef Container < IoC.IContainer
             ctor = @constructor;
         end
 
-        function serviceId = validateServiceId(this, serviceId)
-            if ischar(serviceId) || (iscell(serviceId) && all(cellfun(@(s) ischar(s) || isstring(s), serviceId)))
+        function serviceId = validateServiceId(this, serviceId) 
+            if iscell(serviceId)
+                if all(cellfun(@(s) ischar(s) || isstring(s), serviceId))
+                    serviceId = string(serviceId);
+                else
+                    c = {};
+                    for i = 1:numel(serviceId)
+                        c = [c this.validateServiceId(serviceId{i})];
+                    end
+                    serviceId = c;
+                end
+            elseif isa(serviceId, 'IoC.Injectable')
+                serviceId = [serviceId.DependencyName];
+            elseif ischar(serviceId)
                 serviceId = string(serviceId);
             elseif ~isstring(serviceId)
                 throw(MException('IoC:Injector:invalidServiceId',...
-                    'Service id must be a string or character vector.'));
+                    'Service id must be a string or character vector or an IoC.Injectable.'));
             end
 
             if any(startsWith(serviceId, ["$", "#", "@", "&", "%"]))

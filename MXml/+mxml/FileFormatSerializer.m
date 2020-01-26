@@ -11,6 +11,13 @@ classdef FileFormatSerializer < mxml.ISerializer
     end
     
     methods
+        function this = FileFormatSerializer(fileFormats, serializers, varargin)
+            this@mxml.ISerializer(varargin{:});
+            
+            this.Formats = fileFormats;
+            this.Serializers = serializers;
+        end
+        
         function ser = getSerializer(this, format)
             [tf, i] = ismember(lower(format), lower(this.Formats));
             if ~tf

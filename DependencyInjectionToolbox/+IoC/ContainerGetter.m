@@ -19,7 +19,7 @@ classdef ContainerGetter < IoC.IContainerGetter
     % Author: Tada 2019
     
     properties (GetAccess=private,SetAccess=private)
-        IoCContainer IoC.IContainer;
+        IoCContainer IoC.IContainer = IoC.Container.empty();
     end
     
     methods

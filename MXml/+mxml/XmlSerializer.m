@@ -83,8 +83,8 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             else
                 typeMC = meta.class.fromName(type);
                 
-                % if implements mcol.ICollection
-                if typeMC <= ?mcol.ICollection
+                % if implements lists.ICollection
+                if typeMC <= ?lists.ICollection
                     valueArr = this.interpretClassArray(node, version);
                     obj = this.Factory.construct(type);
                     obj.setVector(valueArr);
@@ -235,7 +235,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                     element.setAttribute(tagName, value);
                 end
             % if obj is an array of reference types or structs
-            elseif ~isscalar(obj) || iscell(obj) || isa(obj, 'mcol.ICollection')
+            elseif ~isscalar(obj) || iscell(obj) || isa(obj, 'lists.ICollection')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                 for i = 1:length(obj)
                     this.buildDOM(this.accessArray(obj, i), 'entry', document, element, true);
