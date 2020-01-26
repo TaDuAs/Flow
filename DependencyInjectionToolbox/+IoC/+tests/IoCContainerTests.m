@@ -153,7 +153,7 @@ classdef IoCContainerTests < matlab.unittest.TestCase
             assert(isa(obj.child1(2).child1, 'IoC.tests.HandleModel'));
             assert(isequaln(obj.child1(2).child1.id, 'h2'));
             assert(isa(obj.child1(2).child1.child1, 'IoC.tests.HandleModel'));
-            assert(isequaln(obj.child1.child1.child1.id, 'h1'));
+            assert(isequaln(obj.child1(2).child1.child1.id, 'h1'));
             assert(isa(obj.child2, 'IoC.tests.HandleModel'));
             assert(isequaln(obj.child2.id, 'h4'));
             assert(isa(obj.child2.child1, 'IoC.tests.HandleModel'));

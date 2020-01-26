@@ -277,15 +277,22 @@ classdef Container < IoC.IContainer
         end
         
         function service = get(this, serviceId, varargin)
-            serviceId = this.validateServiceId(serviceId);
+            [validServiceId, sidn] = this.validateServiceId(serviceId);
+            sidIdxEnd = cumsum(sidn);
+            sidIdxStart = [1, sidIdxEnd(1:end-1)+1];
 
-            service = cell(1, numel(serviceId));
-            for i = 1:numel(serviceId)
-                currDep = this.Dependencies(serviceId{i});
-                service{i} = currDep.build(varargin{:});
+            service = cell(1, numel(sidn));
+            for i = 1:numel(sidn)
+                for j = sidn(i):-1:1
+                    currDepIdx = j+sidIdxStart(i)-1;
+                    currDep = this.Dependencies(validServiceId{currDepIdx});
+                    currInjection(j) = currDep.build(varargin{:});
+                end
+                service{i} = currInjection;
+                clear currInjection;
             end
 
-            if numel(serviceId) == 1
+            if numel(validServiceId) == 1
                 service = service{1};
             end
         end
@@ -336,24 +343,31 @@ classdef Container < IoC.IContainer
             ctor = @constructor;
         end
 
-        function serviceId = validateServiceId(this, serviceId) 
+        function [serviceId, sidNumel] = validateServiceId(this, serviceId) 
             if iscell(serviceId)
-                if all(cellfun(@(s) ischar(s) || isstring(s), serviceId))
+                if all(cellfun(@(s) ischar(s) || isStringScalar(s), serviceId))
+                    sidNumel = ones(size(serviceId));
                     serviceId = string(serviceId);
                 else
+                    sidNumel = ones(size(serviceId));
                     c = {};
                     for i = 1:numel(serviceId)
-                        c = [c this.validateServiceId(serviceId{i})];
+                        [currServiceId, sidNumel(i)] = this.validateServiceId(serviceId{i});
+                        c = [c currServiceId];
                     end
                     serviceId = c;
                 end
             elseif isa(serviceId, 'IoC.Injectable')
+                sidNumel = numel(serviceId);
                 serviceId = [serviceId.DependencyName];
             elseif ischar(serviceId)
+                sidNumel = 1;
                 serviceId = string(serviceId);
             elseif ~isstring(serviceId)
                 throw(MException('IoC:Injector:invalidServiceId',...
                     'Service id must be a string or character vector or an IoC.Injectable.'));
+            else % serviceId is a string vector
+                sidNumel = numel(serviceId);
             end
 
             if any(startsWith(serviceId, ["$", "#", "@", "&", "%"]))

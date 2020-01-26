@@ -7,7 +7,8 @@ Dependency injection toolbox by TADA
 % as name-value pairs passed to the ctor as is customary in many matlab
 % funcitons/classes.
 % 
-% Dependencies are identified using strings (or character vectors)
+% Dependencies are identified using strings (or character vectors) or by 
+% the IoC.Injectable class.
 % To get a dependency use the get method:
 %   obj = get(ioc, dependencyId)
 %   summary:
@@ -15,7 +16,7 @@ Dependency injection toolbox by TADA
 %       instantiated using the dependencies configured during setup
 %       (use one of the set methods for setup)
 %   parametrs:
-%       dependencyId - the id of the current dependency (string/char)
+%       dependencyId - the id of the current dependency (string/char/IoC.Injectable)
 %   return value:
 %       obj - the instance of the desired dependency.
 %
@@ -28,7 +29,7 @@ Dependency injection toolbox by TADA
 %                  this will generate a ctor injection using the
 %                  name-value properties for classes which support that
 %                  * optional property injection syntax:
-%                  obj = get(__, "propertyName", value)
+%                  obj = get(__, "&propertyName", value)
 %       
 %
 % To setup dependencies use one of the set methods:
