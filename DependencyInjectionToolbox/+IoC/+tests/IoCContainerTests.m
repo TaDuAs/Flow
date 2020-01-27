@@ -14,6 +14,23 @@ classdef IoCContainerTests < matlab.unittest.TestCase
             assert(strcmp(type, 'IoC.tests.HandleModel'));
         end
         
+        function getTypeInjectable(testCase)
+            inj = IoC.Container();
+            inj.set('handle', @IoC.tests.HandleModel);
+            type = inj.getType(IoC.Injectable('handle'));
+            
+            assert(strcmp(type, 'IoC.tests.HandleModel'));
+        end
+        
+        function getTypeInjectable2(testCase)
+            inj = IoC.Container();
+            inj.set('handle', @IoC.tests.HandleModel);
+            inj.set('value', @IoC.tests.ValueModel);
+            type = inj.getType(IoC.Injectable(["handle", "value"]));
+            
+            assert(isequal(type, {'IoC.tests.HandleModel', 'IoC.tests.ValueModel'}));
+        end
+        
         function stringCtor(testCase)
             inj = IoC.Container();
             inj.set("handle", "IoC.tests.HandleModel");
@@ -95,6 +112,65 @@ classdef IoCContainerTests < matlab.unittest.TestCase
             assert(isequaln(numel(obj.child1), 2));
             assert(isequaln(obj.child1(1).id, 'id1'));
             assert(isequaln(obj.child1(2).id, 'id2'));
+        end
+        
+        function simpleDependencyWithManyDependencies(testCase)
+            inj = IoC.Container();
+            inj.set("handle", @IoC.tests.HandleModel, "$id1");
+            inj.set("handle2", @IoC.tests.HandleModel, "$id2");
+            inj.set("dependentHandle", @IoC.tests.HandleModel, "$idkfa", IoC.Injectable(["handle", "handle2"]), IoC.Injectable("handle"), IoC.Injectable(["handle", "handle2", "handle2", "handle2"]));
+            obj = inj.get("dependentHandle");
+            
+            assert(isa(obj, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.id, 'idkfa'));
+            assert(isa(obj.child1, 'IoC.tests.HandleModel'));
+            assert(isequaln(numel(obj.child1), 2));
+            assert(isequaln(obj.child1(1).id, 'id1'));
+            assert(isequaln(obj.child1(2).id, 'id2'));
+            assert(isa(obj.child2, 'IoC.tests.HandleModel'));
+            assert(isequaln(numel(obj.child2), 1));
+            assert(isequaln(obj.child2.id, 'id1'));
+            assert(isa(obj.list, 'IoC.tests.HandleModel'));
+            assert(isequaln(numel(obj.list), 4));
+            assert(isequaln(obj.list(1).id, 'id1'));
+            assert(isequaln(obj.list(2).id, 'id2'));
+            assert(isequaln(obj.list(3).id, 'id2'));
+            assert(isequaln(obj.list(4).id, 'id2'));
+        end
+        
+        function propInjectionWithManyDependencies(testCase)
+            inj = IoC.Container();
+            x = 0;
+            function out = foo()
+                x = x + 1;
+                out = x;
+            end
+            inj.set('x', @foo);
+            inj.set("handle", @IoC.tests.HandleModel, "$idbeholdl", "&list", IoC.Injectable(["x", "x", "x", "x"]), "&child1", "x", "&child2", IoC.Injectable(["x", "x", "x"]));
+            obj = inj.get("handle");
+            
+            assert(isa(obj, 'IoC.tests.HandleModel'));
+            assert(isequaln(obj.id, 'idbeholdl'));
+            testCase.verifyEqual(obj.list, [4 3 2 1]);
+            testCase.verifyEqual(obj.child1, 5);
+            testCase.verifyEqual(obj.child2, [8 7 6]);
+        end
+        
+        function propAndNVInjectionWithManyDependencies(testCase)
+            inj = IoC.Container();
+            x = 0;
+            function out = foo()
+                x = x + 1;
+                out = x;
+            end
+            inj.set('x', @foo);
+            inj.set("handle", @IoC.tests.GetSetModel, "@prop1", IoC.Injectable(["x", "x", "x", "x"]), "@prop2", "x", "&prop3", IoC.Injectable(["x", "x", "x"]));
+            obj = inj.get("handle");
+            
+            testCase.verifyClass(obj, 'IoC.tests.GetSetModel');
+            testCase.verifyEqual(obj.prop1, [4 3 2 1]);
+            testCase.verifyEqual(obj.prop2, 5);
+            testCase.verifyEqual(obj.prop3, [8 7 6]);
         end
         
         function simpleDependencyIndependentArgs(testCase)
@@ -418,6 +494,23 @@ classdef IoCContainerTests < matlab.unittest.TestCase
             assert(isequal(obj1.prop2, "changed"));
         end
         
+        function dynamicNameValueInjectableInjection(testCase)
+            inj1 = IoC.Container();
+            inj1.setSingleton('getset', @IoC.tests.GetSetModel, "@prop1", 1:10, "@prop2", "$my_id");
+            x = 0;
+            function out = foo()
+                x = x + 1;
+                out = x;
+            end
+            inj1.set('x', @foo);
+            
+            obj1 = inj1.get('getset', "@prop1", IoC.Injectable(["x", "x", "x"]));
+            
+            assert(isa(obj1, 'IoC.tests.GetSetModel'));
+            assert(isequal(obj1.prop1, [3 2 1]));
+            assert(isequal(obj1.prop2, "my_id"));
+        end
+        
         function dynamicNameValueInjectionCantOverridePropertyInjection(testCase)
             inj1 = IoC.Container();
             inj1.setSingleton('getset', @IoC.tests.GetSetModel, "&prop1", 1:10, "&prop2", "$my_id");
@@ -462,6 +555,27 @@ classdef IoCContainerTests < matlab.unittest.TestCase
             assert(isequal(obj1.id, 'id123'));
             assert(isequal(obj1.child1, 1:10));
             assert(isequal(obj1.child2, 1:100));
+        end
+        
+        function dynamicIndexInjectionAddAndOverrideInjectables(testCase)
+            inj1 = IoC.Container();
+            inj1.set('handle', @IoC.tests.HandleModel, '$id', 1:10);
+            x = 0;
+            function out = foo()
+                x = x + 1;
+                out = x;
+            end
+            inj1.set('x', @foo);
+            
+            obj1 = inj1.get('handle', "#3", IoC.Injectable(["x", "x", "x"]), "#1", 'x');
+            
+            assert(isa(obj1, 'IoC.tests.HandleModel'));
+            testCase.verifyEqual(obj1.id, 1);
+            testCase.verifyEqual(obj1.child1, 1:10);
+            
+            % IoC.Container sets the values from last to first to allocate
+            % the vector only once
+            testCase.verifyEqual(obj1.child2, [4 3 2]);
         end
     end
 end
