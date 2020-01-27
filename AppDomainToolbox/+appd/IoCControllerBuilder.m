@@ -14,7 +14,7 @@ classdef IoCControllerBuilder < appd.AppControllerBuilder
         end
         
         function controller = build(this)
-            controller = this.Container.get(controllerName);
+            controller = this.Container.get(this.ControllerName);
         end
     end
 end

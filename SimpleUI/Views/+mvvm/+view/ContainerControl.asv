@@ -1,10 +1,11 @@
 classdef ContainerControl < mvvm.view.IContainer
     properties (Access=protected)
         ControlHandle;
+        OwnerView_ mvvm.view.IView = mvvm.view.Window.empty();
     end
     
     methods
-        function this = ContainerControl(control)
+        function this = ContainerControl(control, view)
             this.ControlHandle = control;
         end
         
@@ -39,8 +40,17 @@ classdef ContainerControl < mvvm.view.IContainer
         end
         
         function setParent(this, parent)
-            if isa
-            this.ControlHandle.Parent = parent;
+            if isa(child, 'mvvm.view.IContainer')
+                h = parent.getContainerHandle();
+            else
+                h = parent;
+            end
+            
+            this.ControlHandle.Parent = h;
+        end
+        
+        function view = getOwnerView(this)
+            mvvm.view.ViewManager
         end
         
         function delete(this)

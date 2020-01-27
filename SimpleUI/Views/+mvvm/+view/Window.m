@@ -11,7 +11,10 @@ classdef Window < mvvm.view.View
         
         function delete(this)
             set([this.Fig], 'CloseRequestFcn', 'closereq');
-            close([this.Fig]);
+            b = ishandle(this.Fig);
+            if any(b)
+                delete([this(b).Fig]);
+            end
         end
         
         function show(this)

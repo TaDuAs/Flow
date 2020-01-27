@@ -5,6 +5,10 @@ classdef FileFormatSerializer < mxml.ISerializer
     % mxml.FileFormatSerializer uses mxml.ISerializer registered to
     % given file formats
     
+    properties (Access=protected, Constant)
+        DefaultMaintainedTypes string = "";
+    end
+    
     properties
         Formats string;
         Serializers mxml.ISerializer = mxml.XmlSerializer.empty();

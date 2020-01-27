@@ -41,6 +41,11 @@ classdef (Abstract) ISerializer < handle & matlab.mixin.Heterogeneous & mfc.IDes
             defaultValues = {};
         end
     end
+    methods (Static, Sealed, Access = protected)
+        function default_object = getDefaultScalarElement()
+            default_object = mxml.EmptySerializer();
+        end
+    end
     
     methods (Access=protected) % utilities
         function this = ISerializer(varargin)

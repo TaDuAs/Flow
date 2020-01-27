@@ -33,6 +33,10 @@ classdef ComponentView < mvvm.view.View
             this.setParent(parent);
         end
         
+        function h = getContainerHandle(this)
+            h = this.ContainerBox_.getContainerHandle();
+        end
+        
         function parent = ancestor(this, type)
             if nargin >= 2
                 parent = ancestor(getContainerHandle([this.Parent]), type);
@@ -87,7 +91,7 @@ classdef ComponentView < mvvm.view.View
             end
         end
         
-        function prepareParser(~, parser)
+        function prepareParser(this, parser)
             prepareParser@mvvm.view.View(this, parser);
             
             % define parameters

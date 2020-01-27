@@ -43,6 +43,10 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
 %                 ownerView = this.ViewManager.get();
             end
         end
+        
+        function show(this)
+            set(this.getContainerHandle(), 'visible', 'off');
+        end
     end
     
     methods (Access=protected)
