@@ -58,7 +58,7 @@ classdef ComponentView < mvvm.view.View
         end
         
         function setParent(this, parent)
-            if ishndle(parent)
+            if ishandle(parent)
                 this.Parent_ = mvvm.view.ContainerControl(parent);
             else
                 this.Parent_ = parent;
