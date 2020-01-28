@@ -1,4 +1,4 @@
-classdef Pipeline < lists.ICollection
+classdef Pipeline < lists.IObservable
     %PIPELINE Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -43,19 +43,60 @@ classdef Pipeline < lists.ICollection
         end
         
         function setv(this, i, value)
+            if this.containsIndex(i)
+                action = 'change';
+            else
+                action = 'add';
+            end
+
             this.list(i) = value;
+            
+            % notify collection changed
+            this.raiseCollectionChangedEvent(action, i);
         end
         
         function setVector(this, vector)
+            prevkeys = this.keys();
+            
             this.list = vector;
+            
+            newkeys = this.keys();
+            
+            % notify collection changed
+            this.raiseCollectionChangedEvent('remove', prevkeys);
+            this.raiseCollectionChangedEvent('add', newkeys);
         end
         
         function add(this, value)
-            this.list(numel(this.list) + 1) = value;
+            i = numel(this.list) + 1;
+            this.list(i) = value;
+            
+            % notify collection changed
+            this.raiseCollectionChangedEvent('add', i);
         end
         
         function removeAt(this, i)
+            lists.Map
             this.list(i) = [];
+            
+            % notify collection changed
+            this.raiseCollectionChangedEvent('remove', i);
+        end
+    end
+    
+    methods % IObservable methods
+        function tf = containsIndex(this, i)
+            if isnumeric(i)
+                tf = i <= numel(this.list);
+            elseif ischar(i) || isStringScalar(i)
+                tf = ~isempty(this.findTaskByType(i));
+            else
+                this.raiseInvalidIndexTypeError();
+            end
+        end
+        
+        function keySet = keys(this)
+            keySet = 1:numel(this.list);
         end
     end
     
@@ -115,27 +156,47 @@ classdef Pipeline < lists.ICollection
         
         function task = getTask(this, i)
             if isnumeric(i)
-                if i > numel(this.list)
-                    throw(MException('lists:Pipeline:IndexOutOfRange', 'index %d exceeds pipeline length', i));
+                if ~this.containsIndex(i)
+                    throw(MException('lists:Pipeline:IndexOutOfRange', 'Index %d exeeds the length of the pipeline', i));
                 end
                 task = this.getv(i);
             elseif ischar(i) || isStringScalar(i)
-                wantedType = lower(i);
-                for j = 1:numel(this.list)
-                    curr = this.getv(j);
-                    if isa(curr, i) || endsWith(lower(class(curr)), wantedType)
-                        task = curr;
-                        return;
-                    end
+                task = findTaskByType(i);
+                if isempty(task)
+                    throw(MException('lists:Pipeline:IndexOutOfRange', 'pipeline doesn''t contain specified task type %s', i));
                 end
-                throw(MException('lists:Pipeline:IndexOutOfRange', 'pipeline doesn''t contain specified task type %s', i));
             else
-                throw(MException('lists:Pipeline:InvalidIndex', 'Must specify task numeric index or type name'));
+                this.raiseInvalidIndexTypeError();
             end
         end
         
         function n = tasksNumber(this)
             n = numel(this.list);
+        end
+    end
+    
+    methods (Access=private)
+        function raiseInvalidIndexTypeError(this)
+            throw(MException('lists:Pipeline:InvalidIndex', 'Must specify task numeric index or type name'));
+        end
+        
+        function task = findTaskByType(this, i)
+            task = lists.PipelineTask.empty();
+            wantedType = lower(i);
+            for j = 1:numel(this.list)
+                curr = this.getv(j);
+                if isa(curr, i) || endsWith(lower(class(curr)), wantedType)
+                    task = curr;
+                    return;
+                end
+            end
+        end
+        
+        function raiseCollectionChangedEvent(this, action, idx)
+            args = lists.CollectionChangedEventData(action, idx);
+
+            % raise event
+            notify(this, 'collectionChanged', args);
         end
     end
     

@@ -7,18 +7,12 @@ classdef CollectionChangedEventData < event.EventData
 %   i:      Is expected to be a vector of linear indexes for the changed items
     
     properties
-        Action;
+        Action char {mustBeMember(Action, {'add', 'remove', 'change', 'index_update'})} = 'change';
         Subs;
         i;
     end
     
     methods
-        function set.Action(this, value)
-            assert(ischar(value) && any(strcmpi(value, {'add', 'remove', 'change'})),...
-                'Action must be either ''add'', ''remove'' or ''change''');
-            this.Action = lower(value);
-        end
-        
         function this = CollectionChangedEventData(action, i, subs)
             this.Action = action;
             this.i = i;
