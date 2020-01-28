@@ -62,7 +62,9 @@ classdef ContainerControl < mvvm.view.IContainer
         end
         
         function delete(this)
-            delete(this.Control);
+            if ishandle(this.ControlHandle)
+                delete(this.ControlHandle);
+            end
         end
     end
 end
