@@ -155,13 +155,13 @@ classdef XmlSerializationTests < matlab.mock.TestCase
             assert(strcmp(root.attr.a_isList.value, 'true'));
             assert(numel(root.list) == 3);
             assert(strcmp(root.list{1}.attr.a_type.value, 'char'));
-            assert(strcmp(root.list{1}.name, 'entry'));
+            assert(strcmp(root.list{1}.name, '_entry'));
             assert(strcmp(root.list{1}.value, 'The Cat'));
             assert(strcmp(root.list{2}.attr.a_type.value, 'char'));
-            assert(strcmp(root.list{2}.name, 'entry'));
+            assert(strcmp(root.list{2}.name, '_entry'));
             assert(strcmp(root.list{2}.value, 'in  the'));
             assert(strcmp(root.list{3}.attr.a_type.value, 'char'));
-            assert(strcmp(root.list{3}.name, 'entry'));
+            assert(strcmp(root.list{3}.name, '_entry'));
             assert(strcmp(root.list{3}.value, '   Hat.'));
         end
         
@@ -190,13 +190,13 @@ classdef XmlSerializationTests < matlab.mock.TestCase
             assert(strcmp(root.attr.a_isList.value, 'true'));
             assert(numel(root.list) == 3);
             assert(strcmp(root.list{1}.attr.a_type.value, 'string'));
-            assert(strcmp(root.list{1}.name, 'entry'));
+            assert(strcmp(root.list{1}.name, '_entry'));
             assert(strcmp(root.list{1}.value, 'The Cat'));
             assert(strcmp(root.list{2}.attr.a_type.value, 'string'));
-            assert(strcmp(root.list{2}.name, 'entry'));
+            assert(strcmp(root.list{2}.name, '_entry'));
             assert(strcmp(root.list{2}.value, 'in the'));
             assert(strcmp(root.list{3}.attr.a_type.value, 'string'));
-            assert(strcmp(root.list{3}.name, 'entry'));
+            assert(strcmp(root.list{3}.name, '_entry'));
             assert(strcmp(root.list{3}.value, 'Hat'));
         end
         
@@ -228,13 +228,13 @@ classdef XmlSerializationTests < matlab.mock.TestCase
             assert(strcmp(root.attr.a_isList.value, 'true'));
             assert(numel(root.list) == 3);
             assert(strcmp(root.list{1}.attr.a_type.value, 'mxml.tests.MyEnum'));
-            assert(strcmp(root.list{1}.name, 'entry'));
+            assert(strcmp(root.list{1}.name, '_entry'));
             assert(strcmp(root.list{1}.value, 'Cat'));
             assert(strcmp(root.list{2}.attr.a_type.value, 'mxml.tests.MyEnum'));
-            assert(strcmp(root.list{2}.name, 'entry'));
+            assert(strcmp(root.list{2}.name, '_entry'));
             assert(strcmp(root.list{2}.value, 'Cat'));
             assert(strcmp(root.list{3}.attr.a_type.value, 'mxml.tests.MyEnum'));
-            assert(strcmp(root.list{3}.name, 'entry'));
+            assert(strcmp(root.list{3}.name, '_entry'));
             assert(strcmp(root.list{3}.value, 'Giraffe'));
         end
         

@@ -27,6 +27,7 @@ classdef App < appd.IApp
     properties (GetAccess=public, SetAccess=protected)
         Id string;
         Status appd.AppStatus = appd.AppStatus.NotAvailable;
+        LogPath char;
     end
     
     properties (GetAccess=public, SetAccess=private, Dependent)
@@ -108,8 +109,8 @@ classdef App < appd.IApp
         end
         
         function [path, filename] = getLogPath(this)
-            path  = pwd;
-            filename = ['error ' datestr(now, 'yyyy-mm-dd.HH.MM.SS.FFF') '.log'];
+            path = this.LogPath;
+            filename = ['error_' datestr(now, 'yyyy-mm-dd') '.log'];% ['error ' datestr(now, 'yyyy-mm-dd.HH.MM.SS.FFF') '.log'];
         end
     end
     
@@ -169,10 +170,35 @@ classdef App < appd.IApp
         
         function prepareParser(this, parser)
             addParameter(parser, 'Id', class(this), @gen.valid.mustBeTextualScalar);
+            addParameter(parser, 'LogPath', pwd, @gen.valid.mustBeTextualScalar);
         end
         
         function extractParserParameters(this, parser)
             this.Id = string(parser.Results.Id);
+            this.LogPath = string(parser.Results.LogPath);
+        end
+        
+        function log = getLogger(this, path, fileName)
+            [path1, fileName1] = this.getLogPath();
+            
+            if nargin < 2 || isempty(path)
+                path = path1;
+            end
+            if nargin < 3 || isempty(fileName)
+                fileName = fileName1;
+            end
+            
+            if ~exist(path, 'dir')
+                mkdir(path);
+            end
+            
+            fullLogPath = fullfile(path, fileName);
+            
+            log = log4m.getLogger(fullLogPath);
+            
+            if ~strcmp(log.fullpath, fullLogPath)
+                log = log4m.forceNewLogger(fullLogPath);
+            end 
         end
     end
     
@@ -263,6 +289,25 @@ classdef App < appd.IApp
             if isempty(controller) || ~isa(controller, 'appd.AppController')
                 throw(MException('App:GetController:InvalidController', ['Controller ' char(controllerName) ' invalid']));
             end
+        end
+        
+        function handleException(this, err, msg)
+            % handleException(exception, message) - logs the
+            % exception and the message. If specified, logs into the
+            % specified path and file name
+            %
+            % handleException(exception)
+            if isa(err, 'MException')
+                err = getReport(err, 'extended');
+            end
+            if nargin >= 3
+                logText = [msg, newline, err];
+            else
+                logText = err;
+            end
+            
+            logger = this.getLogger();
+            logger.error('', logText);
         end
     end
 end

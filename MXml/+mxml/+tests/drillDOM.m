@@ -37,7 +37,7 @@ function root = drillDOM(node)
                 end
                 
                 currChild = mxml.tests.drillDOM(curr);
-                if isList && strcmp(name, 'entry')
+                if isList && strcmp(name, '_entry')
                     root.list{numel(root.list)+1} = currChild;
                 else
                     root.children.(name) = currChild;

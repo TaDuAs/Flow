@@ -4,7 +4,8 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
         VERSION_ATTR_NAME = '_version';
         TYPE_ATTR_NAME = '_type';
         IS_LIST_ATTR_NAME = '_isList';
-        COMPATIBILITY_ATTR_NAMES = struct('TYPE_ATTR_NAME', 'type', 'IS_LIST_ATTR_NAME', 'isList');
+        LIST_ENRTY_TAG_NAME = '_entry';
+        COMPATIBILITY_ELEMENT_NAMES = struct('TYPE_ATTR_NAME', 'type', 'IS_LIST_ATTR_NAME', 'isList', 'LIST_ENRTY_TAG_NAME', 'entry');
     end
     
     properties (Access=protected, Constant)
@@ -69,15 +70,21 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             elseif strcmp(type, 'cell')
                 obj = this.interpretCellArray(node, version);
             elseif strcmp(type, 'struct')
-                obj = struct();
-                extractor = this.ExtractorBuilder.build(this, node, version, this.getReservedMetadataAttributeNames(version));
-                allFields = extractor.allProps();
-                
-                % import all fields into the struct
-                for i = 1:numel(allFields)
-                    currProp = allFields{i};
-                    if extractor.hasProp(currProp)
-                        obj.(currProp) = extractor.get(currProp);
+                if isList
+                    objCell = this.interpretCellArray(node, version);
+                    obj = [objCell{:}];
+                else
+                    obj = struct();
+                    [reservedAttrNames, reservedElemNames] = this.getReservedMetadataAttributeNames(version, false);
+                    extractor = this.ExtractorBuilder.build(this, node, version, reservedAttrNames, reservedElemNames);
+                    allFields = extractor.allProps();
+
+                    % import all fields into the struct
+                    for i = 1:numel(allFields)
+                        currProp = allFields{i};
+                        if extractor.hasProp(currProp)
+                            obj.(currProp) = extractor.get(currProp);
+                        end
                     end
                 end
             else
@@ -85,14 +92,21 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 
                 % if implements lists.ICollection
                 if typeMC <= ?lists.ICollection
+                    % generate the list object - extract its data from xml
+                    [reservedAttrNames, reservedElemNames] = this.getReservedMetadataAttributeNames(version, true);
+                    extractor = this.ExtractorBuilder.build(this, node, version, reservedAttrNames, reservedElemNames);
+                    obj = this.Factory.construct(type, extractor);
+                    
+                    % generate the list items and inject into the list
+                    % object
                     valueArr = this.interpretClassArray(node, version);
-                    obj = this.Factory.construct(type);
                     obj.setVector(valueArr);
                 elseif isList
                     obj = this.interpretClassArray(node, version);
                 else
-                    % Generate dynamic struct
-                    extractor = this.ExtractorBuilder.build(this, node, version, this.getReservedMetadataAttributeNames(version));
+                    % Generate dynamic object
+                    [reservedAttrNames, reservedElemNames] = this.getReservedMetadataAttributeNames(version, false);
+                    extractor = this.ExtractorBuilder.build(this, node, version, reservedAttrNames, reservedElemNames);
                     obj = this.Factory.construct(type, extractor);
                 end
             end
@@ -110,12 +124,18 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             valueCell = cell(1,n);
             validValuesMask = false(1,n);
             
+            if this.isCompatibilityMode(version)
+                entryElementNodeName = this.COMPATIBILITY_ELEMENT_NAMES.LIST_ENRTY_TAG_NAME;
+            else
+                entryElementNodeName = this.LIST_ENRTY_TAG_NAME;
+            end
+            
             % iterate through all xml elements
             for i = 1:n
                 currEntry = children.item(i-1);
                 
                 % only parse actual elements, no text nodes, comments, etc.
-                if currEntry.getNodeType() == currEntry.ELEMENT_NODE
+                if currEntry.getNodeType() == currEntry.ELEMENT_NODE && strcmp(char(currEntry.getNodeName()), entryElementNodeName)
                     valueCell{i} = this.interpretElement(currEntry, version);
                     validValuesMask(i) = true;
                 end
@@ -205,7 +225,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                     if ~isrow(obj) && ismatrix(obj)
                         element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                         for i = 1:size(obj,1)
-                            this.buildDOM(obj(i,:), 'entry', document, element, true);
+                            this.buildDOM(obj(i,:), this.LIST_ENRTY_TAG_NAME, document, element, true);
                         end
                         return;
                     else
@@ -216,7 +236,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                     if numel(obj) > 1
                         element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                         for i = 1:length(obj)
-                            this.buildDOM(obj(i), 'entry', document, element, true);
+                            this.buildDOM(obj(i), this.LIST_ENRTY_TAG_NAME, document, element, true);
                         end
                         return;
                     else
@@ -238,7 +258,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             elseif ~isscalar(obj) || iscell(obj) || isa(obj, 'lists.ICollection')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                 for i = 1:length(obj)
-                    this.buildDOM(this.accessArray(obj, i), 'entry', document, element, true);
+                    this.buildDOM(this.accessArray(obj, i), this.LIST_ENRTY_TAG_NAME, document, element, true);
                 end
             % handle ref types and structs
             elseif ~isempty(obj)
@@ -257,32 +277,41 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             md.type = 'struct';
             
             % use the correct attributes
-            attrNames = this;
+            elementNames = this;
             if this.isCompatibilityMode(version)
-                attrNames = this.COMPATIBILITY_ATTR_NAMES;
+                elementNames = this.COMPATIBILITY_ELEMENT_NAMES;
             end
             
             % determine object type
-            if node.hasAttribute(attrNames.TYPE_ATTR_NAME)
-                md.type = char(node.getAttribute(attrNames.TYPE_ATTR_NAME));
+            if node.hasAttribute(elementNames.TYPE_ATTR_NAME)
+                md.type = char(node.getAttribute(elementNames.TYPE_ATTR_NAME));
             end
             
             % if object is a list
             md.isList = false;
-            if node.hasAttribute(attrNames.IS_LIST_ATTR_NAME)
-                md.isList = mxml.converters.str2boolean(char(node.getAttribute(attrNames.IS_LIST_ATTR_NAME)));
+            if node.hasAttribute(elementNames.IS_LIST_ATTR_NAME)
+                md.isList = mxml.converters.str2boolean(char(node.getAttribute(elementNames.IS_LIST_ATTR_NAME)));
             end
         end
     end
     
     methods (Access=private)
-        function attrNames = getReservedMetadataAttributeNames(this, version)
+        function [attrNames, elemNames] = getReservedMetadataAttributeNames(this, version, isList)
             if this.isCompatibilityMode(version)
                 % compatibility mode attributes
-                attrNames = {this.COMPATIBILITY_ATTR_NAMES.TYPE_ATTR_NAME, this.COMPATIBILITY_ATTR_NAMES.IS_LIST_ATTR_NAME};
+                attrNames = {this.COMPATIBILITY_ELEMENT_NAMES.TYPE_ATTR_NAME, this.COMPATIBILITY_ELEMENT_NAMES.IS_LIST_ATTR_NAME};
+                if isList
+                    elemNames = {this.COMPATIBILITY_ELEMENT_NAMES.LIST_ENRTY_TAG_NAME};
+                else
+                    elemNames = {};
+                end
             else
                 % regular meta data attributes
                 attrNames = {this.VERSION_ATTR_NAME, this.TYPE_ATTR_NAME, this.IS_LIST_ATTR_NAME};
+                
+                % the _entry tag name is always reserved, there can be no
+                % property with the name _entry
+                elemNames = {this.LIST_ENRTY_TAG_NAME};
             end
         end
     end

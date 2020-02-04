@@ -10,6 +10,11 @@ classdef GuiApp < appd.App
             if nargin < 1 || isempty(iocContainer); iocContainer = IoC.Container.empty(); end
             
             this@appd.App(iocContainer, varargin{:});
+            
+            % update log path relative location
+            if any(regexp(this.LogPath, '^[\\\/]'))
+                this.LogPath = fullfile(this.RootPath, this.LogPath(2:end));
+            end
         end
         
         function clear(this)

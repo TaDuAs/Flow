@@ -9,7 +9,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             testCase.assignOutputsWhen(interpreterBehav.interpretElement(root.children.child1.node, 3), 123);
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, '_type');
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, '_type', []);
             
             value = extractor.get('child1');
             
@@ -24,7 +24,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             testCase.assignOutputsWhen(interpreterBehav.interpretElement(root.children.child2.node, 3), mxml.tests.HandleModel());
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, ["_type", "_version", "_isList"]);
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, ["_type", "_version", "_isList"], "_entry");
             
             value = extractor.get('child2');
             
@@ -38,7 +38,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             testCase.assignOutputsWhen(interpreterBehav.interpretAttribute(java.lang.String('myId'), 3), 'the cat in the hat');
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             value = extractor.get('id');
             
@@ -52,7 +52,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             testCase.assignOutputsWhen(interpreterBehav.interpretAttribute(java.lang.String(root.attr.type.value), 3), 'the cat in the hat');
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             value = extractor.get('type');
             
@@ -66,7 +66,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             testCase.assignOutputsWhen(interpreterBehav.interpretAttribute(java.lang.String(root.attr.id.value), 3), 'the cat in the hat');
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             flag = true;
             try
@@ -86,7 +86,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             testCase.assignOutputsWhen(interpreterBehav.interpretAttribute(java.lang.String(root.attr.id.value), 3), 'the cat in the hat');
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             flag = true;
             try
@@ -106,7 +106,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             testCase.assignOutputsWhen(interpreterBehav.interpretAttribute(java.lang.String(root.attr.type.value), 3), 'the cat in the hat');
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'type', 'isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'type', 'isList'}, {'entry'});
             
             flag = true;
             try
@@ -125,7 +125,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             % mock stuff
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             assert(extractor.hasProp('child1'));
         end
@@ -136,7 +136,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             % mock stuff
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             assert(extractor.hasProp('id'));
         end
@@ -147,7 +147,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             % mock stuff
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             assert(~extractor.hasProp('blahblahblah'));
         end
@@ -158,7 +158,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             % mock stuff
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             assert(~extractor.hasProp('_type'));
         end
@@ -169,7 +169,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             % mock stuff
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'_type', '_version', '_isList'}, {'_entry'});
             
             assert(extractor.hasProp('type'));
         end
@@ -180,7 +180,7 @@ classdef XmlFieldExtractorTests < matlab.mock.TestCase
             % mock stuff
             [interpreterMock, interpreterBehav] = testCase.createMock(?mxml.IXmlInterpreter);
             
-            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'type', 'isList'});
+            extractor = mxml.XmlFieldExtractor(interpreterMock, root.node, 3, {'type', 'isList'}, {'entry'});
             
             assert(~extractor.hasProp('type'));
         end

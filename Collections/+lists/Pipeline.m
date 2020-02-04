@@ -25,7 +25,7 @@ classdef Pipeline < lists.IObservable
         end
         
         function b = isempty(this)
-            b = isempty(this.list);
+            b = builtin('isempty', this) || isempty(this.list);
         end
         
         function varargout = size(this, dim)
@@ -110,7 +110,7 @@ classdef Pipeline < lists.IObservable
             task = [];
             
             if this.hasPending()                
-                task = this.list.get(this.currentTaskIndex);
+                task = this.list(this.currentTaskIndex);
             end
         end
         
@@ -131,8 +131,8 @@ classdef Pipeline < lists.IObservable
         end
         
         function init(this, settings)
-            for i = 1:this.list.length()
-                this.list.get(i).init(settings);
+            for i = 1:numel(this.list)
+                this.list(i).init(settings);
             end
         end
         

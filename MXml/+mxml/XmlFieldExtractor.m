@@ -5,6 +5,7 @@ classdef XmlFieldExtractor < mfc.extract.IJitPropertyExtractor
     properties
         Interpreter mxml.IXmlInterpreter = mxml.XmlSerializer.empty();
         ReservedAttributes string;
+        ReservedChildElements string;
         Node;
         ChildNodes;
         ChildNodesIndices;
@@ -13,16 +14,18 @@ classdef XmlFieldExtractor < mfc.extract.IJitPropertyExtractor
     end
     
     methods
-        function this = XmlFieldExtractor(interpreter, node, version, reservedAttr)
+        function this = XmlFieldExtractor(interpreter, node, version, reservedAttr, reservedChildElements)
             this.Interpreter = interpreter;
             this.Node = node;
             this.Version = version;
             this.ReservedAttributes = string(reservedAttr);
+            this.ReservedChildElements = string(reservedChildElements);
         end
         
         function tf = hasProp(this, property)
         % determines if the desired property exists in the data
-            tf = (~ismember(property, this.ReservedAttributes) && this.hasAttr(property)) || this.hasChild(property);
+            tf = (~ismember(property, this.ReservedAttributes) && this.hasAttr(property)) ||...
+                 (~ismember(property, this.ReservedChildElements) && this.hasChild(property));
         end
         
         function value = get(this, property)
@@ -88,8 +91,15 @@ classdef XmlFieldExtractor < mfc.extract.IJitPropertyExtractor
                     continue;
                 end
                 
+                % skip nodes with reserved xml element tag names - they are
+                % not property representation
+                currNodeName = char(node.getNodeName());
+                if ismember(currNodeName, this.ReservedChildElements)
+                    continue;
+                end
+                
                 % extract the name of actual nodes
-                childNodesNames{i} = char(node.getNodeName());
+                childNodesNames{i} = currNodeName;
                 
                 % mark node index as actual node
                 actualNodesMask(i) = true;

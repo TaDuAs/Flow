@@ -539,7 +539,7 @@ classdef ObservableArrayTests < matlab.unittest.TestCase
             
             arr.removeAt(5);
             
-            testCase.verifyEqual(arr.Array, 1:4);
+            testCase.verifyEqual(arr.Array, A(1:4, :));
         end
     end
 end
