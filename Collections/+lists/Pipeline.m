@@ -161,7 +161,7 @@ classdef Pipeline < lists.IObservable
                 end
                 task = this.getv(i);
             elseif ischar(i) || isStringScalar(i)
-                task = findTaskByType(i);
+                task = this.findTaskByType(i);
                 if isempty(task)
                     throw(MException('lists:Pipeline:IndexOutOfRange', 'pipeline doesn''t contain specified task type %s', i));
                 end

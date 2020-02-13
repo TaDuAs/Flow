@@ -56,6 +56,9 @@ classdef MessagingMediator < handle
         end
         
         function send(this, message)
+            if ischar(message) || isStringScalar(message)
+                message = appd.RelayMessage(message);
+            end
             msgId = message.Id;
             if this.Listeners.isKey(msgId)
                 msgListenesrs = this.Listeners(msgId);
