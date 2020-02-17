@@ -63,7 +63,8 @@ classdef Dependency < handle & matlab.mixin.Heterogeneous
     
     methods (Access={?IoC.Container})
         function new = duplicateFor(this, IoCContainer)
-            new = this.doDuplicateFor(IoCContainer);
+            new = this.generateCopyInstance(IoCContainer);
+            this.copyArgumentsTo(new);
         end
     end
     
@@ -201,8 +202,15 @@ classdef Dependency < handle & matlab.mixin.Heterogeneous
             end
         end
         
-        function new = doDuplicateFor(this, ioCContainer)
-            new = IoC.Dependency(ioCContainer, this.Id, this.Ctor, this.Arguments{:});
+        function new = generateCopyInstance(this, ioCContainer)
+            new = IoC.Dependency(ioCContainer, this.Id, this.Ctor);
+        end
+        
+        function copyArgumentsTo(this, other)
+            other.Arguments = this.Arguments;
+            other.NameValueArgs = this.NameValueArgs;
+            other.PropertyInjections = this.PropertyInjections;
+            other.Type = this.Type;
         end
     end
 end

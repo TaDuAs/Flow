@@ -18,8 +18,8 @@ classdef SessionDependency < IoC.Dependency
     end
     
     methods (Access=protected)
-        function new = doDuplicateFor(this, ioc)
-            new = IoC.SessionDependency(ioc, this.Id, this.Ctor, this.Arguments{:});
+        function new = generateCopyInstance(this, ioc)
+            new = IoC.SessionDependency(ioc, this.Id, this.Ctor);
         end
     end
 end

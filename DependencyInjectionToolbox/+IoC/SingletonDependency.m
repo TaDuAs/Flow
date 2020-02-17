@@ -24,13 +24,13 @@ classdef SingletonDependency < IoC.Dependency
     end
     
     methods (Access=protected)
-        function new = doDuplicateFor(this, ioc)
+        function new = generateCopyInstance(this, ioc)
             % if the singleton was not created yet, it's time to build it
             % now. Fixes the extreme lazy loading problem
             if isempty(this.Instance)
                 this.build();
             end
-            new = IoC.SingletonDependency(ioc, this.Id, this.Ctor, this.Arguments{:});
+            new = IoC.SingletonDependency(ioc, this.Id, this.Ctor);
             new.setSingleton(this.Instance);
         end
     end
