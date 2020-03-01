@@ -1,17 +1,17 @@
-classdef DependencyFetcher < handle
+classdef DependencyFetcher < IoC.IDependencyFetcher
     properties
-        IoCContainer IoC.IContainerGetter = IoC.ContainerGetter.empty();
+        IocContainer IoC.IContainerGetter = IoC.ContainerGetter.empty();
         Dependency string;
     end
     
     methods
         function this = DependencyFetcher(ioc, dependency)
-            this.IoCContainer = ioc;
+            this.IocContainer = ioc;
             this.Dependency = dependency;
         end
         
         function dep = fetch(this)
-            dep = this.IoCContainer.get(this.Dependency);
+            dep = this.IocContainer.get(this.Dependency);
         end
     end
 end

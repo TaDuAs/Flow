@@ -283,12 +283,13 @@ classdef Container < IoC.IContainer
 
             service = cell(1, numel(sidn));
             for i = 1:numel(sidn)
+                currInjection = cell(1, sidn(i));
                 for j = sidn(i):-1:1
                     currDepIdx = j+sidIdxStart(i)-1;
                     currDep = this.Dependencies(validServiceId{currDepIdx});
-                    currInjection(j) = currDep.build(varargin{:});
+                    currInjection{j} = currDep.build(varargin{:});
                 end
-                service{i} = currInjection;
+                service{i} = [currInjection{:}];
                 clear currInjection;
             end
 
@@ -326,9 +327,9 @@ classdef Container < IoC.IContainer
     end
     
     methods (Access=?IoC.Container)
-        function setDependencies(this, Dependencies)
-            for i = 1:numel(Dependencies)
-                d = Dependencies{i};
+        function setDependencies(this, dependencies)
+            for i = 1:numel(dependencies)
+                d = dependencies{i};
                 this.Dependencies(d.Id) = d.duplicateFor(this);
             end
         end

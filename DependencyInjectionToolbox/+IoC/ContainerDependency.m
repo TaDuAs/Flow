@@ -6,7 +6,7 @@ classdef ContainerDependency < IoC.Dependency
     end
     
     methods (Access=protected)
-        function new = doDuplicateFor(this, ioc)
+        function new = generateCopyInstance(this, ioc)
             new = IoC.ContainerDependency(ioc, this.Id);
         end
     end
