@@ -1,0 +1,33 @@
+<HTML>
+<head>
+	<title>{ServiceName} Service Methods</title>
+	<meta charset="utf-8">
+	<script type="text/javascript" language="javascript">
+		function invokeServiceMethod(link, url)
+		{
+			item = link.parentElement;
+			
+			paramElements = item.getElementsByTagName('input');
+			for (i = 0; i < paramElements.length; ++i)
+			{
+				if (i == 0)
+				{
+					url += "?"
+				}
+				else
+				{
+					url += "&";
+				}
+				url += paramElements[i].name + "=" +  paramElements[i].value;
+			}
+			
+			alert(url);
+		}
+	</script>
+<body>
+	<H1>{ServiceName}</H1>
+    <ul style="list-style-type: none;">
+        {Methods}
+    </ul>
+</body>
+</HTML>
