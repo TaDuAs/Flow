@@ -12,7 +12,7 @@ classdef wlc
             s = -(kbt/(p*l))*(1+1/(2*(1-x/l)^3)); 
         end
         
-        function f = F(x, p, l, T, k)
+        function f = F(x, p, l, T, k, model)
         % f = F(x, p, l, [T])
         % calculates the stretching force in position x
         % for a polymer chain with persistence length: p
@@ -24,13 +24,11 @@ classdef wlc
             
             import Simple.Scientific.PhysicalConstants;
             import Simple.Math.wlc;
+            
             % Validate & initialize valuse
-            if nargin < 4 || isempty(T)
-                T = PhysicalConstants.RT;
-            end
-            if nargin < 5
-                k = [];
-            end
+            if nargin < 4 || isempty(T); T = PhysicalConstants.RT; end
+            if nargin < 5; k = []; end
+            if nargin < 6; model = ''; end
             n = length(p);
             if n ~= length(l)
                 error('The dimensions of vectors p & l must be consistent.');
@@ -45,19 +43,25 @@ classdef wlc
             for i = 1:n
                 kbt = PhysicalConstants.kB * T;
                 if isempty(k)
+                    
+                    wlcf = Simple.Math.wlc.getWlcFunction(kbt, p(i), l(i), model);
+                    
                     % calculate f according to WLC formula
                     % vectorized solution
-                    x1 = x/l(i);
-                    f(i, :) = real((kbt./p(i))*(1./(4*(1-x1).^2)-1/4+x1));
+                    f(i, :) = real(wlcf(x));
+%                     x1 = x/l(i);
+%                     f(i, :) = real((kbt./p(i))*(1./(4*(1-x1).^2)-1/4+x1));
                 else
                     % calculate f according to WLC formula, while
                     % substituting x with D=x-f/k to get correct tip height
                     % x and f are recalculated iteratively.
                     % The solution generally converges after 6 iterations.
-                    x1 = x/l(i);
+                    wlcf = Simple.Math.wlc.getWlcFunction(kbt, [], [], model); 
+                    x1 = x;
                     for j = 1:6
-                        f = double(real((kbt./p(i))*(1./(4*(1-x1).^2)-1/4+x1)));
-                        x1 = (x-f/k)/l(i);
+%                         f = double(real((kbt./p(i))*(1./(4*(1-x1).^2)-1/4+x1)));
+                        f = double(real(wlcf(p(i), l(i), x1)));
+                        x1 = (x-f/k);
                     end
                 end
             end
@@ -157,16 +161,15 @@ classdef wlc
             correctL = l(mostProbableSolutionIndex(1));
         end
         
-        function [p, l, gof, output] = fitAll(x, y, disconIdx, persistenceRange, T, varargin)
-            if nargin < 5
-                T = Simple.Scientific.PhysicalConstants.RT;
-            end
+        function [p, l, gof, output] = fitAll(x, y, contourRange, persistenceRange, T, model, varargin)
+            if nargin < 5; T = Simple.Scientific.PhysicalConstants.RT; end
+            if nargin < 6 || isempty(model); model = ''; end
             kBT = Simple.Scientific.PhysicalConstants.kB * T;
             
-            wlcfunction = Simple.Math.wlc.getWlcFunction(kBT);
+            wlcfunction = Simple.Math.wlc.getWlcFunction(kBT, [], [], model);
             sfoo = func2str(wlcfunction);
             
-            n = numel(disconIdx);
+            n = size(contourRange, 1);
             c = cell(1,n);
             for i = 1:n
                 c{i} = regexprep(regexprep(regexprep(sfoo, '@\([^()]*\)', ''), '(p|l)', ['$0' num2str(i)]), 'kBT', num2str(kBT));
@@ -180,16 +183,16 @@ classdef wlc
             argsIdxMask = cellfun(@(name) find(strcmp(argNames, name)), coeffNames);
             
             % Set fit bounds & method
-            disconDist = x(disconIdx);
-            lower = reshape([repmat(persistenceRange(1), 1, n); disconDist(:)'], size(coeffNames));
-            upper = reshape([repmat(persistenceRange(2), 1, n); disconDist(:)' * 1.1], size(coeffNames));
+            lower = reshape([persistenceRange(:, 1)'; contourRange(:, 1)'], size(coeffNames));
+            upper = reshape([persistenceRange(:, 2)'; contourRange(:, 2)'], size(coeffNames));
             fitOpt = fitoptions(wlcf);
             fitOpt.Lower = lower(argsIdxMask);
             fitOpt.Upper = upper(argsIdxMask);
+            fitOpt.StartPoint = lower(argsIdxMask);
             
             fitOpt.MaxFunEvals = 150;
             fitOpt.MaxIter = 100;
-            if nargin >= 8
+            if nargin >= 7
                 fitOpt = fitoptions(fitOpt, params);
             end
             
@@ -204,14 +207,14 @@ classdef wlc
             end
         end
         
-        function [p, l, gof, output] = fit(x, y, p, l, T, params)
+        function [p, l, gof, output] = fit(x, y, p, l, T, model, params)
             import Simple.Scientific.PhysicalConstants;
-            if nargin < 5
-                T = PhysicalConstants.RT;
-            end
+            if nargin < 5; T = PhysicalConstants.RT; end
+            if nargin < 6; model = ''; end
+            
             % Fit type
             kBT = PhysicalConstants.kB * T;
-            wlcfunction = Simple.Math.wlc.getWlcFunction(kBT);
+            wlcfunction = Simple.Math.wlc.getWlcFunction(kBT, [], [], model);
             wlcf = fittype(wlcfunction);
             
             % Set fit bounds & method
@@ -224,7 +227,7 @@ classdef wlc
             
             fitOpt.MaxFunEvals = 150;
             fitOpt.MaxIter = 100;
-            if nargin >= 6
+            if nargin >= 7
                 fitOpt = fitoptions(fitOpt, params);
             end
             
@@ -234,27 +237,16 @@ classdef wlc
             l = fitArgs.l;
         end
         
-        function func = createExpretion(kBT, p, l)
-%             import Simple.Math.Ex.*;
-%             func =...
-%                  Multiply(...
-%                     Scalar(-kBT/p),...
-%                     Add(...
-%                         Multiply(...
-%                             Scalar(0.25),...
-%                             Power(...
-%                                 Subtract(...
-%                                     One,...
-%                                     Divide(X, Scalar(l))),...
-%                                 Scalar(-2))),...
-%                         Subtract(...
-%                             Divide(X, Scalar(l)),...
-%                             Scalar(0.25)))).evaluate();
-            wlcf = Simple.Math.wlc.getWlcFunction(kBT, p, l);
-            func = Simple.Math.Ex.Minus(Simple.Math.Ex.Symbolic(sym(wlcf)));
+        function func = createExpretion(kBT, p, l, model)
+            if nargin < 4; model = ''; end
+            wlcf = Simple.Math.wlc.getWlcFunction(kBT, [], [], model);
+            symWlcf = subs(-1*sym(wlcf), {'p', 'l'}, [p, l]);
+            func = Simple.Math.Ex.Symbolic(symWlcf);
         end
         
-        function wlcfunction = getWlcFunction(kBT, p, l)
+        function wlcfunction = getWlcFunction(kBT, p, l, model)
+            if nargin < 4 || isempty(model); model = 'bustamante'; end
+            
             % bustamante WLC equation
             % C. Bustamante, J.F. Marko, E.D. Siggia, S. Smith
             % Science, 265 (1994), p. 1599
@@ -266,10 +258,19 @@ classdef wlc
             % (1999), Biophysical journal, 76(1), 409-413,
             % Estimating the persistence length of a worm-like chain molecule from force-extension measurements.
             
-            if nargin < 2
-                wlcfunction = @(p, l, x) (kBT/p) * (1./(4*(1-(x./l)).^2) + x./l - 1/4 + (-0.516422*(x/l).^2) + (-2.73741*(x/l).^3) + (16.0749*(x/l).^4) + (-38.8760*(x/l).^5) + (39.4994*(x/l).^6) + (-14.1771*(x/l).^7));
-            else
-                wlcfunction = @(x) (kBT/p) * (1./(4*(1-(x./l)).^2) + x./l - 1/4 + (-0.516422*(x/l).^2) + (-2.73741*(x/l).^3) + (16.0749*(x/l).^4) + (-38.8760*(x/l).^5) + (39.4994*(x/l).^6) + (-14.1771*(x/l).^7));
+            switch lower(model)
+                case 'bouchiat'
+                    if nargin < 2 || isempty(p)
+                        wlcfunction = @(p, l, x) (kBT/p) * (1./(4*(1-(x./l)).^2) + x./l - 1/4 + (-0.516422*(x/l).^2) + (-2.73741*(x/l).^3) + (16.0749*(x/l).^4) + (-38.8760*(x/l).^5) + (39.4994*(x/l).^6) + (-14.1771*(x/l).^7));
+                    else
+                        wlcfunction = @(x) (kBT/p) * (1./(4*(1-(x./l)).^2) + x./l - 1/4 + (-0.516422*(x./l).^2) + (-2.73741*(x./l).^3) + (16.0749*(x./l).^4) + (-38.8760*(x./l).^5) + (39.4994*(x./l).^6) + (-14.1771*(x./l).^7));
+                    end
+                case 'bustamante'
+                    if nargin < 2 || isempty(p)
+                        wlcfunction = @(p, l, x) (kBT/p) * (1./(4*(1-(x./l)).^2) + x./l - 1/4);
+                    else
+                        wlcfunction = @(x) (kBT/p) * (1./(4*(1-(x./l)).^2) + x./l - 1/4);
+                    end
             end
         end
     end
