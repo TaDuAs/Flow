@@ -1,18 +1,18 @@
 classdef (Abstract) IContainer < mvvm.IControl
     
     properties (Dependent)
-        Parent mvvm.view.IContainer = mvvm.view.ContainerControl.empty();
+        Parent mvvm.view.IContainer;
         Children;
     end
     
     methods
-        function parent = Parent.get(this)
+        function parent = get.Parent(this)
             parent = this.getParent();
         end
-        function Parent.set(this, parent)
+        function set.Parent(this, parent)
             this.setParent(parent);
         end
-        function children = Children.get(this)
+        function children = get.Children(this)
             children = this.getChildren();
         end
     end

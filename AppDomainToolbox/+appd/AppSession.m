@@ -35,6 +35,35 @@ classdef AppSession < appd.IApp
         Messenger appd.MessagingMediator;
     end
     
+    methods % allow property access for wrapped app props
+        function varargout = subsref(A, S)
+            if strcmp(S(1).type, '.')
+                subsStr = string(S(1).subs);
+                firstSubs = subsStr(1);
+                if all(ismethod(A, firstSubs))
+                    if nargout > 1
+                        varargout = cell(1, nargout);
+                    else
+                        mc = metaclass(A);
+                        currMethod = mc.MethodList(strcmp(firstSubs, {mc.MethodList.Name}));
+                        varargout = cell(1, min(1, numel(currMethod.OutputNames)));
+                    end
+                    
+                    [varargout{:}] = builtin('subsref', A, S);
+                elseif all(~isprop(A, firstSubs)) && all(isprop([A.App], firstSubs))
+                    varargout = {subsref([A.App], S)};
+                else
+                    varargout = {builtin('subsref', A, S)};
+                end
+            else
+                varargout = {builtin('subsref', A, S)};
+            end
+        end
+        
+        function A = subsasgn(A,S,B)
+        end
+    end
+    
     methods % Property accessors
         function app = getApp(this)
             app = this.App;
