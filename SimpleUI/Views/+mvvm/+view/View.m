@@ -3,7 +3,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         AppLoadingEventListener;
         
         % parent lifecycle event handlers
-        OwnerViewEventHandlers;
+        OwnerViewEventHandlers event.listener;
     end
     
     properties (GetAccess=public,SetAccess=private)
@@ -30,6 +30,10 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             end
             if ~isempty(this.ViewManager)
                 this.ViewManager.register(this);
+            end
+            if ~isempty(this.OwnerView)
+                % this will sign in to the owner views lifecycle events
+                this.start();
             end
         end
         
@@ -99,8 +103,8 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             this.ViewManager = parser.Results.ViewManager;
             if ~isempty(parser.Results.OwnerView)
                 this.OwnerView = parser.Results.OwnerView;
-            elseif ~isempty(this.ViewManager)
-                this.OwnerView = this.ViewManager.getOwnerView(this);
+%             elseif ~isempty(this.ViewManager)
+%                 this.OwnerView = this.ViewManager.getOwnerView(this);
             end
             
             % get view id
@@ -213,7 +217,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             notify(this, 'loaded');
             
             delete(this.OwnerViewEventHandlers)
-            this.OwnerViewEventHandlers = [];
+            this.OwnerViewEventHandlers = event.listener.empty();
         end
         
         function registerToApp(this, app)

@@ -39,7 +39,7 @@ classdef ContainerControl < mvvm.view.IContainer
         end
         
         function setParent(this, parent)
-            if isa(child, 'mvvm.view.IContainer')
+            if isa(parent, 'mvvm.view.IContainer')
                 h = parent.getContainerHandle();
             else
                 h = parent;

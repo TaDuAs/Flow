@@ -63,15 +63,22 @@ classdef ComponentView < mvvm.view.View
             else
                 this.Parent_ = parent;
             end
+            
+            % ensure the wrapping box of this component gets the parent
+            % container
+            if ~isempty(this.ContainerBox_)
+                this.ContainerBox_.setParent(this.Parent_);
+            end
         end
     end
     
     methods (Access=protected)
         
-        function initializeComponents(this)
+        function init(this)
             % base initialize components
-            initializeComponents@mvvm.view.View(this);
+            init@mvvm.view.View(this);
             
+            % initialize self box
             if ~isempty(this.ContainerBoxCtor)
                 this.ContainerBox_ = mvvm.view.ContainerControl(this.ContainerBoxCtor());
                 this.ContainerBox_.setParent(this.Parent);
