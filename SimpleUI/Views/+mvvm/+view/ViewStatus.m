@@ -1,10 +1,10 @@
-classdef ViewStatus
+classdef ViewStatus < double
     enumeration
-        NotActivated;
-        Initialized;
-        ComponentsInitialized
-        Loaded;
-        Closed;
+        NotActivated            (1);
+        Initialized             (2);
+        ComponentsInitialized   (3);
+        Loaded                  (4);
+        Closed                  (5);
     end
 end
 

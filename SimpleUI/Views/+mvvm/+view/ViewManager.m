@@ -5,15 +5,15 @@ classdef ViewManager < mvvm.view.IViewManager
     % IoC dependency names.
     
     properties (Access=protected)
-        App appd.IApp;
-        IoCContainer IoC.IContainer;
+        App appd.IApp = appd.App.empty();
+        IoCContainer IoC.IContainer = IoC.Container.empty();
         SelfIoCContainerId = "ViewManager";
         ActiveViews containers.Map;
     end
     
     methods
         function this = ViewManager(app, viewManagerIoCContainerId)
-            if nargin >= 2
+            if nargin >= 2 && ~isempty(viewManagerIoCContainerId)
                 this.SelfIoCContainerId = viewManagerIoCContainerId;
             end
             this.App = app;
@@ -27,7 +27,7 @@ classdef ViewManager < mvvm.view.IViewManager
             delete(this.ActiveViews);
         end
         
-        function view = start(this, id)
+        function view = start(this, id, varargin)
             vid = this.generateViewID(id);
             
             % create session views in a new session
@@ -35,9 +35,9 @@ classdef ViewManager < mvvm.view.IViewManager
                 app = this.App.getApp();
                 [~, session] = app.startSession();
                 sessionViewManager = session.iocContainer.get(this.SelfIoCContainerId);
-                view = sessionViewManager.startInOwnSession(vid);
+                view = sessionViewManager.startInOwnSession(vid, varargin{:});
             else
-                view = this.startInOwnSession(vid);
+                view = this.startInOwnSession(vid, varargin{:});
             end
         end
         
@@ -57,6 +57,32 @@ classdef ViewManager < mvvm.view.IViewManager
             if this.ActiveViews.isKey(vid)
                 view = this.ActiveViews(vid);
                 view.show();
+            end
+        end
+        
+        function ownerView = getOwnerView(this, view)
+            % hierarchically finds the lowest level view which contains the
+            % specified view
+            viewContainer = view.getContainerHandle();
+            h = viewContainer.Parent;
+            ownerView = mvvm.view.Window.empty();
+            activeViewList = cellfun(@(v) v, this.ActiveViews.Values);
+            activeHandles = arrayfun(@getContainerHandle, activeViewList);
+            
+            while ~isempty(h) && isvalid(h)
+                isViewHandle = activeHandles == h;
+                
+                if any(isViewHandle)
+                    ownerView = activeViewList(isViewHandle);
+                    return;
+                end
+            end
+        end
+        
+        function register(this, view)
+            vid = view.Id;
+            if ~this.ActiveViews.isKey(vid)
+                this.ActiveViews(vid) = view;
             end
         end
     end
@@ -84,10 +110,11 @@ classdef ViewManager < mvvm.view.IViewManager
     end
     
     methods (Access={?mvvm.view.ViewManager})
-        function view = startInOwnSession(this, vid)
-            view = this.IoCContainer.get(vid.Type);
+        function view = startInOwnSession(this, vid, owner)
+            svid = vid.toString();
+            view = this.IoCContainer.get(vid.Type, '@ViewManager', this, '@Id', strcat("$", svid));
             
-            this.ActiveViews(vid.toString()) = view;
+            this.ActiveViews(svid) = view;
             view.start();
         end
     end

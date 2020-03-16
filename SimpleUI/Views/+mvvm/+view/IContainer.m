@@ -23,7 +23,6 @@ classdef (Abstract) IContainer < mvvm.IControl
         children = getChildren(this);
         parent = getParent(this);
         setParent(this, parent);
-        view = getOwnerView(this);
     end
 end
 

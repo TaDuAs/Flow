@@ -1,11 +1,14 @@
 classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.Heterogeneous
     properties (Access=private)
         AppLoadingEventListener;
+        
+        % parent lifecycle event handlers
+        OwnerViewEventHandlers;
     end
     
     properties (GetAccess=public,SetAccess=private)
         App appd.IApp = appd.App.empty();
-        Status (1,1) mvvm.view.ViewStatus = mvvm.view.ViewStatus.NotActivated;
+        Status mvvm.view.ViewStatus = mvvm.view.ViewStatus.NotActivated;
     end
     
     properties
@@ -15,6 +18,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         BindingManager mvvm.BindingManager;
         ModelProviderMapping mvvm.view.ViewProviderMapping;
         ViewManager mvvm.view.IViewManager = mvvm.view.ViewManager.empty();
+        Id string;
     end
     
     methods
@@ -23,6 +27,9 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             
             if ~isempty(this.App)
                 this.registerToApp(this.App);
+            end
+            if ~isempty(this.ViewManager)
+                this.ViewManager.register(this);
             end
         end
         
@@ -34,14 +41,6 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         
         function close(this)
             this.onCloseRequest();
-        end
-        
-        function ownerView = getOwnerView(this)
-            if ~isempty(this.OwnerView)
-                ownerView = this.OwnerView;
-            elseif ~isempty(this.ViewManager)
-%                 ownerView = this.ViewManager.get();
-            end
         end
         
         function show(this)
@@ -88,14 +87,24 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             % first of all, get binding manager
             this.BindingManager = parser.Results.BindingManager;
             
-            % get control event name
+            % get messenger
             this.Messenger = parser.Results.Messenger;
             
+            % get data binding model provider
             if ~isempty(parser.Results.ModelProvider)
                 this.ModelProviderMapping = mvvm.view.ViewProviderMapping(this.BindingManager, this, parser.Results.ModelProvider);
             end
             
+            % get view manager and parent view
             this.ViewManager = parser.Results.ViewManager;
+            if ~isempty(parser.Results.OwnerView)
+                this.OwnerView = parser.Results.OwnerView;
+            elseif ~isempty(this.ViewManager)
+                this.OwnerView = this.ViewManager.getOwnerView(this);
+            end
+            
+            % get view id
+            this.Id = parser.Results.Id;
         end
         
         function prepareParser(~, parser)
@@ -109,7 +118,10 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             addParameter(parser, 'ModelProvider', [], ...
                 @(x) assert(isa(x, 'mvvm.providers.IModelProvider'), 'ModelProvider must be a mvvm.providers.IModelProvider'));
             addParameter(parser, 'ViewManager', mvvm.view.ViewManager.empty(), ...
-                @(x) assert(isa(x, 'mvvm.view.ViewManager'), 'ViewManager must be a mvvm.view.ViewManager'));
+                @(x) assert(isa(x, 'mvvm.view.IViewManager'), 'ViewManager must be a mvvm.view.ViewManager'));
+            addParameter(parser, 'OwnerView', mvvm.view.Window.empty(), ...
+                @(x) assert(isa(x, 'mvvm.view.IView'), 'OwnerView must be a mvvm.view.IView'));
+            addParameter(parser, 'Id', guid(), @gen.valid.mustBeTextualScalar);
         end
         
         function onCloseRequest(this, ~, ~)
@@ -134,20 +146,74 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
     
     methods (Access=private)
         function initiateLifecycle(this)
-            this.init();
+            % get view owner
+            owner = this.OwnerView;
             
+            % get owner status
+            if ~isempty(this.OwnerView)
+                ownerStatus = owner.Status;
+            else
+                % when there is no owner, this views lifecycle should be
+                % independent of anything.
+                % simulate this by setting the owner status to the highest
+                % status available
+                ownerStatus = mvvm.view.ViewStatus.Closed;
+            end
+            
+            %
+            % ** automatically activate any events already fired by the
+            % ** owner view
+            %
+            % initialize view
+            if ownerStatus < mvvm.view.ViewStatus.Initialized
+                this.OwnerViewEventHandlers(end + 1) = addlistener(owner, 'initialized', @this.onBeingInitialized);
+            else
+                this.onBeingInitialized();
+            end
+
+            % initialize view components
+            if ownerStatus < mvvm.view.ViewStatus.ComponentsInitialized
+                this.OwnerViewEventHandlers(end + 1) = addlistener(owner, 'componentsInitialized', @this.onComponentsBeingInitialized);
+            else
+                this.onComponentsBeingInitialized();
+            end
+
+            % load view
+            if ownerStatus < mvvm.view.ViewStatus.Loaded
+                this.OwnerViewEventHandlers(end + 1) = addlistener(owner, 'loaded', @this.onBeingLoaded);
+            else
+                this.onBeingLoaded();
+            end
+        end
+        
+        function onBeingInitialized(this, ~, ~)
+            % perform view initialization
+            this.init();
+
+            % fire initialization lifecycle event
             this.Status = mvvm.view.ViewStatus.Initialized;
             notify(this, 'initialized');
-            
+        end
+        
+        function onComponentsBeingInitialized(this, ~, ~)
+            % perform component initialization
             this.initializeComponents();
-            
+
+            % fire component initialization lifecycle event
             this.Status = mvvm.view.ViewStatus.ComponentsInitialized;
             notify(this, 'componentsInitialized');
-            
+        end
+        
+        function onBeingLoaded(this, ~, ~)
+            % perform view load
             this.load();
-            
+
+            % fire loading lifecycle event
             this.Status = mvvm.view.ViewStatus.Loaded;
             notify(this, 'loaded');
+            
+            delete(this.OwnerViewEventHandlers)
+            this.OwnerViewEventHandlers = [];
         end
         
         function registerToApp(this, app)
@@ -160,6 +226,8 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         
         function onAppLoading(this, app, eData)
             this.start();
+            delete(this.AppLoadingEventListener);
+            this.AppLoadingEventListener = [];
         end
     end
 end

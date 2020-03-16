@@ -4,9 +4,10 @@ classdef (Abstract) IViewManager < handle
         
     methods (Abstract)
         view = start(viewMgr, id);
+        register(viewMgr, view);
         close(viewMgr, id);
         show(viewMgr, id);
-%         getOwnerView(viewMgr, view);
+        getOwnerView(viewMgr, view);
     end
 end
 

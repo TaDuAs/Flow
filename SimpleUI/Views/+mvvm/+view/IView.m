@@ -4,6 +4,9 @@ classdef (Abstract) IView < mvvm.view.IContainer
     properties (Abstract, GetAccess=public, SetAccess=private)
         % Application object
         App appd.IApp;
+        
+        % view status
+        Status mvvm.view.ViewStatus;
     end
     
     properties (Abstract) % property injections
@@ -24,6 +27,9 @@ classdef (Abstract) IView < mvvm.view.IContainer
         
         % View manager for interaction with other views
         ViewManager mvvm.view.IViewManager;
+        
+        % The Id of the current view
+        Id string;
     end
     
     events % view lifecycle events
@@ -61,9 +67,6 @@ classdef (Abstract) IView < mvvm.view.IContainer
         
         % Terminates the current view
         close(view);
-        
-        % Gets the parent view of the current view
-        ownerView = getOwnerView(view);
     end
 end
 
