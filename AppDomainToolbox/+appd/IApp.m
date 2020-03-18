@@ -54,5 +54,8 @@ classdef (Abstract) IApp < handle
         
         % Gets an MVC controller
         controller = getController(this, controllerName);
+        
+        % log and handle an error
+        handleException(this, err, msg);
     end
 end

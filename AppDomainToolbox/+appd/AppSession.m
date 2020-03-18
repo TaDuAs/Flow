@@ -37,13 +37,13 @@ classdef AppSession < appd.IApp
     
     methods % allow property access for wrapped app props
         function varargout = subsref(A, S)
+            varargout = cell(1, nargout);
+            
             if strcmp(S(1).type, '.')
                 subsStr = string(S(1).subs);
                 firstSubs = subsStr(1);
                 if all(ismethod(A, firstSubs))
-                    if nargout > 1
-                        varargout = cell(1, nargout);
-                    else
+                    if nargout < 1
                         mc = metaclass(A);
                         currMethod = mc.MethodList(strcmp(firstSubs, {mc.MethodList.Name}));
                         varargout = cell(1, min(1, numel(currMethod.OutputNames)));
@@ -51,16 +51,27 @@ classdef AppSession < appd.IApp
                     
                     [varargout{:}] = builtin('subsref', A, S);
                 elseif all(~isprop(A, firstSubs)) && all(isprop([A.App], firstSubs))
-                    varargout = {subsref([A.App], S)};
+                    [varargout{:}] = subsref([A.App], S);
                 else
-                    varargout = {builtin('subsref', A, S)};
+                    [varargout{:}] = builtin('subsref', A, S);
                 end
             else
-                varargout = {builtin('subsref', A, S)};
+                [varargout{:}] = builtin('subsref', A, S);
             end
         end
         
         function A = subsasgn(A,S,B)
+            if strcmp(S(1).type, '.')
+                subsStr = string(S(1).subs);
+                firstSubs = subsStr(1);
+                if all(~isprop(A, firstSubs)) && all(ismethod(A, firstSubs)) && all(isprop([A.App], firstSubs))
+                    A = subsasgn([A.App], S, B);
+                else
+                    A = builtin('subsasgn', A, S, B);
+                end
+            else
+                A = builtin('subsasgn', A, S, B);
+            end
         end
     end
     
@@ -173,6 +184,10 @@ classdef AppSession < appd.IApp
         function clearSessionState(this)
             this.SessionManager.clearSession(this.SessionKey);
             this.delete();
+        end
+        
+        function handleException(this, varargin)
+            this.App.handleException(varargin{:});
         end
     end
     
