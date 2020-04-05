@@ -65,6 +65,75 @@ classdef BindingManagerTests < matlab.unittest.TestCase & mvvm.providers.IModelP
             close(container);
         end
         
+        function BindingManager_GetAncestorModelProvider(testCase)
+            mvvm.BindingManager.forceNewInstance();
+            
+            container = figure();
+            container2 = uicontrol(container);
+            
+            mvvm.BindingManager.setModProv(container, testCase)
+            modelProvier = mvvm.BindingManager.getModProv(container2);
+            
+            assert(eq(modelProvier, testCase), 'model provider for child container is wrong');
+            
+            close(container);
+        end
+        
+        function BindingManager_GetSelfModelProvider(testCase)
+            mvvm.BindingManager.forceNewInstance();
+            
+            container = figure();
+            container2 = uicontrol(container);
+            
+            mvvm.BindingManager.setModProv(container, testCase);
+            
+            mp2 = mvvm.providers.SimpleModelProvider();
+            mvvm.BindingManager.setModProv(container2, mp2);
+            modelProvier = mvvm.BindingManager.getModProv(container2);
+            
+            assert(eq(modelProvier, mp2), 'model provider for child container is wrong');
+            
+            close(container);
+        end
+        
+        function BindingManager_GetComplexUIHierarchyModelProvider(testCase)
+            mvvm.BindingManager.forceNewInstance();
+            
+            container = figure();
+            container2 = uipanel(container);
+            container3 = uipanel(container);
+            container4 = uicontrol(container3);
+            
+            mvvm.BindingManager.setModProv(container, testCase);
+            
+            mp2 = mvvm.providers.SimpleModelProvider();
+            mvvm.BindingManager.setModProv(container2, mp2);
+            modelProvier = mvvm.BindingManager.getModProv(container4);
+            
+            assert(eq(modelProvier, testCase), 'model provider for child container is wrong');
+            
+            close(container);
+        end
+        
+        function BindingManager_GetComplexUIHierarchyModelProvider2(testCase)
+            mvvm.BindingManager.forceNewInstance();
+            
+            container = figure();
+            container2 = uipanel(container);
+            container3 = uipanel(container);
+            container4 = uicontrol(container3);
+            
+            mvvm.BindingManager.setDefaultModProv(testCase);
+            
+            mp2 = mvvm.providers.SimpleModelProvider();
+            mvvm.BindingManager.setModProv(container2, mp2);
+            modelProvier = mvvm.BindingManager.getModProv(container4);
+            
+            assert(eq(modelProvier, testCase), 'model provider for child container is wrong');
+            
+            close(container);
+        end
+        
         function BindingManager_ChangeModelProvider(testCase)
             mvvm.BindingManager.forceNewInstance();
             
@@ -179,7 +248,8 @@ classdef BindingManagerTests < matlab.unittest.TestCase & mvvm.providers.IModelP
             
             modelProvier = mvvm.BindingManager.getModProv(container1);
             
-            assert(~eq(modelProvier, testCase), 'model provider for a container1 was not removed properly');
+            assert(~isempty(modelProvier), 'when no model provider is registered for a given gui component, should return the default model provider');
+            assert(any(~eq(modelProvier, testCase)) && all(~eq(modelProvier, testCase)), 'model provider for a container1 was not removed properly');
             
             modelProvier = mvvm.BindingManager.getModProv(container2);
             

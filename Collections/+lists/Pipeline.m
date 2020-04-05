@@ -1,4 +1,4 @@
-classdef Pipeline < lists.IObservable
+classdef Pipeline < lists.IObservable & lists.ISequentialKeys
     %PIPELINE Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -76,7 +76,6 @@ classdef Pipeline < lists.IObservable
         end
         
         function removeAt(this, i)
-            lists.Map
             this.list(i) = [];
             
             % notify collection changed

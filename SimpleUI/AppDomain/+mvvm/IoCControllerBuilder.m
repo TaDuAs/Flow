@@ -1,4 +1,4 @@
-classdef IoCControllerBuilder < appd.AppControllerBuilder
+classdef IoCControllerBuilder < mvvm.AppControllerBuilder
     %IOCCONTROLLERBUILDER Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -9,7 +9,7 @@ classdef IoCControllerBuilder < appd.AppControllerBuilder
     methods
         function this = IoCControllerBuilder(controllerName, iocGetter)
             % send base class just some meaningless function
-            this@appd.AppControllerBuilder(controllerName, @nan);
+            this@mvvm.AppControllerBuilder(controllerName, @nan);
             this.Container = iocGetter;
         end
         

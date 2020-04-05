@@ -1,4 +1,4 @@
-classdef GuiApp < appd.App
+classdef GuiApp < mvvm.App
     properties
         RootPath char;
         ResourcePath char;
@@ -9,7 +9,7 @@ classdef GuiApp < appd.App
         function this = GuiApp(iocContainer, varargin)
             if nargin < 1 || isempty(iocContainer); iocContainer = IoC.Container.empty(); end
             
-            this@appd.App(iocContainer, varargin{:});
+            this@mvvm.App(iocContainer, varargin{:});
             
             % update log path relative location
             if any(regexp(this.LogPath, '^[\\\/]'))
@@ -19,13 +19,13 @@ classdef GuiApp < appd.App
         
         function clear(this)
             this.savePreferences();
-            clear@appd.App(this);
+            clear@mvvm.App(this);
         end
     end
     
     methods (Access=protected)
         function initConfig(this)
-            initConfig@appd.App(this);
+            initConfig@mvvm.App(this);
             
             this.IocContainer.setSingleton("BindingManager", @mvvm.BindingManager.instance);
             this.IocContainer.setPerSession("ViewManager", @mvvm.view.ViewManager, 'App', '$ViewManager');
@@ -63,7 +63,7 @@ classdef GuiApp < appd.App
         end
         
         function prepareParser(this, parser)
-            prepareParser@appd.App(this, parser);
+            prepareParser@mvvm.App(this, parser);
             
             % define parameters
             addParameter(parser, 'RootPath', fileparts(which(class(this))),...
@@ -74,7 +74,7 @@ classdef GuiApp < appd.App
         end
         
         function extractParserParameters(this, parser)
-            extractParserParameters@appd.App(this, parser);
+            extractParserParameters@mvvm.App(this, parser);
             
             % root path, by default the path of the app class
             if ~exist(parser.Results.RootPath, 'dir')

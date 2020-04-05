@@ -6,7 +6,7 @@ classdef ViewManagerTests < matlab.mock.TestCase
             import matlab.mock.actions.ThrowException;
             
             [iocMock, iocBehav] = createMock(testCase, ?IoC.IContainer);
-            [appMock, appBehav] = createMock(testCase, ?appd.IApp);
+            [appMock, appBehav] = createMock(testCase, ?mvvm.IApp);
             [viewMock, viewBehav] = createMock(testCase, ?mvvm.view.IView);
             appMock.iocContainer = iocMock;
             

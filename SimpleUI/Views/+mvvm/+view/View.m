@@ -7,14 +7,14 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
     end
     
     properties (GetAccess=public,SetAccess=private)
-        App appd.IApp = appd.App.empty();
+        App mvvm.IApp = mvvm.App.empty();
         Status mvvm.view.ViewStatus = mvvm.view.ViewStatus.NotActivated;
     end
     
     properties
         OwnerView mvvm.view.IView = mvvm.view.Window.empty();
         Fig matlab.ui.Figure;
-        Messenger appd.MessagingMediator;
+        Messenger mvvm.MessagingMediator;
         BindingManager mvvm.BindingManager;
         ModelProviderMapping mvvm.view.ViewProviderMapping;
         ViewManager mvvm.view.IViewManager = mvvm.view.ViewManager.empty();
@@ -88,11 +88,21 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         function extractParserParameters(this, parser)
             this.App = parser.Results.App;
             
-            % first of all, get binding manager
-            this.BindingManager = parser.Results.BindingManager;
-            
             % get messenger
-            this.Messenger = parser.Results.Messenger;
+            messenger = parser.Results.Messenger;
+            if ~isempty(messenger)
+                this.Messenger = messenger;
+            elseif ~isempty(this.App) && ~isempty(this.App.Messenger)
+                this.Messenger = this.App.Messenger;
+            end
+            
+            % get binding manager
+            bm = parser.Results.BindingManager;
+            if ~isempty(bm)
+                this.BindingManager = bm;
+            elseif ~isempty(this.OwnerView)
+                this.BindingManager = this.OwnerView.BindingManager;
+            end
             
             % get data binding model provider
             if ~isempty(parser.Results.ModelProvider)
@@ -113,12 +123,12 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         
         function prepareParser(~, parser)
             % define parameters
-            addParameter(parser, 'App', appd.App.empty(),...
-                @(x) assert(isa(x, 'appd.IApp'), 'App must be appd.IApp or convertible type'));
+            addParameter(parser, 'App', mvvm.App.empty(),...
+                @(x) assert(isa(x, 'mvvm.IApp'), 'App must be mvvm.IApp or convertible type'));
             addParameter(parser, 'BindingManager', mvvm.BindingManager.instance(),...
                 @(x) assert(isa(x, 'mvvm.BindingManager'), 'Binding manager must be a valid mvvm.BindingManager'));
-            addParameter(parser, 'Messenger', appd.MessagingMediator.empty(), ...
-                @(x) assert(isa(x, 'appd.MessagingMediator'), 'Messenger must be a appd.MessagingMediator or derived class'));
+            addParameter(parser, 'Messenger', mvvm.MessagingMediator.empty(), ...
+                @(x) assert(isa(x, 'mvvm.MessagingMediator'), 'Messenger must be a mvvm.MessagingMediator or derived class'));
             addParameter(parser, 'ModelProvider', [], ...
                 @(x) assert(isa(x, 'mvvm.providers.IModelProvider'), 'ModelProvider must be a mvvm.providers.IModelProvider'));
             addParameter(parser, 'ViewManager', mvvm.view.ViewManager.empty(), ...
@@ -221,7 +231,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         end
         
         function registerToApp(this, app)
-            if app.Status >= appd.AppStatus.Loaded
+            if app.Status >= mvvm.AppStatus.Loaded
                 this.start();
             else
                 this.AppLoadingEventListener = app.addlistener('loading', @this.onAppLoading);

@@ -75,7 +75,7 @@ classdef Command < mvvm.ControlObserver & mvvm.IBinderBase
             if ~isempty(parser.Results.ModelProvider)
                 this.ModelProvider = parser.Results.ModelProvider;
             else
-                this.ModelProvider = this.BindingManager.getModelProvider(ancestor(control, 'figure'));
+                this.ModelProvider = this.BindingManager.getModelProvider(control);
             end
             
             % get parameters

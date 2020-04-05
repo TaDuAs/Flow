@@ -1,7 +1,7 @@
 classdef MainSessionView < mvvm.view.View & mvvm.SessionOwner
     methods
         function this = MainSessionView(session, varargin)
-            if nargin < 1; session = appd.AppSession.empty(); end
+            if nargin < 1; session = mvvm.AppSession.empty(); end
             this@mvvm.SessionOwner(session);
             this@mvvm.view.View(varargin{:}, 'App', session);
         end

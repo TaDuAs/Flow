@@ -51,6 +51,8 @@ classdef Repeater < mvvm.Binder
     
     methods (Access=protected)
         function bindData(this, changedScope, path)
+            notify(this, 'binding');
+            
             list = mvvm.getobj(changedScope, path);
             
             % observe lists implementing lists.IObservable
@@ -100,6 +102,7 @@ classdef Repeater < mvvm.Binder
 %             removedItemsKeys = setdiff(oldKeySet, newKeySet);
 %             changedItemsKeys = intersect(oldKeySet, newKeySet);
             
+            notify(this, 'postBind');
         end
         
         function bindNewScopes(this, list, newItemsKeys)
@@ -189,7 +192,7 @@ classdef Repeater < mvvm.Binder
             if ~isempty(parser.Results.ModelProvider)
                 this.ModelProvider = parser.Results.ModelProvider;
             else
-                this.ModelProvider = this.BindingManager.getModelProvider(ancestor(control, 'figure'));
+                this.ModelProvider = this.BindingManager.getModelProvider(control);
             end
             
             % get scope factory

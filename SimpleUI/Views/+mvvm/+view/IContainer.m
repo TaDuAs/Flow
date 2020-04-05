@@ -1,7 +1,10 @@
 classdef (Abstract) IContainer < mvvm.IControl
     
     properties (Dependent)
+        % Direct parent of this ui container
         Parent mvvm.view.IContainer;
+        
+        % direct children of ui container
         Children;
     end
     
@@ -12,6 +15,7 @@ classdef (Abstract) IContainer < mvvm.IControl
         function set.Parent(this, parent)
             this.setParent(parent);
         end
+        
         function children = get.Children(this)
             children = this.getChildren();
         end

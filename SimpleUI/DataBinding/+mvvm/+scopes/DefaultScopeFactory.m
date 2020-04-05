@@ -1,6 +1,7 @@
 classdef DefaultScopeFactory < mvvm.scopes.IScopeFactory
     properties
         KeyType;
+        ManageSequentialIndices = true;
     end
     
     methods % Property accessors
@@ -24,6 +25,7 @@ classdef DefaultScopeFactory < mvvm.scopes.IScopeFactory
             % because of the observability of the collection
             if isa(list, 'lists.IObservable')
                 scope = mvvm.scopes.CollectionScope(modelProvider, path, key);
+                scope.ManageKeyUpdates = this.ManageSequentialIndices && isa(list, 'lists.ISequentialKeys');
                 if ~strcmp(this.KeyType, 'default')
                     warning('mvvm:scopes:DefaultScopeFactory:InvalidKeyType',...
                         'lists.IObservable controls its own key types, the scope has no power over lists.IObservable indexing method');

@@ -5,7 +5,7 @@ classdef ViewManager < mvvm.view.IViewManager
     % IoC dependency names.
     
     properties (Access=protected)
-        App appd.IApp = appd.App.empty();
+        App mvvm.IApp = mvvm.App.empty();
         IoCContainer IoC.IContainer = IoC.Container.empty();
         SelfIoCContainerId = "ViewManager";
         ActiveViews containers.Map;

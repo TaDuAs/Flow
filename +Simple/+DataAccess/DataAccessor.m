@@ -5,7 +5,7 @@ classdef (Abstract) DataAccessor < handle
         % source is used (file system, web service, database, whatever
         % floats your boat....)
         % key represents a unique identifier of the required data item in
-        % the PersistenceContainer it is held in.
+        % the context it is held in.
         item = load(this, key)
         
         % Loads a batch of data items in the form of a Simple.DataAccess.DataQueue

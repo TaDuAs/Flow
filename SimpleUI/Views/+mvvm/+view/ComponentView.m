@@ -28,10 +28,9 @@ classdef ComponentView < mvvm.view.View
     
     methods
         function this = ComponentView(parent, varargin)
-            this@mvvm.view.View(varargin{:});
-            
-            this.setParent(parent);
+            this@mvvm.view.View(varargin{:}, 'Parent', parent);
         end
+        
         
         function h = getContainerHandle(this)
             h = this.ContainerBox_.getContainerHandle();
@@ -96,6 +95,10 @@ classdef ComponentView < mvvm.view.View
                     this.ContainerBoxCtor = str2func(parser.Results.BoxType);
                 end
             end
+            
+            if ~isempty(parser.Results.Parent)
+                this.setParent(parser.Results.Parent);
+            end
         end
         
         function prepareParser(this, parser)
@@ -104,6 +107,8 @@ classdef ComponentView < mvvm.view.View
             % define parameters
             addParameter(parser, 'BoxType', '',...
                 @(x) assert((ischar(x) && isrow(x)) || isStringScalar(x) || isa(x, 'function_handle'), 'BoxType must be ctor function or a type name'));
+            addParameter(parser, 'Parent', mvvm.view.ContainerControl.empty(),...
+                @(x) assert(ishandle(x) || isa(x, 'mvvm.view.IContainer'), 'ComponentView parent must be a gui handle or an mvvm.view.IContainer'));
         end
         
     end

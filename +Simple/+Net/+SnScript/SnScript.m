@@ -21,7 +21,7 @@ classdef SnScript < handle
     
     methods % Property Accessors
         function val = get.session(this)
-            if isa(this.app, 'appd.AppSession') && ~isempty(this.app)
+            if isa(this.app, 'mvvm.AppSession') && ~isempty(this.app)
                 val = this.app.Context;
             else
                 val = [];

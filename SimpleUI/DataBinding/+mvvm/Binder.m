@@ -54,6 +54,11 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
     %       'Event', 'KeyRelease',...
     %       'UpdateDelay', 0.2);
     
+    events
+        binding;
+        postBind;
+    end
+    
     properties (Access=protected)
         % This is a handle to a timer which will execute model update after
         % the control event fires and a certain timeout fires
@@ -242,8 +247,12 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
         end
         
         function bindData(this, scope, path)
+            notify(this, 'binding');
+            
             value = this.extractValueFromModel(scope, path);
             set(this.Control, this.ControlProperty, value);
+            
+            notify(this, 'postBind');
         end
         
         function parseConfiguration(this, control, args)
@@ -280,7 +289,7 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
             if ~isempty(parser.Results.ModelProvider)
                 this.ModelProvider = parser.Results.ModelProvider;
             else
-                this.ModelProvider = this.BindingManager.getModelProvider(ancestor(control, 'figure'));
+                this.ModelProvider = this.BindingManager.getModelProvider(control);
             end
             
             % get model accessor

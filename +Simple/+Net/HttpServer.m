@@ -111,7 +111,7 @@ classdef HttpServer < handle
         end
         
         function this = start(this)
-            if this.config.app.Status ~= appd.AppStatus.Loaded
+            if this.config.app.Status ~= mvvm.AppStatus.Loaded
                 this.config.app.start();
             end
             

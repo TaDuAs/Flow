@@ -43,11 +43,6 @@ classdef BindingManager < handle
     % 
     % Written by TADA. Jan 2019.
     
-    
-    properties (GetAccess=protected,Constant)
-        DefaultProviderContainer = -1;
-    end
-        
     properties (GetAccess=public,SetAccess=private)
         ModelProvidersList;
         ContainerDestroyedListeners;
@@ -112,7 +107,7 @@ classdef BindingManager < handle
         % model provider for a specified container. The user is responsible
         % for instantiating this 
             if nargin < 1 || isempty(container)
-                container = mvvm.BindingManager.DefaultProviderContainer;
+                container = groot();
             end
             bm = mvvm.BindingManager.instance();
             modelProvider = bm.getModelProvider(container);
@@ -148,17 +143,15 @@ classdef BindingManager < handle
         end
     end
     
-    methods (Access=protected)
+    methods % ctor dtor
         function this = BindingManager()
-            this.ModelProvidersList = {};
+            this.ModelProvidersList = struct('container', {}, 'provider', {});
             this.ContainerDestroyedListeners = {};
             this.MPDestroyedListeners = {};
             this.BindersList = {};
-            this.setDefaultModelProvider(mvvm.providers.SimpleModelProvider());
+            this.setDefaultModelProvider(this.generateDefaultModelProvider());
         end
-    end
-    
-    methods
+        
         function delete(this)
             delete@handle(this);
             
@@ -181,27 +174,34 @@ classdef BindingManager < handle
             this.MPDestroyedListeners = [];
             
             % remove all model providers from the list
-            this.ModelProvidersList = [];
+            this.ModelProvidersList = struct('container', {}, 'provider', {});
             
             % delete all data binders
             cellfun(@delete, this.BindersList);
             this.BindersList = {};
         end
-        
+    end
+    
+    methods
         function modelProvider = getDefaultProvider(this)
         % getDefaultProvider returns the default provider
-            [~, modelProvider] = this.tryGetModelProvider(mvvm.BindingManager.DefaultProviderContainer);
+            [~, modelProvider] = this.tryGetModelProvider(groot());
         end
         
         function setDefaultModelProvider(this, modelProvider)
         % sets a new default provider to replace the existing default
         % behaviour
-            this.setModelProvider(mvvm.BindingManager.DefaultProviderContainer, modelProvider);
+            this.setModelProvider(groot(), modelProvider);
         end
         
         function setModelProvider(this, container, modelProvider)
         % sets the model provider associated with the specified container
         % If one is already associated with it, replace it with the new one
+            
+            if ~ishandle(container)
+                throw(MException('mvvm:BindingManager:InvalidContainer', 'Model provider containers must be valid gui handles'));
+            end
+            
             [hasMP, ~, i] = this.tryGetModelProvider(container);
             
             function onObjectBeingDestroyed(src, e)
@@ -213,7 +213,7 @@ classdef BindingManager < handle
             if ~hasMP
                 i = numel(this.ModelProvidersList) + 1;
                 
-                if ishandle(container)
+                if isa(container, 'handle')
                     % Listen to container destuction event and remove the MP
                     % and listener in case of container destruction
                     this.ContainerDestroyedListeners{i} = container.addlistener('ObjectBeingDestroyed', @onObjectBeingDestroyed);
@@ -231,7 +231,7 @@ classdef BindingManager < handle
             end
             
             % set the modelProvider
-            this.ModelProvidersList{i} = ...
+            this.ModelProvidersList(i) = ...
                 struct('container', container, 'provider', modelProvider);
             
             if isa(modelProvider, 'handle')
@@ -246,6 +246,10 @@ classdef BindingManager < handle
         
         function removeModelProvider(this, container)
         % removes the model provider at the specified index
+            if eq(container, groot)
+                this.setDefaultModelProvider(this.generateDefaultModelProvider());
+            end
+        
             [hasMP, ~, i] = this.tryGetModelProvider(container);
             if ~hasMP
                 return;
@@ -273,46 +277,10 @@ classdef BindingManager < handle
             this.MPDestroyedListeners(i) = [];
         end
         
-        function [hasMP, modelProvider, idx] = tryGetModelProvider(this, container)
-        % finds the model provider associated with the specified container
-        % returns:
-        % hasMP:         a logical scalar indicating whether a model
-        %                provider associated with the container was found
-        % modelProvider: The model provider associated with the specified
-        %                container. If none were found, returns empty model
-        %                provider vector
-        % idx:           returns a numeric scalar with the index of the
-        %                model provider associated with the specified
-        %                container in the list of providers. if none were
-        %                found returns an empty numeric array []
-        
-            % loops through all providers and searches for the specified
-            % container
-            for i = 1:numel(this.ModelProvidersList)
-                mpSpec = this.ModelProvidersList{i};
-                if isequal(mpSpec.container, container) && (ishandle(mpSpec.container) || ~isa(mpSpec.container, 'handle') || isvalid(mpSpec.container))
-                    modelProvider = mpSpec.provider;
-                    hasMP = true;
-                    idx = i;
-                    return;
-                end
-            end
-            
-            idx = [];
-            hasMP = false;
-            
-            % returns empty model provider array
-            modelProvider = mvvm.providers.SimpleModelProvider.empty();
-        end
-        
         function modelProvider = getModelProvider(this, container)
         % gets the model provider associated with the specified container
         % if no provider is found, returns the default model provider
-            [hasMP, modelProvider] = this.tryGetModelProvider(container);
-            
-            if ~hasMP
-                modelProvider = this.getDefaultProvider();
-            end
+            [~, modelProvider] = this.tryGetModelProvider(container);
         end
         
         function saveBinder(this, binder)
@@ -340,6 +308,66 @@ classdef BindingManager < handle
             end
             flags = cellfun(@(a) eq(a, binder), this.BindersList);
             this.BindersList(flags) = [];
+        end
+    end
+    
+    methods (Access=protected)
+        
+        function [hasMP, modelProvider, idx] = tryGetModelProvider(this, container)
+        % finds the model provider associated with the specified container
+        % returns:
+        % hasMP:         a logical scalar indicating whether a model
+        %                provider associated with the container was found
+        % modelProvider: The model provider associated with the specified
+        %                container. If none were found, returns empty model
+        %                provider vector
+        % idx:           returns a numeric scalar with the index of the
+        %                model provider associated with the specified
+        %                container in the list of providers. if none were
+        %                found returns an empty numeric array []
+        
+            % loops through all providers and searches through the specified
+            % containers ancestral tree
+            registeredContainers = [this.ModelProvidersList.container];
+            if isempty(registeredContainers)
+                hasMP = false;
+                modelProvider = mvvm.providers.SimpleModelProvider.empty();
+                idx = -1;
+                return;
+            end
+            
+%             validContainers = ishandle(registeredContainers) | ~isa(registeredContainers, 'handle') | gen.isvalidhandle(registeredContainers);
+            ctl = container;
+            ctlMask = false(size(registeredContainers));
+            imgroot = groot();
+            while ~isempty(ctl)
+                ctlMask = eq(ctl, registeredContainers);
+                if any(ctlMask)
+                    break;
+                end
+                
+                ctl = ctl.Parent;
+            end
+%                 
+%                 if ~isvalid(ctl)
+%                     ctl = imgroot;
+%                 elseif isa(ctl, 'mvvm.IControl')
+%                     ctl = ancestor(ctl);
+%                 else
+%                     ctl = ctl.Parent;
+%                 end
+% 
+%             end
+                
+%             idx = find(ctlMask & validContainers, 1, 'first');
+            idx = find(ctlMask, 1, 'first');
+            mpSpec = this.ModelProvidersList(idx);
+            modelProvider = mpSpec.provider;
+            hasMP = eq(ctl, container);
+        end
+        
+        function mp = generateDefaultModelProvider(this)
+            mp = mvvm.providers.SimpleModelProvider();
         end
     end
 end

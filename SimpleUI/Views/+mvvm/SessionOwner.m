@@ -1,7 +1,7 @@
 classdef SessionOwner < handle
     properties
         SessionKey;
-        Session appd.AppSession;
+        Session mvvm.AppSession;
     end
     
     methods

@@ -3,21 +3,18 @@ classdef (Abstract) IView < mvvm.view.IContainer
     
     properties (Abstract, GetAccess=public, SetAccess=private)
         % Application object
-        App appd.IApp;
+        App mvvm.IApp;
         
         % view status
         Status mvvm.view.ViewStatus;
     end
     
     properties (Abstract) % property injections
-        % Parent view
-        OwnerView mvvm.view.IView;
-        
         % Containing figure
         Fig matlab.ui.Figure;
         
         % Application messenger object
-        Messenger appd.MessagingMediator;
+        Messenger mvvm.MessagingMediator;
         
         % Data binding manager object
         BindingManager mvvm.BindingManager;
@@ -27,6 +24,9 @@ classdef (Abstract) IView < mvvm.view.IContainer
         
         % View manager for interaction with other views
         ViewManager mvvm.view.IViewManager;
+        
+        % Parent view
+        OwnerView mvvm.view.IView;
         
         % The Id of the current view
         Id string;

@@ -1,3 +1,3 @@
-classdef TestApp < appd.App
+classdef TestApp < mvvm.App
 end
 

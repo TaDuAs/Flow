@@ -254,7 +254,7 @@ classdef Container < IoC.IContainer
         
         function tf = hasDependency(this, serviceId)
             serviceId = this.validateServiceId(serviceId);
-            tf = this.Dependencies.isKey(serviceId);
+            tf = arrayfun(@(sid) this.Dependencies.isKey(sid), serviceId);
         end
         
         function ioc = startNewSession(this)
@@ -263,7 +263,8 @@ classdef Container < IoC.IContainer
         end
 
         function serviceType = getType(this, serviceId)
-            serviceId = this.validateServiceId(serviceId);
+            % validate required service id
+            serviceId = this.validateAndEnsureDependencyExists(serviceId);
 
             serviceType = cell(1, numel(serviceId));
             for i = 1:numel(serviceId)
@@ -277,7 +278,8 @@ classdef Container < IoC.IContainer
         end
         
         function service = get(this, serviceId, varargin)
-            [validServiceId, sidn] = this.validateServiceId(serviceId);
+            [validServiceId, sidn] = this.validateAndEnsureDependencyExists(serviceId);
+            
             sidIdxEnd = cumsum(sidn);
             sidIdxStart = [1, sidIdxEnd(1:end-1)+1];
 
@@ -374,6 +376,16 @@ classdef Container < IoC.IContainer
             if any(startsWith(serviceId, ["$", "#", "@", "&", "%"]))
                 throw(MException('IoC:Injector:invalidServiceId',...
                     'Service id must not start with "$", "@", "&", "%" nor "#"'));
+            end
+        end
+        
+        function [validServiceId, sidNumel] = validateAndEnsureDependencyExists(this, serviceId)
+            [validServiceId, sidNumel] = this.validateServiceId(serviceId);
+            
+            existingServiceIdsMask = this.hasDependency(validServiceId);
+            if ~all(existingServiceIdsMask)
+                serviceIdForDisplay = strcat('"', strjoin(validServiceId(~existingServiceIdsMask), '", "'), '"');
+                throw(MException('IoC:Injector:InvalidDependency', 'No dependency with id %s is registered to the IoC.Container', serviceIdForDisplay));
             end
         end
     end

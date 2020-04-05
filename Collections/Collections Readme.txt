@@ -1,4 +1,6 @@
 lists package contains several collection interfaces for collection classes and some implementations
+These abstractions are crucial for some of the packages in Simple framework
+including mxml and the data binding toolbox (mvvm package)
 
 ***************************************************************************
 APIs
@@ -42,7 +44,7 @@ An observable lists.ICollection. On top of the general lists.ICollection api,
 it includes methods for getting available keys/indices and the collectionChanged event
 
 Key Polling Methods:
-b = containsIndex(this, i)
+tf = containsIndex(this, i)
 Summary: Determines whther the collection contains the index/key specified by i
 
 keySet = keys(this);
@@ -64,6 +66,6 @@ lists.ObservableArray < lists.IObservable
 Summary: This class is a wrapper for matrices and cell arrays which
 implements the lists.IObservable and lists.ICollection interfaces.
 
-lists.Pipeline < lists.ICollection
+lists.Pipeline < lists.IObservable
 Summary: This class is a pipeline which operates a process defined by the
 list of contained lists.PipelineTask

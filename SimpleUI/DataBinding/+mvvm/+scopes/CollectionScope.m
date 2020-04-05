@@ -9,6 +9,10 @@ classdef CollectionScope < mvvm.scopes.Scope
         CollectionListener;
     end
     
+    properties
+        ManageKeyUpdates (1,1) logical = false;
+    end
+    
     methods
         function this = CollectionScope(modelProvider, path, key)
             % the collection controls it's own key set and indexing type,
@@ -16,6 +20,10 @@ classdef CollectionScope < mvvm.scopes.Scope
             % default keytpye controlled by mvvm.scopes.Scope - it will
             % never be used...
             this@mvvm.scopes.Scope(modelProvider, path, key);
+        end
+        
+        function delete(this)
+            delete(this.CollectionListener);
         end
     end
     
@@ -33,18 +41,23 @@ classdef CollectionScope < mvvm.scopes.Scope
                 if isempty(list)
                     this.CollectionListener = [];
                 else
-                    this.CollectionListener = list.addlistener('collectionChanged', @(src, arg) this.onCollectionChanged(arg));
+                    this.CollectionListener = list.addlistener('collectionChanged', @this.onCollectionChanged);
                 end
             end
         end
         
-        function onCollectionChanged(this, eArg)
+        function onCollectionChanged(this, ~, eArg)
             if ismember(this.Key, eArg.i)
                 switch eArg.Action
                     case 'remove'
                         notify(this, 'scopeRemoved');
                     case 'change'
                         notify(this, 'modelChanged');
+                end
+            elseif this.ManageKeyUpdates
+                lowerKeysMask = eArg.i < this.Key;
+                if any(lowerKeysMask)
+                    this.Key = this.Key - sum(lowerKeysMask);
                 end
             end
         end

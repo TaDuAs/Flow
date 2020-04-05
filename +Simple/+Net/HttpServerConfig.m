@@ -16,7 +16,7 @@ classdef (Sealed) HttpServerConfig
         readStartTimeout;
         readEndTimeout;
         parpoolWorkersNum;
-        app appd.App;
+        app mvvm.App;
     end
     
     methods
@@ -52,7 +52,7 @@ classdef (Sealed) HttpServerConfig
                             any(strcmp(x, {'matlabTcpipServer','javaServerSocket'})),...
                             'must be a valid networker id: {''matlabTcpipServer'',''javaServerSocket''}'));
             addParameter(parser, 'parpoolWorkersNum', 2, @(x) assert(isinteger(x) && x >= 0, 'must be a positive integer'));
-            addParameter(parser, 'app', appd.App.empty(), @(x) assert(isa(x, 'appd.App'), 'must be a valid appd.App'));
+            addParameter(parser, 'app', mvvm.App.empty(), @(x) assert(isa(x, 'mvvm.App'), 'must be a valid mvvm.App'));
             
             % validate root path
             if nargin < 1
@@ -82,7 +82,7 @@ classdef (Sealed) HttpServerConfig
             if ~isempty(parser.Results.app)
                 this.app = parser.Results.app;
             else
-                this.app = appd.App();
+                this.app = mvvm.App();
             end
         end
     end
