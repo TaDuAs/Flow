@@ -22,7 +22,7 @@ classdef ViewManager < mvvm.view.IViewManager
         end
         
         function delete(this)
-            views = this.ActiveViews.Values;
+            views = this.ActiveViews.values;
             cellfun(@close, views);
             delete(this.ActiveViews);
         end
@@ -51,8 +51,9 @@ classdef ViewManager < mvvm.view.IViewManager
             end
         end
         
-        function show(this, id)
+        function view = show(this, id)
             vid = toString(this.generateViewID(id));
+            view = mvvm.view.Window.empty();
             
             if this.ActiveViews.isKey(vid)
                 view = this.ActiveViews(vid);
@@ -110,9 +111,9 @@ classdef ViewManager < mvvm.view.IViewManager
     end
     
     methods (Access={?mvvm.view.ViewManager})
-        function view = startInOwnSession(this, vid, owner)
+        function view = startInOwnSession(this, vid, varargin)
             svid = vid.toString();
-            view = this.IoCContainer.get(vid.Type, '@ViewManager', this, '@Id', strcat("$", svid));
+            view = this.IoCContainer.get(vid.Type, '@ViewManager', this, '@Id', strcat("$", svid), varargin{:});
             
             this.ActiveViews(svid) = view;
             view.start();

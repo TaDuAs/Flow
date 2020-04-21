@@ -168,8 +168,8 @@ classdef Repeater < mvvm.Binder
                 @(x) assert(isa(x, 'mvvm.ITemplate') || isa(x, 'function_handle'), 'Template must be a function handle or a class which implements the mvvm.ITemplate abstract class'));
             
             % define optional parameters
-            addParameter(parser, 'BindingManager', mvvm.BindingManager.instance(),...
-                @(x) assert(isa(x, 'mvvm.BindingManager'), 'Binding manager must be a valid mvvm.BindingManager'));
+            addParameter(parser, 'BindingManager', mvvm.BindingManager.empty(),...
+                @(x) assert(isa(x, 'mvvm.IBindingManager'), 'Binding manager must be a valid mvvm.IBindingManager'));
             addParameter(parser, 'ModelProvider', mvvm.providers.SimpleModelProvider.empty(),...
                 @(x) assert(isa(x, 'mvvm.providers.IModelProvider'), 'Model Provider must implement the mvvm.providers.IModelProvider abstract class'));
             addParameter(parser, 'IndexingMethod', '', @mvvm.scopes.DefaultScopeFactory.validateKeyType);
@@ -179,7 +179,12 @@ classdef Repeater < mvvm.Binder
         
         function extractParserParameters(this, parser, control)
             % first of all, get binding manager
-            this.BindingManager = parser.Results.BindingManager;
+            bm = parser.Results.BindingManager;
+            if ~isempty(bm)
+                this.BindingManager = parser.Results.BindingManager;
+            else
+                this.BindingManager = mvvm.GlobalBindingManager.instance();
+            end
             
             % get the template which was injected into args in the ctor
             if isa(parser.Results.Template, 'function_handle')

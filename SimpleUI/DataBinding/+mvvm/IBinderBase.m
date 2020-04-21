@@ -1,4 +1,8 @@
 classdef (Abstract) IBinderBase < handle
+    events
+        modelUpdated;
+    end
+    
     methods (Abstract)
         start(this);
         stop(this);

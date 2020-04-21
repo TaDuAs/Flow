@@ -23,6 +23,12 @@ classdef Window < mvvm.view.View
             end
         end
         
+        function hide(this)
+            if isa(this.Fig, 'handle') && ishandle(this.Fig) && isvalid(this)
+                this.Fig.WindowState = 'minimized';
+            end
+        end
+        
         function h = getContainerHandle(this)
             h = [this.Fig];
         end

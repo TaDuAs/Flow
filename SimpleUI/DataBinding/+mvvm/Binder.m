@@ -17,9 +17,11 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
     %----------------------------------------------------------------------
     % Name-Value pair arguments:
     %----------------------------------------------------------------------
-    % BindingManager: allows dependency injection of a mvvm.BindingManager
-    % instance (or custom implementation or mocked instance for testing
-    % purposes)
+    % BindingManager: allows dependency injection of a mvvm.IBindingManager
+    % instance. When not specified, the global binding manager is used.
+    % Best practice is to explicitly set the binding manager during
+    % mvvm.Binder construction. See also mvvm.IBindingManager,
+    % mvvm.BindingManager, mvvm.GlobalBindingManager
     %
     % Event: The event name to observe in the control. Use this parameter
     % to construct a 2-way data binder which observes changes in the
@@ -37,12 +39,13 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
     % as keyboard key strokes
     % example:
     %   % configure model
+    %   bm = mvvm.BindingManager();
     %   model = struct();
     %   model.config.smoothing.method = 'moving';
     %   model.config.smoothing.span = '10';
     %   modelProvider = mvvm.providers.AppDataModelProvider(gcf, 'model');
     %   modelProvider.setModel(model);
-    %   mvvm.BindingManager.setModProv(gcf, modelProvider);
+    %   bm.setModelProvider(gcf, modelProvider);
     %
     %   % set up gui
     %   textedit = uicontrol(gcf, 'style', 'edit');
@@ -52,7 +55,8 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
     %       textedit,...
     %       'String',...
     %       'Event', 'KeyRelease',...
-    %       'UpdateDelay', 0.2);
+    %       'UpdateDelay', 0.2,...
+    %       'BindingManager', bm);
     
     events
         binding;
@@ -66,7 +70,7 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
     end
     
     properties (GetAccess=public,SetAccess=protected)
-        BindingManager;
+        BindingManager mvvm.IBindingManager = mvvm.BindingManager.empty();
         ControlProperty;
         ModelUpdateDelay;
         ModelIndexer mvvm.providers.IModelIndexer;
@@ -192,6 +196,8 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
             end
             
             this.start('model');
+            
+            notify(this, 'modelUpdated', mvvm.ModelUpdateEventData(this));
         end
         
         function value = extractValueFromControl(this)
@@ -273,7 +279,12 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
         
         function extractParserParameters(this, parser, control)
             % first of all, get binding manager
-            this.BindingManager = parser.Results.BindingManager;
+            bm = parser.Results.BindingManager;
+            if ~isempty(bm)
+                this.BindingManager = parser.Results.BindingManager;
+            else
+                this.BindingManager = mvvm.GlobalBindingManager.instance();
+            end
             
             % get control event name
             this.ControlEvent = parser.Results.Event;
@@ -304,8 +315,8 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
         
         function prepareParser(~, parser)
             % define parameters
-            addParameter(parser, 'BindingManager', mvvm.BindingManager.instance(),...
-                @(x) assert(isa(x, 'mvvm.BindingManager'), 'Binding manager must be a valid mvvm.BindingManager'));
+            addParameter(parser, 'BindingManager', mvvm.BindingManager.empty(),...
+                @(x) assert(isvalid(x) && isa(x, 'mvvm.IBindingManager'), 'Binding manager must be a valid mvvm.IBindingManager'));
             addParameter(parser, 'Event', '', ...
                 @(x) assert(ischar(x), 'The controls event must be a name of a public event or event handler function property'));
             addParameter(parser, 'UpdateDelay', 0, @(x) assert(isnumeric(x) && isscalar(x) && x>=0, 'Update delay must be a positive number'));

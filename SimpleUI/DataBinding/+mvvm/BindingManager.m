@@ -1,4 +1,4 @@
-classdef BindingManager < handle
+classdef BindingManager < mvvm.IBindingManager
     % mvvm.BindingManager class manages everything there is to know about
     % data binding
     % Use model provider methods to manage model providers associated with
@@ -8,38 +8,6 @@ classdef BindingManager < handle
     % event (when the container is a handle) and automatically removes its
     % associated model provider when the container is being deleted
     %
-    % Static Methods:
-    % mvvm.BindingManager.instance()
-    %       Returns the single instance of the mvvm.BindingManager class
-    %
-    % mvvm.BindingManager.forceNewInstance()
-    %       Forces the mvvm.BindingManager to deleter it's single instance
-    %       and produce a new one
-    %
-    % mvvm.BindingManager.getModProv([container])
-    %       Retrives the model provider associated with the specified 
-    %       container or the default model provider when no container is 
-    %       specified or when no model provider is associated with the
-    %       specifeid container
-    %
-    % mvvm.BindingManager.setModProv(container, modelProvider)
-    %       Associates a model provider with the specified container
-    %
-    % mvvm.BindingManager.setDefaultModProv(modelProvider)
-    %       Replaces the existing dafault model provider with the new
-    %       specified one.
-    %
-    % mvvm.BindingManager.removeModProv(container)
-    %       Removes any model-provier association with the specified
-    %       container.
-    %
-    % mvvm.BindingManager.setBinder(binder)
-    %       Saves a reference to the given mvvm.Binder to keep it alive
-    %       event if the user did not keep it's reference.
-    %       Binders will be removed automatically when deleted.
-    %
-    % mvvm.BindingManager.removeBinder(binder)
-    %       Remove the binder from keep-alive list and deletes it.
     % 
     % Written by TADA. Jan 2019.
     
@@ -47,100 +15,8 @@ classdef BindingManager < handle
         ModelProvidersList;
         ContainerDestroyedListeners;
         MPDestroyedListeners;
+        BinderListeners;
         BindersList;
-    end
-    
-    methods (Static, Access=private)
-        function ref = singletonInstance(forceNewInstance)
-        % Gets the single instance of the mvvm.BindingManager class
-            persistent instance;
-            
-            if nargin > 0 && forceNewInstance
-                delete(instance);
-            end
-            
-            if isempty(instance) || ~isvalid(instance)
-                instance = mvvm.BindingManager();
-            end
-            
-            ref = instance;
-        end
-    end
-    
-    methods (Static) % singleton
-        function ref = forceNewInstance()
-        % Forces mvvm.BindingManager to replace the old instance with a new
-        % one. Only use this for testing.
-            ref = mvvm.BindingManager.singletonInstance(true);
-        end
-        
-        function ref = instance()
-        % gets the single instance of mvvm.BindingManager
-            ref = mvvm.BindingManager.singletonInstance();
-        end
-        
-        function setModProv(container, provider)
-        % Sets a model provider associated with a specified container.
-        % If one was already associated with this container, the MP is
-        % simply replaced
-            bm = mvvm.BindingManager.instance();
-            bm.setModelProvider(container, provider);
-        end
-        
-        function setDefaultModProv(provider)
-        % Sets the default model provider
-            bm = mvvm.BindingManager.instance();
-            bm.setDefaultModelProvider(provider);
-        end
-        
-        function removeModProv(container)
-        % Removes the model provider associated with the specified
-        % container
-            bm = mvvm.BindingManager.instance();
-
-            % remove the model provider container
-            bm.removeModelProvider(container);
-        end
-        
-        function modelProvider = getModProv(container)
-        % mvvm.BindingManager.getProvider(container) returns the specific
-        % model provider for a specified container. The user is responsible
-        % for instantiating this 
-            if nargin < 1 || isempty(container)
-                container = groot();
-            end
-            bm = mvvm.BindingManager.instance();
-            modelProvider = bm.getModelProvider(container);
-        end
-        
-        function setBinder(binder)
-        % saves a reference of a data binder.
-        % mvvm.Binder instances are referenced by mvvm.BindingManager to
-        % keep them alive without having to keep a reference in the base
-        % workspace or to couple to GUI handles.
-        % mvvm.Binder automatically send tehmselves to the 
-        % mvvm.BindingManager during construction and remove themselves
-        % upon destruction
-            bm = mvvm.BindingManager.instance();
-
-            % save the model provider
-            bm.saveBinder(binder);
-        end
-        
-        function removeBinder(binder)
-        % removes all reference of a data binder from the
-        % mvvm.BindingManager.
-        % mvvm.Binder instances are referenced by mvvm.BindingManager to
-        % keep them alive without having to keep a reference in the base
-        % workspace or to couple to GUI handles.
-        % mvvm.Binder automatically send tehmselves to the 
-        % mvvm.BindingManager during construction and remove themselves
-        % upon destruction
-            bm = mvvm.BindingManager.instance();
-
-            % save the model provider
-            bm.clearBinder(binder);
-        end
     end
     
     methods % ctor dtor
@@ -153,8 +29,6 @@ classdef BindingManager < handle
         end
         
         function delete(this)
-            delete@handle(this);
-            
             % delete all listeners to containers delete events
             for i = 1:numel(this.ContainerDestroyedListeners)
                 listener = this.ContainerDestroyedListeners{i};
@@ -280,6 +154,7 @@ classdef BindingManager < handle
         function modelProvider = getModelProvider(this, container)
         % gets the model provider associated with the specified container
         % if no provider is found, returns the default model provider
+            if nargin < 2; container = groot(); end
             [~, modelProvider] = this.tryGetModelProvider(container);
         end
         
@@ -292,6 +167,7 @@ classdef BindingManager < handle
         % mvvm.BindingManager during construction and remove themselves
         % upon destruction
             this.BindersList{numel(this.BindersList) + 1} = binder;
+            this.BinderListeners(end + 1) = addlistener(binder, 'modelUpdated', @this.onBinderModelUpdate);
         end
         
         function clearBinder(this, binder)
@@ -308,10 +184,27 @@ classdef BindingManager < handle
             end
             flags = cellfun(@(a) eq(a, binder), this.BindersList);
             this.BindersList(flags) = [];
+            delete(this.BinderListeners(flags));
+            this.BinderListeners(flags) = [];
+        end
+        
+        function activateBindersDomain(this, containerControl)
+            allBinders = this.BindersList;
+            myBindersMask = cellfun(@(b) b.isSubjectToControl(containerControl), allBinders);
+            cellfun(@start, allBinders(myBindersMask));
+        end
+        
+        function deactivateBindersDomain(this, containerControl)
+            allBinders = this.BindersList;
+            myBindersMask = cellfun(@(b) b.isSubjectToControl(containerControl), allBinders);
+            cellfun(@stop, allBinders(myBindersMask));
         end
     end
     
     methods (Access=protected)
+        function onBinderModelUpdate(this, binder, args)
+            notify(this, 'modelUpdated', args);
+        end
         
         function [hasMP, modelProvider, idx] = tryGetModelProvider(this, container)
         % finds the model provider associated with the specified container
@@ -337,9 +230,13 @@ classdef BindingManager < handle
             end
             
 %             validContainers = ishandle(registeredContainers) | ~isa(registeredContainers, 'handle') | gen.isvalidhandle(registeredContainers);
-            ctl = container;
-            ctlMask = false(size(registeredContainers));
             imgroot = groot();
+            if ~isempty(container)
+                ctl = container;
+            else
+                ctl = imgroot;
+            end
+            ctlMask = false(size(registeredContainers));
             while ~isempty(ctl)
                 ctlMask = eq(ctl, registeredContainers);
                 if any(ctlMask)

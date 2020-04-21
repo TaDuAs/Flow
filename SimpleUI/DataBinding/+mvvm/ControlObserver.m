@@ -28,7 +28,7 @@ classdef (Abstract) ControlObserver < handle
                     % delete event listener
                     delete(this.ControlEventListener);
                     this.ControlEventListener = [];
-                elseif isvalid(this.Control)
+                elseif isa(this.Control, 'handle') && isvalid(this.Control)
                     % remove event handler function
                     set(this.Control, this.ControlEvent, []);
                 end
@@ -46,6 +46,8 @@ classdef (Abstract) ControlObserver < handle
         end
         
         function stop(this)
+            control = this.Control;
+            event = this.ControlEvent;
             if isprop(control, event)
                 % remove callback
                 set(control, event, []);
@@ -82,7 +84,7 @@ classdef (Abstract) ControlObserver < handle
                 % enable listener
                 this.ControlEventListener = this.Control.addlistener(this.ControlEvent, this.ControlCallbackFunction_);
             else
-                this.ControlEventListener.Enabled = ture;
+                this.ControlEventListener.Enabled = true;
             end
         end
         

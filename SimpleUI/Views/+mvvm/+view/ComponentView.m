@@ -88,8 +88,9 @@ classdef ComponentView < mvvm.view.View
             extractParserParameters@mvvm.view.View(this, parser);
             
             % get container box ctor
-            if ~isempty(parser.Results.BoxType)
-                if isa(x, 'function_handle')
+            boxType = parser.Results.BoxType;
+            if ~isempty(boxType)
+                if isa(boxType, 'function_handle')
                     this.ContainerBoxCtor = parser.Results.BoxType;
                 else
                     this.ContainerBoxCtor = str2func(parser.Results.BoxType);

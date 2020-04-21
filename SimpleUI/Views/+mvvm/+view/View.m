@@ -44,11 +44,28 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         end
         
         function close(this)
+            if ~isvalid(this)
+                return;
+            end
             this.onCloseRequest();
         end
         
         function show(this)
+            set(this.getContainerHandle(), 'visible', 'on');
+        end
+        
+        function hide(this)
             set(this.getContainerHandle(), 'visible', 'off');
+        end
+        
+        % Deactivates view bindings
+        function sleep(this)
+            this.BindingManager.deactivateBindersDomain(this.getContainerHandle());
+        end
+        
+        % Activates view bindings
+        function wake(this)
+            this.BindingManager.activateBindersDomain(this.getContainerHandle());
         end
     end
     

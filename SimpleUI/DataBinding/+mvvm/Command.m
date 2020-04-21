@@ -6,8 +6,8 @@ classdef Command < mvvm.ControlObserver & mvvm.IBinderBase
     
     properties (GetAccess=public,SetAccess=protected)
         ActionModelPath;
-        ModelProvider;
-        BindingManager;
+        ModelProvider mvvm.providers.IModelProvider = mvvm.providers.SimpleModelProvider.empty();
+        BindingManager mvvm.IBindingManager = mvvm.BindingManager.empty();
         DynamicParams;
         ConstantParams;
     end
@@ -69,7 +69,12 @@ classdef Command < mvvm.ControlObserver & mvvm.IBinderBase
         
         function extractParserParameters(this, parser, control)
             % first of all, get binding manager
-            this.BindingManager = parser.Results.BindingManager;
+            bm = parser.Results.BindingManager;
+            if ~isempty(bm)
+                this.BindingManager = parser.Results.BindingManager;
+            else
+                this.BindingManager = mvvm.GlobalBindingManager.instance();
+            end
             
             % get model provider
             if ~isempty(parser.Results.ModelProvider)
@@ -87,7 +92,7 @@ classdef Command < mvvm.ControlObserver & mvvm.IBinderBase
         
         function prepareParser(~, parser)
             % define parameters
-            addParameter(parser, 'BindingManager', mvvm.BindingManager.instance(),...
+            addParameter(parser, 'BindingManager', mvvm.BindingManager.empty(),...
                 @(x) assert(isa(x, 'mvvm.BindingManager'), 'Binding manager must be a valid mvvm.BindingManager'));
             addParameter(parser, 'ModelProvider', mvvm.providers.SimpleModelProvider.empty(),...
                 @(x) assert(isa(x, 'mvvm.providers.IModelProvider'), 'Model Provider must implement the mvvm.IModelProvider abstract class'));

@@ -6,7 +6,7 @@ classdef (Abstract) IViewManager < handle
         view = start(viewMgr, id);
         register(viewMgr, view);
         close(viewMgr, id);
-        show(viewMgr, id);
+        view = show(viewMgr, id);
         getOwnerView(viewMgr, view);
     end
 end

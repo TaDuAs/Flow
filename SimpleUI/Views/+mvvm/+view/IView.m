@@ -54,6 +54,15 @@ classdef (Abstract) IView < mvvm.view.IContainer
         % Shows the current view
         show(view);
         
+        % Hides the current view
+        hide(view);
+        
+        % Deactivates view bindings
+        sleep(view);
+        
+        % Activates view bindings
+        wake(view);
+        
         % Accesses the ancestral tree of a view's ui component
         % parent = ancestor(view)
         %   Gets the direct ancestor of the current view

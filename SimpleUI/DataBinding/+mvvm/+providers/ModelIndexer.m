@@ -19,8 +19,16 @@ classdef ModelIndexer < mvvm.providers.IModelIndexer
         function value = getv(this, model)
             if istable(model)
                 value = model{this.Index{:}};
+            elseif iscellstr(model)
+                value = model(this.Index{:});
+            elseif iscell(model)
+                value = [model{this.Index{:}}];
             else
                 value = model(this.Index{:});
+            end
+            
+            if iscell(value) && numel(value) == 1
+                value = value{1};
             end
         end
         
