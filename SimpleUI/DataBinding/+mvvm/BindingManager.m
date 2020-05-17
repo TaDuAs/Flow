@@ -13,17 +13,15 @@ classdef BindingManager < mvvm.IBindingManager
     
     properties (GetAccess=public,SetAccess=private)
         ModelProvidersList;
-        ContainerDestroyedListeners;
-        MPDestroyedListeners;
-        BinderListeners;
+        ContainerDestroyedListeners event.listener = event.listener.empty();
+        MPDestroyedListeners event.listener = event.listener.empty();
+        BinderListeners event.listener = event.listener.empty();
         BindersList;
     end
     
     methods % ctor dtor
         function this = BindingManager()
             this.ModelProvidersList = struct('container', {}, 'provider', {});
-            this.ContainerDestroyedListeners = {};
-            this.MPDestroyedListeners = {};
             this.BindersList = {};
             this.setDefaultModelProvider(this.generateDefaultModelProvider());
         end
@@ -31,21 +29,21 @@ classdef BindingManager < mvvm.IBindingManager
         function delete(this)
             % delete all listeners to containers delete events
             for i = 1:numel(this.ContainerDestroyedListeners)
-                listener = this.ContainerDestroyedListeners{i};
+                listener = this.ContainerDestroyedListeners(i);
                 if ~isempty(listener) && isa(listener, 'handle')
                     delete(listener);
                 end
             end
-            this.ContainerDestroyedListeners = [];
+            this.ContainerDestroyedListeners = event.listener.empty();
             
             % delete all listeners to model provider delete events
             for i = 1:numel(this.MPDestroyedListeners)
-                listener = this.MPDestroyedListeners{i};
+                listener = this.MPDestroyedListeners(i);
                 if ~isempty(listener) && isa(listener, 'handle')
                     delete(listener);
                 end
             end
-            this.MPDestroyedListeners = [];
+            this.MPDestroyedListeners = event.listener.empty();
             
             % remove all model providers from the list
             this.ModelProvidersList = struct('container', {}, 'provider', {});
@@ -90,15 +88,15 @@ classdef BindingManager < mvvm.IBindingManager
                 if isa(container, 'handle')
                     % Listen to container destuction event and remove the MP
                     % and listener in case of container destruction
-                    this.ContainerDestroyedListeners{i} = container.addlistener('ObjectBeingDestroyed', @onObjectBeingDestroyed);
+                    this.ContainerDestroyedListeners(i) = container.addlistener('ObjectBeingDestroyed', @onObjectBeingDestroyed);
                 else
                     % Only handles have events
-                    this.ContainerDestroyedListeners{i} = [];
+                    this.ContainerDestroyedListeners(i) = [];
                 end
             else
                 % terminate listener to previous model provider delete
                 % event
-                mplistener = this.MPDestroyedListeners{i};
+                mplistener = this.MPDestroyedListeners(i);
                 if ~isempty(mplistener) && isa(mplistener, 'handle')
                     delete(mplistener);
                 end
@@ -111,10 +109,10 @@ classdef BindingManager < mvvm.IBindingManager
             if isa(modelProvider, 'handle')
                 % Listen to container destuction event and remove the MP
                 % and listener in case of container destruction
-                this.MPDestroyedListeners{i} = modelProvider.addlistener('ObjectBeingDestroyed', @onObjectBeingDestroyed);
+                this.MPDestroyedListeners(i) = modelProvider.addlistener('ObjectBeingDestroyed', @onObjectBeingDestroyed);
             else
                 % Only handles have events
-                this.MPDestroyedListeners{i} = [];
+                this.MPDestroyedListeners(i) = [];
             end
         end
         
@@ -136,7 +134,7 @@ classdef BindingManager < mvvm.IBindingManager
             
             % terminate listener to destruction event of the associated
             % container of the removed model provider
-            listener = this.ContainerDestroyedListeners{i};
+            listener = this.ContainerDestroyedListeners(i);
             if ~isempty(listener) && isa(listener, 'handle')
                 delete(listener);
             end
@@ -144,7 +142,7 @@ classdef BindingManager < mvvm.IBindingManager
             
             % terminate listener to destruction event of the removed model 
             % provider
-            listener = this.MPDestroyedListeners{i};
+            listener = this.MPDestroyedListeners(i);
             if ~isempty(listener) && isa(listener, 'handle')
                 delete(listener);
             end
@@ -229,7 +227,6 @@ classdef BindingManager < mvvm.IBindingManager
                 return;
             end
             
-%             validContainers = ishandle(registeredContainers) | ~isa(registeredContainers, 'handle') | gen.isvalidhandle(registeredContainers);
             imgroot = groot();
             if ~isempty(container)
                 ctl = container;
@@ -243,20 +240,16 @@ classdef BindingManager < mvvm.IBindingManager
                     break;
                 end
                 
-                ctl = ctl.Parent;
+                if isprop(ctl, 'Parent')
+                    ctl = ctl.Parent;
+                elseif isa(ctl, 'mvvm.IControl')
+                    ctl = ancestor(ctl);
+                else
+                    throw(MException('mvvm:BindingManager:UnbindableControlType', ...
+                        'Bound controls and their ancestral tree must all be Matlab UI elements or mvvm.IControl'));
+                end
             end
-%                 
-%                 if ~isvalid(ctl)
-%                     ctl = imgroot;
-%                 elseif isa(ctl, 'mvvm.IControl')
-%                     ctl = ancestor(ctl);
-%                 else
-%                     ctl = ctl.Parent;
-%                 end
-% 
-%             end
-                
-%             idx = find(ctlMask & validContainers, 1, 'first');
+            
             idx = find(ctlMask, 1, 'first');
             mpSpec = this.ModelProvidersList(idx);
             modelProvider = mpSpec.provider;

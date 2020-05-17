@@ -3,7 +3,7 @@ classdef ModelUpdateEventData < event.EventData
     %   Detailed explanation goes here
     
     properties
-        Binder mvvm.IBinderBase;
+        Binder mvvm.IBinderBase = mvvm.Binder.empty();
     end
     
     methods

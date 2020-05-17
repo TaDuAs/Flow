@@ -2,10 +2,10 @@ classdef Repeater < mvvm.Binder
     % 
     
     properties (GetAccess=protected,SetAccess=protected)
-        ScopeList;
-        ScopeRemovedListeners;
-        UIComponents;
-        CollectionListener;
+        ScopeList cell = {};
+        ScopeRemovedListeners event.listener = event.listener.empty();
+        UIComponents cell = {};
+        CollectionListener event.listener = event.listener.empty();
         Collection;
     end
     
@@ -26,11 +26,11 @@ classdef Repeater < mvvm.Binder
             for i = 1:numel(this.ScopeList)
                 this.Template.teardown(this.ScopeList{i}, this.Control, this.UIComponents{i});
             end
-            this.UIComponents = [];
+            this.UIComponents = {};
             
             % terminate scope listeners
-            cellfun(@delete, this.ScopeRemovedListeners);
-            this.ScopeRemovedListeners = {};
+            arrayfun(@delete, this.ScopeRemovedListeners);
+            this.ScopeRemovedListeners = event.listener.empty();
             
             % terminate scopes
             cellfun(@delete, this.ScopeList);
@@ -120,7 +120,7 @@ classdef Repeater < mvvm.Binder
                 
                 % Scopes monitor item removal, register to item removal
                 % notification to destroy the scope and the controls
-                this.ScopeRemovedListeners{i} = scope.addlistener('scopeRemoved', @(src, arg) this.handleItemRemoved(src));
+                this.ScopeRemovedListeners(i) = scope.addlistener('scopeRemoved', @(src, arg) this.handleItemRemoved(src));
                 
                 % bind that scope to the template
                 this.UIComponents{i} = this.Template.build(scope, this.Control);
@@ -142,7 +142,7 @@ classdef Repeater < mvvm.Binder
             i = cellfun(@(s) eq(s,scope), this.ScopeList);
             
             % terminate scope removed listener
-            delete(this.ScopeRemovedListeners{i});
+            delete(this.ScopeRemovedListeners(i));
             this.ScopeRemovedListeners(i) = [];
             
             % teardown UI components
@@ -156,7 +156,7 @@ classdef Repeater < mvvm.Binder
         
         function init(this, modelPath, control, property)
             this.ScopeList = {};
-            this.ScopeRemovedListeners = {};
+            this.ScopeRemovedListeners = event.listener.empty();
             
             init@mvvm.Binder(this, modelPath, control, property);
         end
