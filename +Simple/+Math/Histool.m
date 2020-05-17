@@ -95,7 +95,7 @@ classdef Histool
             x = bins - 0.5*[firstBinDiff binsDiff];
         end
         
-        function [mpv, stdev, gammaParams, goodness] = fitGamma(bins, freq, fittingOptions)
+        function [mpv, stdev, gammaParams, goodness] = fitGamma(bins, freq, y, fittingOptions)
             import Simple.Math.*;
             import Simple.*;
             if nargin < 3
@@ -103,8 +103,9 @@ classdef Histool
             end
             
             x = Histool.bins2x(bins);
-            significance = getobj(fittingOptions, 'alpha', 0.25);
-            [gfit, goodness] = gamfit(x, significance, zeros(1, length(x)), freq);
+            significance = getobj(fittingOptions, 'alpha', 0.05);
+            [gfit2, goodness2] = gamfit(x, significance, zeros(1, length(x)), freq);
+            [gfit, goodness] = gamfit(y, significance);
             alpha = gfit(1);
             theta = gfit(2);
             
