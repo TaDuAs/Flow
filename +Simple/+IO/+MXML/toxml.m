@@ -5,20 +5,10 @@ function xml = toxml(data, meta)
 % xml = toxml([data, meta])
 %
 % Author: Tal Duanis-Assaf
-    if exist('meta', 'var')
-        obj.meta = meta;
-    end
 
-    % Write all data entries as child nodes of the root element
-    if exist('data', 'var')
-        obj.data = data;
-    end
-    
-    % Export everything to XML document
-    [~, document] = serialize(obj);
-    
-    % Write xml document
-    xml = xmlwrite(document);
+    warning('Simple:IO:MXML', 'Don''t use the obsolete Simple packages');
+    if nargin < 2; meta = []; end
+    xml = MXML.toxml(data, meta);
     
 end
 

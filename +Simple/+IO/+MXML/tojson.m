@@ -5,20 +5,9 @@ function json = tojson(data, meta)
 % json = tojson([data, meta])
 %
 % Author: Tal Duanis-Assaf
-    if exist('meta', 'var')
-        obj.meta = meta;
-    end
-
-    % Write all data entries as child nodes of the root element
-    if exist('data', 'var')
-        obj.data = data;
-    end
-    
-    % Export everything to XML document
-    jsonElement = jsonize(obj);
-    
-    % serialize to json format
-    json = jsonencode(jsonElement);
+    warning('Simple:IO:MXML', 'Don''t use the obsolete Simple packages');
+    if nargin < 2; meta = []; end
+    json = MXML.tojson(data, meta);
     
 end
 

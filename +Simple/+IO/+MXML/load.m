@@ -20,40 +20,7 @@ function [data, metadata] = load(fileName, format)
 % and all numeric values are loaded as double.
 % 
 % Author: TADA
-    if nargin < 2
-        switch lower(fileName(find(fileName == '.', 1, 'last') + 1:end))
-            case 'json'
-                format = 'json';
-            otherwise
-                format = 'xml';
-        end
-    end
-    
-    if nargout > 1
-        metadata = struct();
-    end
-    
-    switch format
-        case 'xml'
-            dom = parse(fileName);
-            for i = 1:length(dom.Children)
-                if strcmp(dom.Children(i).Name, 'meta')
-                    metadata = parseElement(dom.Children(i));
-                elseif strcmp(dom.Children(i).Name, 'data')
-                    data = parseElement(dom.Children(i));
-                end
-            end
-        case 'json'
-            obj = parsejson(fileName);
-            if isfield(obj, 'data')
-                data = obj.data;
-                if isfield(obj, 'meta')
-                    metadata = obj.meta;
-                end
-            else
-                data = obj;
-            end
-        otherwise
-            throw(MException('Simple.IO.MXML:load:formatNotSupported', sprintf('Format %s not supported', format)));
-    end
+
+    warning('Simple:IO:MXML', 'Don''t use the obsolete Simple packages');
+    [data, metadata] = MXML.load(fileName, format);
 end
