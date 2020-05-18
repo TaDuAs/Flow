@@ -1,5 +1,9 @@
 classdef MessagingMediator < handle
     % MessagingMediator encapsulates the communication between objects.
+    %
+    % The MessagingMediator is loosely based on the MVVM Light Messenger
+    % object.
+    %
     % Usecase #1: objects from deeper layers of the system can raise events
     % without breaking the layered architecture.
     %   Example: A model is saved, which raises a series of validations in
@@ -11,17 +15,20 @@ classdef MessagingMediator < handle
     %            or alternatively accummulating the errors to a list and 
     %            deciding in the view which errors are relevant, each view 
     %            registers to the messages of interest and handles those.
+    %
     % Usecase #2: passing messages between views. views need to communicate
     % instead of strong coupling them, have them raise messages.
     %   Example: Closing the main window when some components are dirty.
     %            The main window raises a AppClosingMessage.
-    %            AppClosingMessage is caught by a form that has unsaved
-    %            changes and a search tool. the search tool stops the
+    %            AppClosingMessage is caught by a search tool and another 
+    %            form that has unsaved changes. the search tool stops the
     %            current search. The form notifies the user that the
     %            application is closing and they have unsaved changes, and
     %            maybe even if the user presses cancel, the form will
     %            change the state of the AppClosingMessage to canceled
-    % (see mediator pattern https://en.wikipedia.org/wiki/Mediator_pattern)
+    %
+    % see mediator pattern https://en.wikipedia.org/wiki/Mediator_pattern
+    % see Publish–subscribe pattern https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern
     
     properties (Access=protected)
         App mvvm.IApp = mvvm.App.empty();
