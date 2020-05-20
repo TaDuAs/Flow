@@ -13,6 +13,20 @@ classdef MFactory < mfc.IFactory
         IoCContainer IoC.IContainerGetter = IoC.ContainerGetter.empty();
     end
     
+    properties (Dependent, GetAccess=public, SetAccess=private)
+        ContextId;
+    end
+    
+    methods
+        function id = get.ContextId(this)
+            id = '';
+            
+            if ~isempty(this.IoCContainer) && isprop(this.IoCContainer, 'Id')
+                id = this.IoCContainer.Id;
+            end
+        end
+    end
+    
     methods
         function this = MFactory(varargin)
             this.constructors = containers.Map();

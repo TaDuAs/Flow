@@ -58,4 +58,10 @@ classdef (Abstract) IApp < handle
         % log and handle an error
         handleException(this, err, msg);
     end
+    
+    % internal methods
+    methods (Abstract, Access={?mvvm.App, ?mvvm.AppSession})
+        % get a controller builder by name
+        controllerBuilder = getControllerBuilder(this, controllerName);
+    end
 end

@@ -1,6 +1,7 @@
 function serializer = generateDefaultSerializer()
-    serializer = mxml.FileFormatSerializer();
-    serializer.Formats = ["xml", "json"];
-    serializer.Serializers = [mxml.XmlSerializer('Factory', MXML.Factory.instance), mxml.JsonSerializer('Factory', MXML.Factory.instance)];
+    factory = MXML.Factory.instance;
+    xmlSerializer = mxml.XmlSerializer('Factory', factory);
+    jsonSerializer = mxml.JsonSerializer('Factory', factory);
+    serializer = mxml.FileFormatSerializer(["xml", "json"], [xmlSerializer, jsonSerializer]);
 end
 

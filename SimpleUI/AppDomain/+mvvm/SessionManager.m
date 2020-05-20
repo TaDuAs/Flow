@@ -47,7 +47,7 @@ classdef SessionManager < handle
             
             % create new IoC container session and make it return current
             % session
-            sessionIoC = this.App.IocContainer.startNewSession();
+            sessionIoC = this.App.IocContainer.startNewSession(['Session.IoC /' key]);
             sessionIoC.setPerSession('SessionKey', @() key);
             sessionIoC.set('Session', @(app, key) app.getSession(key), 'App', 'SessionKey');
             

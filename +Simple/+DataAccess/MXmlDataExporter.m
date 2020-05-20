@@ -12,7 +12,7 @@ classdef MXmlDataExporter < Simple.DataAccess.FSOutputDataExporter
         end
         
         function [data, output] = load(this, path)
-            [data, output] = Simple.IO.MXML.load(path);
+            [data, output] = Simple.IO.MXML.load(path, this.outputFilePostfix());
         end
         
         function postfix = outputFilePostfix(this)

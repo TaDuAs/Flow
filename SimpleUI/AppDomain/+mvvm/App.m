@@ -205,7 +205,7 @@ classdef App < mvvm.IApp
     methods % ctor dtor
         function this = App(ioc, varargin)
             if nargin < 1 || isempty(ioc)
-                ioc = IoC.Container();
+                ioc = IoC.Container('MainApplication.IoC');
             end
             
             % Instantiate app PersistenceContainer & class factory
@@ -304,12 +304,19 @@ classdef App < mvvm.IApp
     end
     
     methods (Access={?mvvm.App, ?mvvm.AppSession})
-        function controller = buildController(this, controllerName)
+        function controllerBuilder = getControllerBuilder(this, controllerName)
             if isfield(this.ControllerBuilders, controllerName)
-                controller = this.ControllerBuilders.(controllerName).build();
+                controllerBuilder = this.ControllerBuilders.(controllerName);
             else
                 throw(MException('App:GetController:NotRegistered', ['Controller ' char(controllerName) ' not registered']));
             end
+        end
+    end
+    
+    methods (Access=private)
+        function controller = buildController(this, controllerName)
+            controllerBuilder = this.getControllerBuilder(controllerName);
+            controller = controllerBuilder.build();
             
             if isempty(controller) || ~isa(controller, 'mvvm.AppController')
                 throw(MException('App:GetController:InvalidController', ['Controller ' char(controllerName) ' invalid']));

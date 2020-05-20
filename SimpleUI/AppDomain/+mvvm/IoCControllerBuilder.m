@@ -16,6 +16,10 @@ classdef IoCControllerBuilder < mvvm.AppControllerBuilder
         function controller = build(this)
             controller = this.Container.get(this.ControllerName);
         end
+        
+        function builder = copy(this, app)
+            builder = mvvm.IoCControllerBuilder(this.ControllerName, app.IocContainer.get('IoC'));
+        end
     end
 end
 

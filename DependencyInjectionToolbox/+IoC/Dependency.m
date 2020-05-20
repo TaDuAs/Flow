@@ -15,6 +15,21 @@ classdef Dependency < handle & matlab.mixin.Heterogeneous
         Type char;
     end
     
+    
+    properties (Dependent, GetAccess=public, SetAccess=private)
+        ContextId;
+    end
+    
+    methods
+        function id = get.ContextId(this)
+            id = '';
+            
+            if ~isempty(this.IoCContainer)
+                id = this.IoCContainer.Id;
+            end
+        end
+    end
+    
     methods
         function this = Dependency(ioc, id, ctor, varargin)
             this.IoCContainer = ioc;

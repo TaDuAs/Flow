@@ -246,8 +246,16 @@ classdef Container < IoC.IContainer
         Dependencies;
     end
     
+    properties
+        Id {gen.valid.mustBeTextualScalar(Id)} = '';
+    end
+    
     methods
-        function this = Container()
+        function this = Container(id)
+            if nargin >= 1
+                this.Id = id;
+            end
+            
             this.Dependencies = containers.Map();
             this.Dependencies('IoC') = IoC.ContainerDependency(this, 'IoC');
         end
@@ -257,8 +265,10 @@ classdef Container < IoC.IContainer
             tf = arrayfun(@(sid) this.Dependencies.isKey(sid), serviceId);
         end
         
-        function ioc = startNewSession(this)
-            ioc = IoC.Container();
+        function ioc = startNewSession(this, id)
+            if nargin < 2; id = ''; end
+            
+            ioc = IoC.Container(id);
             ioc.setDependencies(this.Dependencies.values);
         end
 

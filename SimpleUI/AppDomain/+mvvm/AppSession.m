@@ -177,8 +177,20 @@ classdef AppSession < mvvm.IApp
         end
         
         function controller = getController(this, controllerName)
-            controller = this.App.buildController(controllerName);
+        % Gets the controlle in current session context
+            controller = this.buildController(controllerName);
             controller.init(this);
+            
+            % Bug fix - don't use this.App.buildController 
+            % When letting the app build the controller, if using an
+            % mvvm.IoCControllerBuilder, it will build it with the main App
+            % IoC.Container - thus using the wrong context for controlle
+            % manufacturing.
+            % 
+            % Instead copy the controller builder locally and apply the
+            % current session IoC.Container.
+            % 
+            % This was pretty vicious to debug...
         end
         
         function clearSessionState(this)
@@ -192,9 +204,26 @@ classdef AppSession < mvvm.IApp
     end
     
     methods (Access=protected)
+        function controller = buildController(this, controllerName)
+            controllerBuilder = this.getControllerBuilder(controllerName);
+            controller = controllerBuilder.build();
+            
+            if isempty(controller) || ~isa(controller, 'mvvm.AppController')
+                throw(MException('App:GetController:InvalidController', ['Controller ' char(controllerName) ' invalid']));
+            end
+        end
         
         function m = getMessenger(this)
             m = this.App.Messenger;
+        end
+    end
+    
+    % internal methods
+    methods (Access={?mvvm.App, ?mvvm.AppSession})
+        % get a controller builder by name
+        function localBuilder = getControllerBuilder(this, controllerName)
+            originalBuilder = this.App.getControllerBuilder(controllerName);
+            localBuilder = originalBuilder.copy(this);
         end
     end
 end

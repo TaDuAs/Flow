@@ -16,6 +16,10 @@ classdef AppControllerBuilder
         function controller = build(this)
             controller = this.FactoryMethod();
         end
+        
+        function builder = copy(this, app)
+            builder = this;
+        end
     end
 end
 

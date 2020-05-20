@@ -22,6 +22,16 @@ classdef ContainerGetter < IoC.IContainerGetter
         IoCContainer IoC.IContainer = IoC.Container.empty();
     end
     
+    properties (Dependent, GetAccess=public, SetAccess=private)
+        Id;
+    end
+    
+    methods
+        function id = get.Id(this)
+            id = this.IoCContainer.Id;
+        end
+    end
+    
     methods
         function this = ContainerGetter(ioc)
             this.IoCContainer = ioc;
