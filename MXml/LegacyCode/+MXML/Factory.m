@@ -148,10 +148,6 @@ classdef Factory < mfc.MFactory
         function reset(this)
             this.constructors.remove(this.constructors.keys);
         end
-        
-        function bool = isempty(this)
-            bool = this.constructors.isempty();
-        end
     end
 end
 
