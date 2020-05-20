@@ -83,12 +83,7 @@ classdef Tooltip < uix.Box & sui.IRedrawSuppressable
             this.copyTooltipPropertiesToLabel();
             
             ctl = this.Owner;
-            x = zeros(1,4);
-            fig = ancestor(ctl, 'figure');
-            while ishandle(ctl) && ~eq(ctl, fig)
-                x = x + sui.getPos(ctl, 'pixel');
-                ctl = ctl.Parent;
-            end
+            x = sui.getAbsPos(ctl);
  
             mySize = sui.getSize(this, 'pixel');
             pad = this.Padding;
