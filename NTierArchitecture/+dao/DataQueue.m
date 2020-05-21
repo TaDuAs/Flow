@@ -56,26 +56,17 @@ classdef DataQueue < handle
         % next - Changes the current location of the queue to the next
         % position. If the current location is at the 9th item, then next
         % will change it to the 10th position. next also returns the item 
-        % and key at the new position.
+        % and key at the new position. If there are no pending items in the
+        % queue, returns empty item and key.
         %
-        % [item, key] = jumpTo(i) - moves to the i'th item in the queue
-        % Input:
-        %   i - An integer scalar representing the the numeric index of the
-        %       desired item in the queue
+        % [item, key] = next(queue) - moves to the i'th item in the queue
         % Output:
-        %   item - The item at the i'th index
-        %   key  - The key identifier of the item in the i'th index
-        %
-        % [item, key] = jumpTo(key) - moves the current queue location to 
-        %   the item with the specified key
-        % Input:
-        %   key - The key identifier of the desired item
-        % Output:
-        %   item - The item corresponding to the specified key
-        %   key  - The key
+        %   item - The item at the new position in the queue
+        %   key  - The key of the item
         %
             if ~this.isPending()
                 item = [];
+                key = [];
                 return;
             end
             this.currentIndex = this.currentIndex + 1;
