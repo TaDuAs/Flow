@@ -12,6 +12,7 @@ classdef PersistenceContainer < handle
     
     methods
         function this = PersistenceContainer(ioc)
+            Simple.obsoleteWarning('Simple.App');
             if nargin < 1; ioc = IoC.Container.empty(); end
             this.context = containers.Map();
             this.iocContainer = ioc;

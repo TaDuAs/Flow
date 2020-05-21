@@ -6,6 +6,7 @@ function [a,b,R2] = linfit(x,y)
 %   b - y intercept
 %   R2 - R square of regression
 
+    Simple.obsoleteWarning('Simple.Math');
     n = length(x);
     sx = sum(x);
     sy = sum(y);

@@ -10,6 +10,7 @@ classdef Pipeline < handle
     
     methods
         function this = Pipeline(shouldPrintTaskTimespan)
+            Simple.obsoleteWarning('Simple.Pipeline');
             this.list = Simple.List(Simple.PipelineTask.empty(), 10, Simple.PipelineTask());
             this.currentTaskIndex = 1;
             

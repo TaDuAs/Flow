@@ -12,6 +12,7 @@ classdef fjc
         % for a polymer chain with Kuhn length: lk
         % and contour length: L
             
+            Simple.obsoleteWarning('Simple.Math.fjc');
             import Simple.Scientific.PhysicalConstants;
             import Simple.Math.fjc;
             % Validate & initialize valuse
@@ -26,6 +27,7 @@ classdef fjc
         end
         
         function [k, l, gof, output] = fit(x, y, k, l, T, params)
+            Simple.obsoleteWarning('Simple.Math.fjc');
             import Simple.Scientific.PhysicalConstants;
             if nargin < 5
                 T = PhysicalConstants.RT;
@@ -59,6 +61,7 @@ classdef fjc
         end
         
         function [k, l, gof, output] = fitAll(x, y, LcRange, klRange, T, params)
+            Simple.obsoleteWarning('Simple.Math.fjc');
             if nargin < 5
                 T = Simple.Scientific.PhysicalConstants.RT;
             end
@@ -112,12 +115,14 @@ classdef fjc
         end
         
         function func = createExpretion(kBT, k, l)
+            Simple.obsoleteWarning('Simple.Math.fjc');
             x = sym('x');
             fjcSym = -kBT/k*(3*x/l + (9/5)*(x/l).^3 + (297/175)*(x/l).^5 + (1539/875)*(x/l).^7);
             func = Simple.Math.Ex.Symbolic(fjcSym);
         end
         
         function ffjc = getFjcFunction(kBT)
+            Simple.obsoleteWarning('Simple.Math.fjc');
             ffjc = @(k, l, x) kBT/k*(3*x/l + (9/5)*(x/l).^3 + (297/175)*(x/l).^5 + (1539/875)*(x/l).^7);
         end
     end

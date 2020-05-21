@@ -9,6 +9,7 @@ function [err, ci] = econfi(x, a, stdev, n)
 %   err - the error value for +/- stuff
 %   ci  - the confidence interval
 
+    Simple.obsoleteWarning('Simple.Math');
     if nargin < 3
         [err, ci] = ForSDAT.util.confi(x, a);
     else

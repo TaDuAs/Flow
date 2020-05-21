@@ -1,6 +1,7 @@
 function varargout = invokeOptionalParams(handle, params)
 %INVOKEOPTIONALPARAMS Summary of this function goes here
 %   Detailed explanation goes here
+            Simple.obsoleteWarning();
     import Simple.*;
 
     input = cell(1, 0);

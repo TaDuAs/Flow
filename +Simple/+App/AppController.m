@@ -26,6 +26,10 @@ classdef AppController < handle & matlab.mixin.Heterogeneous
     end
     
     methods
+        function this = AppController()
+            Simple.obsoleteWarning('Simple.App');
+        end
+        
         function handle = getMethod(this, methodName)
             % getMethod returns a handle of an invoker method to the wanted
             % controller method

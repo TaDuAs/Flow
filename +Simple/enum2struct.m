@@ -14,6 +14,7 @@ function s = enum2struct(enumClassName)
 %           y: MyEnum.y
 %           z: MyEnum.z
 
+            Simple.obsoleteWarning();
     enum = enumeration(enumClassName);
     s = cell2struct(mat2cell(enum, ones(size(enum))), arrayfun(@char, enum, 'UniformOutput', false));
 end

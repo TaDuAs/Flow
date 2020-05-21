@@ -5,6 +5,7 @@ classdef DelimiterValuesDataExporter < Simple.DataAccess.FSOutputDataExporter
     
     methods
         function this = DelimiterValuesDataExporter(delimiter)
+            Simple.obsoleteWarning('Simple.DataAccess');
             if nargin >= 1 && ischar(delimiter) && ~isempty(delimiter)
                 this.validateDelimiter(delimiter);
                 this.delimiter = delimiter;

@@ -6,6 +6,7 @@ function value = logb(x, b, n)
 %   b - the logarithms basis. log_b(x)
 %   n - number of significant digits.
 
+    Simple.obsoleteWarning('Simple.Math');
     import Simple.Math.*;
     if nargin < 2
         b = exp(1);

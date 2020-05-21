@@ -8,6 +8,7 @@ classdef CancelEventData < event.EventData
     
     methods
         function this = CancelEventData()
+            Simple.obsoleteWarning();
             this.Cancel = false;
         end
     end

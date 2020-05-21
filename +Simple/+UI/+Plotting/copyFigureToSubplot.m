@@ -1,4 +1,5 @@
 function copyFigureToSubplot(originalFig, fig, subplotCoordinates)
+            Simple.obsoleteWarning('Simple.UI');
     if ischar(originalFig)
         originalFig = openfig(originalFig, 'reuse');
     end

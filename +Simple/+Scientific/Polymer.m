@@ -3,6 +3,9 @@ classdef (Abstract) Polymer < handle
     %   Detailed explanation goes here
     
     methods
+        function this = Polymer()
+            Simple.obsoleteWarning('Simple.Scientific');
+        end
         
         function n = repeatingUnits(this, mw)
             if numel(this) > 1 && numel(mw) == 1

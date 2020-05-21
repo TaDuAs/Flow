@@ -8,6 +8,7 @@ classdef (ConstructOnLoad) EventArg < event.EventData
     
     methods
         function this = EventArg(arg)
+            Simple.obsoleteWarning();
             this.arg = arg;
         end
     end

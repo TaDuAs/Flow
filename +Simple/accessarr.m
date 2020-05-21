@@ -1,4 +1,5 @@
 function value = accessarr(arr, i, setValue)
+            Simple.obsoleteWarning();
     import Simple.*;
     % Setter
     if nargin > 2

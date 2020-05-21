@@ -5,6 +5,7 @@ function [x, ind] = croparr(x, a, b)
 % croparr(x, fragment, startAt)
 %   startAt: 'start'|'end'|specified numeric index
 %   fragment: between 0 and 1
+            Simple.obsoleteWarning();
     import Simple.*;
     range = [];
     if (nargin == 2)

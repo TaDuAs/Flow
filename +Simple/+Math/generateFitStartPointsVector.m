@@ -1,4 +1,5 @@
 function coeffVector = generateFitStartPointsVector(fitFunction, values)
+            Simple.obsoleteWarning('Simple.Math');
     import Simple.*;
     coeffNamesArray = coeffnames(fittype(fitFunction));
     coeffVector = ones(1, length(coeffNamesArray));

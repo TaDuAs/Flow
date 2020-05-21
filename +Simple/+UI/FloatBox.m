@@ -4,6 +4,7 @@ classdef FloatBox < uix.Box
     
     methods
         function this = FloatBox(varargin)
+            Simple.obsoleteWarning('Simple.UI');
             try
                 uix.set(this, varargin{:});
             catch ex

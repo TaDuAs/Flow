@@ -1,4 +1,5 @@
 function path = processOutputIOPath(path, timestamp)
+            Simple.obsoleteWarning('Simple.DataAccess');
     if nargin < 2
         timestamp = now;
     end

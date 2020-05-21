@@ -9,6 +9,7 @@ classdef Stopwatch < handle
     
     methods
         function this = Stopwatch()
+            Simple.obsoleteWarning();
             this.start();
         end
         

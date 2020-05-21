@@ -25,6 +25,7 @@ classdef CommandChainer < handle
     
     methods
         function this = CommandChainer(obj)
+            Simple.obsoleteWarning();
             this.object = obj;
         end
         

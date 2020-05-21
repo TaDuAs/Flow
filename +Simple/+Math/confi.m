@@ -7,6 +7,7 @@ function [err, ci] = confi(x, a)
 %   err - the error value for +/- stuff
 %   ci  - the confidence interval
 
+    Simple.obsoleteWarning('Simple.Math');
 n = length(x);
 SEM = std(x)/sqrt(n);       % Standard Error
 ts = tinv([a, 1-a], n-1);   % T-Score

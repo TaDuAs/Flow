@@ -1,8 +1,8 @@
 classdef (Abstract) FileSystemDataAccessor < Simple.DataAccess.DataAccessor
     properties
-        app;
+        app mvvm.App;
         batchPath;
-        exporter;
+        exporter tiers.da.FSOutputDataExporter;
         startTime;
         processedResultsPath;
         errorLogPath;

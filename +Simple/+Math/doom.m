@@ -5,6 +5,7 @@ function oom = doom(val, roundFirst)
 %   val: number. The number to calculate OOM for.
 %   roundFirst: boolean. Determines whether to round the number to 
 %               a single significant digit prior to getting the Log
+    Simple.obsoleteWarning('Simple.Math');
     if (val == 0)
         oom = 0;
         return;

@@ -10,6 +10,7 @@ classdef RelayMessage < handle
     
     methods
         function this = RelayMessage(id, data)
+            Simple.obsoleteWarning('Simple.App');
             this.Id = id;
             
             if nargin >= 2

@@ -22,6 +22,7 @@ classdef Chemistry
     
     methods (Static)
         function mw = Mw(arr)
+            Simple.obsoleteWarning('Simple.Scientific');
             mw = 0;
             for i = 1:length(arr)
                 mw = mw + arr(i).Mw;

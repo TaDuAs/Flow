@@ -8,6 +8,7 @@ classdef ClassFactoryBuilder < handle
     methods
         
         function initFactory(this, classFactory)
+            Simple.obsoleteWarning('Simple.App');
             import Simple.*;
             import Simple.Math.Ex.*;
                

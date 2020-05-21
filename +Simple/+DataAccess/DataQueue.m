@@ -11,6 +11,7 @@ classdef DataQueue < handle
     
     methods
         function this = DataQueue(dataLoader, list)
+            Simple.obsoleteWarning('Simple.DataAccess');
             if ~isa(dataLoader, 'Simple.DataAccess.DataAccessor')
                 error('Must specify a valid DataLoader')
             end

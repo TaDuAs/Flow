@@ -31,6 +31,11 @@ classdef (Abstract) DataAccessor < handle
     end
     
     methods
+        function this = DataAccessor()
+            
+            Simple.obsoleteWarning('Simple.DataAccess');
+        end
+        
         function b = equals(this, other)
             b = strcmp(class(this), class(other));
         end

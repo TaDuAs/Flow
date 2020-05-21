@@ -148,6 +148,7 @@ classdef App < handle
     
     methods (Access=protected) % ctor dtor
         function this = App(ioc, varargin)
+            Simple.obsoleteWarning('Simple.App');
             import Simple.App.*;
             
             if nargin < 2 || isempty(ioc)

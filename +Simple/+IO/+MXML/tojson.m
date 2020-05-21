@@ -5,7 +5,7 @@ function json = tojson(data, meta)
 % json = tojson([data, meta])
 %
 % Author: Tal Duanis-Assaf
-    warning('Simple:IO:MXML', 'Don''t use the obsolete Simple packages');
+    Simple.obsoleteWarning('Simple.IO.MXML');
     if nargin < 2; meta = []; end
     json = MXML.tojson(data, meta);
     

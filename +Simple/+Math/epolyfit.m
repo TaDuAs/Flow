@@ -14,6 +14,7 @@ function [p, s, mu] = epolyfit(x, y, n)
 %   mu - Fitting deviation distribution data.
 %        [mean(y_actual - y_calculated), Std(y_actual - y_calculated)]
     
+    Simple.obsoleteWarning('Simple.Math');
     import Simple.Math.*;
     % so apparently polyfit needs the x array to have constant intervals ?!
     if (n == 2)

@@ -1,4 +1,5 @@
 function out = alanineScan(nativeSequence)
+            Simple.obsoleteWarning('Simple.Scientific');
     alaScanPos = diag(diag(ones(numel(nativeSequence))));
     sequences = repmat(nativeSequence, numel(nativeSequence), 1);
     sequences(alaScanPos == 1) = 'A';

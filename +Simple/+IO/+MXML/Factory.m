@@ -45,14 +45,17 @@ classdef Factory < MXML.Factory
     % Author: TADA
     methods (Static)
         function factory = instance()
+            Simple.obsoleteWarning('Simple.IO.MXML.Factory');
             factory = MXML.Factory.instance();
         end
         
         function factory = terminate()
+            Simple.obsoleteWarning('Simple.IO.MXML.Factory');
             factory = MXML.Factory.terminate();
         end
         
         function init(factoryInitializer)
+            Simple.obsoleteWarning('Simple.IO.MXML.Factory');
             MXML.Factory.init(factoryInitializer);
         end
     end

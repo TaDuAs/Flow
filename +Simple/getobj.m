@@ -1,4 +1,5 @@
 function value = getobj(obj, fieldName, defaultValue)
+            Simple.obsoleteWarning();
     import Simple.*;
 
     % access the field tree

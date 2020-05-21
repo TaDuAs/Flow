@@ -9,6 +9,7 @@ classdef AppControllerBuilder
     
     methods
         function this = AppControllerBuilder(controllerName, factoryMethod)
+            Simple.obsoleteWarning('Simple.App');
             this.factoryMethod = factoryMethod;
             this.controllerName = controllerName;
         end

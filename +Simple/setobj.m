@@ -1,5 +1,6 @@
 function obj = setobj(obj, fieldName, value)
     % access the field tree
+            Simple.obsoleteWarning();
     if ~iscell(fieldName)
         fieldName = strsplit(fieldName, '.');
     end

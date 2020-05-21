@@ -77,6 +77,7 @@ classdef Histool
         end
         
         function x = bins2x(bins)
+            Simple.obsoleteWarning('Simple.Math.Histool');
             import Simple.Math.*;
             binsDiff = diff(bins);
             
@@ -96,6 +97,7 @@ classdef Histool
         end
         
         function [mpv, stdev, gammaParams, goodness] = fitGamma(bins, freq, y, fittingOptions)
+            Simple.obsoleteWarning('Simple.Math.Histool');
             import Simple.Math.*;
             import Simple.*;
             if nargin < 3
@@ -131,6 +133,7 @@ classdef Histool
         %   mpv - most prevalent value
         %   std - standard deviation
         %   amplitude - the maximum value of the fit
+            Simple.obsoleteWarning('Simple.Math.Histool');
             import Simple.*;
             import Simple.Math.*;
             if nargin < 3
@@ -209,6 +212,7 @@ classdef Histool
         end
         
         function [h, freq, bins, binterval, nBins] = plot(data, binningMethod, minimalBins, fig)
+            Simple.obsoleteWarning('Simple.Math.Histool');
             import Simple.Math.*;
             import Simple.*;
             if nargin < 2

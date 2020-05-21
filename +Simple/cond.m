@@ -1,5 +1,6 @@
 function value = cond(condition, ifTrue, ifFalse)
 % ternary operator implementation
+            Simple.obsoleteWarning();
     if condition
         if isa(ifTrue,'function_handle')
             value = ifTrue();

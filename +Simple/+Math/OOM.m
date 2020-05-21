@@ -25,6 +25,7 @@ classdef OOM < double
    
    methods (Static)
        function map = oomPrefixMapping()
+            Simple.obsoleteWarning('Simple.Math');
            map = {Simple.Math.OOM.Yocto, 'y';...
                   Simple.Math.OOM.Zepto, 'z';...
                   Simple.Math.OOM.Atto, 'a';...
@@ -49,6 +50,7 @@ classdef OOM < double
        end
        
        function oom = fromPrefix(prefix)
+            Simple.obsoleteWarning('Simple.Math');
            import Simple.Math.OOM;
            map = OOM.oomPrefixMapping();
            mask = cellfun(@(p) strcmp(p, prefix), map(:,2));
@@ -64,6 +66,7 @@ classdef OOM < double
        % Returns:
        %    The OOM of value, for instance 1000->Kilo, 10^-9->Nano
        function oom = fromNumber(value, only3Fold)
+            Simple.obsoleteWarning('Simple.Math');
            import Simple.Math.*;
            x = doom(value);
            
@@ -133,6 +136,7 @@ classdef OOM < double
        % Returns the textual prefix for physical units
        %    Example: Kilo = k, in kilogram = kg
        function prefix = getPrefix(oom)
+            Simple.obsoleteWarning('Simple.Math');
            import Simple.Math.OOM;
            map = OOM.oomPrefixMapping();
            mask = cellfun(@(x) x == oom, map(:,1));

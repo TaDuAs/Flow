@@ -6,6 +6,7 @@ classdef Direction < double
     
     methods
         function pos = lastPosition(dir, arr)
+            Simple.obsoleteWarning();
             switch dir
                 case Simple.Direction.Backward
                     pos = 1;

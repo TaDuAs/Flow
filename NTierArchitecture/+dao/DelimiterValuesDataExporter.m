@@ -1,4 +1,4 @@
-classdef DelimiterValuesDataExporter < Simple.DataAccess.FSOutputDataExporter
+classdef DelimiterValuesDataExporter < tiers.da.FSOutputDataExporter
     properties
         delimiter = ',';
     end

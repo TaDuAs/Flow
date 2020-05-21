@@ -1,4 +1,5 @@
 function [ values ] = dlgInputValues(fields, defaults, datatypes, title, lines, ids)
+            Simple.obsoleteWarning('Simple.UI');
     import Simple.*;
     defaultAnswersStrings = cell(1,length(defaults));
     if isstruct(defaults)

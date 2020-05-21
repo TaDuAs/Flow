@@ -1,4 +1,5 @@
 function isValueType = isImmediateValueType(value)
+    Simple.obsoleteWarning();
     isValueType = false;
     
     if isnumeric(value) ||... % numeric values are value type

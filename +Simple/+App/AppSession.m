@@ -119,6 +119,7 @@ classdef AppSession < Simple.App.App
     
     methods
         function this = AppSession(app, sessionKey)
+            Simple.obsoleteWarning('Simple.App');
             import Simple.App.*;
             this.app = app;
             

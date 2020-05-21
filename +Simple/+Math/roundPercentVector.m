@@ -1,5 +1,6 @@
 function rounded = roundPercentVector(values)
 
+    Simple.obsoleteWarning('Simple.Math');
     perc = values/sum(values)*100;
     rounded = round(perc);
     sr = sum(rounded);

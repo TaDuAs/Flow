@@ -21,6 +21,6 @@ function [data, metadata] = load(fileName, format)
 % 
 % Author: TADA
 
-    warning('Simple:IO:MXML', 'Don''t use the obsolete Simple packages');
+    Simple.obsoleteWarning('Simple.IO.MXML');
     [data, metadata] = MXML.load(fileName, format);
 end

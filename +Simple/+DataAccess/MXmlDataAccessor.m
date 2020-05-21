@@ -1,6 +1,7 @@
 classdef MXmlDataAccessor < Simple.DataAccess.FileSystemDataAccessor
     methods
         function this = MXmlDataAccessor(exporter, batchPath, processedResultsPath, errorLogPath)
+            Simple.obsoleteWarning('Simple.DataAccess');
             if (nargin < 3); processedResultsPath = []; end
             if (nargin < 4); errorLogPath = []; end
             

@@ -30,6 +30,7 @@ classdef MessagingMediator < handle
     
     methods
         function this = MessagingMediator(app)
+            Simple.obsoleteWarning('Simple.App');
             this.App = app;
             this.Listeners = containers.Map();
         end

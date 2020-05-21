@@ -13,7 +13,7 @@ function save(fileName, data, meta, format, showFileContents)
 %           saves to file according to specified format ('xml' or 'json')
 %
 % Author: TADA
-    warning('Simple:IO:MXML', 'Don''t use the obsolete Simple packages');
+    Simple.obsoleteWarning('Simple.IO.MXML');
     if nargin < 3; meta = []; end
     if nargin < 4; format = ''; end
     if nargin < 5; showFileContents = false; end

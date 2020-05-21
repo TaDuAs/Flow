@@ -1,4 +1,5 @@
 function str = toString(value)
+            Simple.obsoleteWarning();
     import Simple.*;
 
     if iscell(value)

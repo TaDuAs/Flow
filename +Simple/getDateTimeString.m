@@ -1,4 +1,5 @@
 function text = getDateTimeString(time, format, timezone)
+            Simple.obsoleteWarning();
 if isnumeric(time)
     time = datetime(time, 'ConvertFrom', 'datenum');
 elseif isa(time, 'duration')

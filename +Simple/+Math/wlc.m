@@ -4,6 +4,7 @@ classdef wlc
     
     methods (Static)
         function s = S(x, p, l, T)
+            Simple.obsoleteWarning('Simple.Math.wlc');
             import Simple.Scientific.PhysicalConstants;
             if nargin < 4 || isempty(T)
                 T = PhysicalConstants.RT;
@@ -22,6 +23,7 @@ classdef wlc
         % tip height: D=x-f/k (f is positive in WLC)
         % ** Don't use this with multiple p,l solutions.
             
+            Simple.obsoleteWarning('Simple.Math.wlc');
             import Simple.Scientific.PhysicalConstants;
             import Simple.Math.wlc;
             
@@ -74,6 +76,7 @@ classdef wlc
         % 
         % F = kBT/P(1/(4(1-x/L)^2) + x/L - 1/4)
         % dF/dx = kBT/PL(1/(2(1-x/L)^3) + 1)
+            Simple.obsoleteWarning('Simple.Math.wlc');
             import Simple.Scientific.PhysicalConstants;
             import Simple.Math.wlc;
             if nargin < 4 || isempty(T)
@@ -113,6 +116,7 @@ classdef wlc
         %   y - the calculated wlc vector for the specified x vector
         %       according to the best solution
         
+            Simple.obsoleteWarning('Simple.Math.wlc');
             import Simple.Math.wlc;
             if nargin < 4
                 T = [];
@@ -162,6 +166,7 @@ classdef wlc
         end
         
         function [p, l, gof, output] = fitAll(x, y, contourRange, persistenceRange, T, model, varargin)
+            Simple.obsoleteWarning('Simple.Math.wlc');
             if nargin < 5; T = Simple.Scientific.PhysicalConstants.RT; end
             if nargin < 6 || isempty(model); model = ''; end
             kBT = Simple.Scientific.PhysicalConstants.kB * T;
@@ -208,6 +213,7 @@ classdef wlc
         end
         
         function [p, l, gof, output] = fit(x, y, p, l, T, model, params)
+            Simple.obsoleteWarning('Simple.Math.wlc');
             import Simple.Scientific.PhysicalConstants;
             if nargin < 5; T = PhysicalConstants.RT; end
             if nargin < 6; model = ''; end
@@ -238,6 +244,7 @@ classdef wlc
         end
         
         function func = createExpretion(kBT, p, l, model)
+            Simple.obsoleteWarning('Simple.Math.wlc');
             if nargin < 4; model = ''; end
             wlcf = Simple.Math.wlc.getWlcFunction(kBT, [], [], model);
             symWlcf = subs(-1*sym(wlcf), {'p', 'l'}, [p, l]);
@@ -245,6 +252,7 @@ classdef wlc
         end
         
         function wlcfunction = getWlcFunction(kBT, p, l, model)
+            Simple.obsoleteWarning('Simple.Math.wlc');
             if nargin < 4 || isempty(model); model = 'bustamante'; end
             
             % bustamante WLC equation

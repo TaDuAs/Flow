@@ -1,6 +1,7 @@
 function theta = lineAngle(x, y, indices)
 % Determines the angle between a linear function and the x axis in radians
     import Simple.Math.*;
+    Simple.obsoleteWarning('Simple.Math');
     if nargin < 3
         indices = [1, 2];
     end

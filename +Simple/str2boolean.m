@@ -1,4 +1,5 @@
 function value = str2boolean(str)
+            Simple.obsoleteWarning();
     strVal = strsplit(str, ' ');
     numValues = length(strVal);
     value = true(1, numValues);

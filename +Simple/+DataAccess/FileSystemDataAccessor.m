@@ -37,6 +37,7 @@ classdef (Abstract) FileSystemDataAccessor < Simple.DataAccess.DataAccessor
     
     methods % Ctors
         function this = FileSystemDataAccessor(app, exporter, batchPath, processedResultsPath, errorLogPath)
+            Simple.obsoleteWarning('Simple.DataAccess');
             if (nargin < 3 || isempty(processedResultsPath)); processedResultsPath = []; end
             if (nargin < 4 || isempty(errorLogPath)); errorLogPath = []; end
 

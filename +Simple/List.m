@@ -49,6 +49,7 @@ classdef List < handle & Simple.IO.MXML.IIterable & lists.ICollection
         %              preallocated cells are populated with emptyValue so
         %              it must be a non-empty vector which logically 
         %              represents an empty value.
+            Simple.obsoleteWarning('Simple.List');
             if nargin == 0
                 % List()
                 this.init([], [], []);

@@ -10,6 +10,7 @@ classdef (ConstructOnLoad) ProcessProgressED < event.EventData
     
     methods
         function this = ProcessProgressED(progressReported, totalProgress, processingLeft)
+            Simple.obsoleteWarning();
             this.progressReported = progressReported;
             this.totalProgress = totalProgress;
             this.processingLeft = processingLeft;

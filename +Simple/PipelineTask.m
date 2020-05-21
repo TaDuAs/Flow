@@ -2,6 +2,10 @@ classdef PipelineTask < handle & matlab.mixin.Heterogeneous
     % This abstract class exposes the necessary methods for a pipeline task
     
     methods
+        function this = PipelineTask()
+            Simple.obsoleteWarning('Simple.Pipeline');
+        end
+        
         function returnedData = process(this, data)
             error('must implement this in deriving class');
         end
