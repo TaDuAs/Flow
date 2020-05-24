@@ -1,2 +1,0 @@
-OBSOLETE SIMPLE FRAMEWORK PACKAGE!!!
-See mxml package instead
