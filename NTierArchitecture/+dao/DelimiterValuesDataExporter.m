@@ -11,7 +11,7 @@ classdef DelimiterValuesDataExporter < dao.FSOutputDataExporter
             end
         end
         
-        function save(this, data, path)
+        function save(this, data, output, path)
             properties = fields(data);
             t = table();
             for i = 1:length(properties)
@@ -92,13 +92,6 @@ classdef DelimiterValuesDataExporter < dao.FSOutputDataExporter
                 otherwise
                     fileDelimiter = this.delimiter;
             end
-        end
-        
-        function outputFilePath = generateOutputDataFilePath(this, path)
-            tok = regexp(path, '^(.+)\.([a-zA-Z]+)$', 'tokens');
-            pathAndName = tok{1}{1};
-            postfix = tok{1}{2};
-            outputFilePath = [pathAndName '_output.' postfix];
         end
     end
 end
