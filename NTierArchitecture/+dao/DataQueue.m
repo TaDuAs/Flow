@@ -6,7 +6,7 @@ classdef DataQueue < dao.IDataQueue
     % Author - TADA, 2018
     
     properties
-        DataLoader dao.DataAccessor;
+        DataLoader dao.IItemFetcher;
         Items;
         CurrentIndex;
         CurrentItem;
@@ -14,9 +14,6 @@ classdef DataQueue < dao.IDataQueue
     
     methods
         function this = DataQueue(dataLoader, list)
-            if ~isa(dataLoader, 'dao.DataAccessor')
-                error('Must specify a valid DataLoader')
-            end
             this.DataLoader = dataLoader;
 
             if nargin < 2 || isempty(list)
