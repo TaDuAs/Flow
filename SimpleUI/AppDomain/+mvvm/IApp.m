@@ -1,4 +1,4 @@
-classdef (Abstract) IApp < handle
+classdef (Abstract) IApp < handle & mvvm.IErrorHandler
     % mvvm.IApp is the interface for application domain app class
     % implementation
     

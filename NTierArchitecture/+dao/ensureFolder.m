@@ -1,6 +1,6 @@
 function [status, msg, id] = ensureFolder(path)
     if ~exist(path, 'dir')
-        [status, msg, id] = Simple.DataAccess.createFolder(path);
+        [status, msg, id] = dao.createFolder(path);
     else
         status = true;
         msg = '';

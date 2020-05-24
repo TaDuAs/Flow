@@ -1,12 +1,15 @@
-classdef DataQueue < handle
-    %DATAQUEUE Summary of this class goes here
-    %   Detailed explanation goes here
+classdef DataQueue < dao.IDataQueue
+    % dao.DataQueue is a simple queue for loading data items on demand.
+    % dao.DataQueue does not cache items, rather it manages a list of keys 
+    % or ids, and loads the actual data using a dao.DataAccessor on demand.
+    % 
+    % Author - TADA, 2018
     
     properties
-        dataLoader;
-        list;
-        currentIndex;
-        currentItem;
+        DataLoader dao.DataAccessor;
+        Items;
+        CurrentIndex;
+        CurrentItem;
     end
     
     methods
@@ -14,28 +17,45 @@ classdef DataQueue < handle
             if ~isa(dataLoader, 'dao.DataAccessor')
                 error('Must specify a valid DataLoader')
             end
-            this.dataLoader = dataLoader;
+            this.DataLoader = dataLoader;
 
             if nargin < 2 || isempty(list)
-                this.list = Simple.List(1000, struct('path',{}));
-            elseif isa(list, 'Simple.List')
-                this.list = list;
-            elseif iscellstr(list)
-                this.list = Simple.List(struct('path', list), length(list), struct('path',''));
+                this.Items = {};
+            elseif iscellstr(list) || isstring(list)
+                this.Items = cellstr(list);
+            else
+                throw(MException('dao:DataQueue:InvalidListType', 'Items list must be a string array or a cell array of character vectors'));
             end
 
-            this.currentIndex = 0;
-            this.currentItem.index = 0;
-            this.currentItem.item = [];
+            this.CurrentIndex = 0;
+            this.CurrentItem.index = 0;
+            this.CurrentItem.item = [];
         end
         
-        function bool = isPending(this)
-            bool = this.currentIndex <= length(this.list);
+        function tf = isPending(this)
+        % Gets the current item from the queue without moving the queue
+        % position.
+        % 
+        % tf = isPending(queue) - Determines whether there are items
+        % pending in the queue
+        % Output:
+        %   tf - true if there are pending items, false otherwise
+        % 
+            tf = this.CurrentIndex <= numel(this.Items);
         end
         
         function [item, key] = peak(this)
-            if isempty(this.currentIndex) || this.currentIndex == 0
-                this.currentIndex = 1;
+        % Gets the current item from the queue without moving the queue
+        % position.
+        % 
+        % [item, key] = peak(queue) - Gets the current item and its 
+        % corresponding key from the queue.
+        % Output:
+        %   item - The item at the current position in the queue
+        %   key  - The key of the item
+        % 
+            if isempty(this.CurrentIndex) || this.CurrentIndex == 0
+                this.CurrentIndex = 1;
             end
             if ~this.isPending()
                 item = [];
@@ -43,13 +63,12 @@ classdef DataQueue < handle
                 return;
             end
             
-            currentItemFromList = this.list.get(this.currentIndex);
-            key = currentItemFromList.path;
-            if this.currentItem.index ~= this.currentIndex
-                this.currentItem.index = this.currentIndex;
-                this.currentItem.item = this.dataLoader.load(key);
+            key = this.Items{this.CurrentIndex};
+            if this.CurrentItem.index ~= this.CurrentIndex
+                this.CurrentItem.index = this.CurrentIndex;
+                this.CurrentItem.item = this.DataLoader.load(key);
             end
-            item = this.currentItem.item;
+            item = this.CurrentItem.item;
         end
         
         function [item, key] = next(this)
@@ -69,7 +88,7 @@ classdef DataQueue < handle
                 key = [];
                 return;
             end
-            this.currentIndex = this.currentIndex + 1;
+            this.CurrentIndex = this.CurrentIndex + 1;
             [item, key] = this.peak();
         end
 
@@ -86,13 +105,13 @@ classdef DataQueue < handle
         %   key  - The key identifier of the item
         %
         
-            if this.currentIndex < 2
-                this.currentIndex = 1;
+            if this.CurrentIndex < 2
+                this.CurrentIndex = 1;
                 item = [];
                 key = [];
                 return;
             end
-            this.currentIndex = this.currentIndex - 1;
+            this.CurrentIndex = this.CurrentIndex - 1;
             [item, key] = this.peak();
         end
         
@@ -118,10 +137,10 @@ classdef DataQueue < handle
         %
         
             if isnumeric(where) && where > 0 && where <= this.length()
-                this.currentIndex = where;
+                this.CurrentIndex = where;
                 [item, key] = this.peak();
             elseif iscahr(where)
-                this.currentIndex = find(strcmp({this.list.vector.path}, where));
+                this.currentIndex = find(strcmp({this.items.path}, where));
                 [item, key] = this.peak();
             else
                 error('Huh? specified data item identifier should be either string name or index.');
@@ -129,19 +148,19 @@ classdef DataQueue < handle
         end
         
         function names = getDataNameList(this)
-            names = {this.list.vector().path};
+            names = {this.Items.path};
         end
         
         function len = length(this)
-            len = length(this.list);
+            len = numel(this.Items);
         end
         
         function n = itemsLeft(this)
-            n = this.length() - this.currentIndex;
+            n = this.length() - this.CurrentIndex;
         end
 
         function [done, left] = progress(this)
-            done = this.currentIndex;
+            done = this.CurrentIndex;
             left = this.itemsLeft();
         end
     end

@@ -8,7 +8,7 @@ classdef (Abstract) DataAccessor < handle
         % the context it is held in.
         item = load(this, key)
         
-        % Loads a batch of data items in the form of a Simple.DataAccess.DataQueue
+        % Loads a batch of data items in the form of a dao.DataQueue
         queue = loadQueue(this)
         
         % Accept data item - it passed processing

@@ -1,70 +1,69 @@
-classdef (Abstract) FileSystemDataAccessor < Simple.DataAccess.DataAccessor
+classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
     properties
-        app mvvm.App;
-        batchPath;
-        exporter tiers.da.FSOutputDataExporter;
-        startTime;
-        processedResultsPath;
-        errorLogPath;
+        ErrorHandler mvvm.IErrorHandler = mvvm.App.empty();
+        QueueFactory dao.IQueueFactory = dao.SimpleDataQueueFactory();
+        BatchPath;
+        Exporter dao.FSOutputDataExporter = dao.MXmlDataExporter.empty();
+        StartTime;
+        ProcessedResultsPath;
+        ErrorLogPath;
     end
     
     methods %Property getters/setters
         
-        function value = get.processedResultsPath(this)
-            if ~isempty(this.processedResultsPath)
-                value = this.processedResultsPath;
+        function value = get.ProcessedResultsPath(this)
+            if ~isempty(this.ProcessedResultsPath)
+                value = this.ProcessedResultsPath;
                 return;
             end
             
-            value = Simple.DataAccess.processOutputIOPath(fullfile(this.batchPath, 'processed_{timestamp}'), this.startTime);
+            value = dao.processOutputIOPath(fullfile(this.BatchPath, 'processed_{timestamp}'), this.StartTime);
         end
-        function set.processedResultsPath(this, value)
-            this.processedResultsPath = value;
+        function set.ProcessedResultsPath(this, value)
+            this.ProcessedResultsPath = value;
         end
         
-        function value = get.errorLogPath(this)
-            if ~isempty(this.errorLogPath)
-                value = this.errorLogPath;
+        function value = get.ErrorLogPath(this)
+            if ~isempty(this.ErrorLogPath)
+                value = this.ErrorLogPath;
                 return;
             end
             
-            value = Simple.DataAccess.processOutputIOPath(fullfile(this.batchPath, 'errors_{timestamp}'), this.startTime);
+            value = dao.processOutputIOPath(fullfile(this.BatchPath, 'errors_{timestamp}'), this.StartTime);
         end
-        function set.errorLogPath(this, value)
-            this.errorLogPath = value;
+        function set.ErrorLogPath(this, value)
+            this.ErrorLogPath = value;
         end
     end
     
     methods % Ctors
-        function this = FileSystemDataAccessor(app, exporter, batchPath, processedResultsPath, errorLogPath)
-            if (nargin < 3 || isempty(processedResultsPath)); processedResultsPath = []; end
-            if (nargin < 4 || isempty(errorLogPath)); errorLogPath = []; end
-
-            this = this@Simple.DataAccess.DataAccessor();
-            this.app = app;
-            this.batchPath = batchPath;
-            this.startTime = now;
-            this.processedResultsPath = processedResultsPath;
-            this.errorLogPath = errorLogPath;
-
-            if ~isa(exporter, 'Simple.DataAccess.FSOutputDataExporter')
-                error('Must specify a valid FSOutputDataExporter to save output results');
+        function this = FileSystemDataAccessor(errorHandler, exporter, queueFactory)
+            this = this@dao.DataAccessor();
+            this.ErrorHandler = errorHandler;
+            this.StartTime = now;
+            this.Exporter = exporter;
+            
+            if nargin >= 3 && ~isempty(queueFactory)
+                this.QueueFactory = queueFactory;
             end
-            this.exporter = exporter;
         end
     end
 
     methods
-        function queue = loadQueue(this)
+        function queue = loadQueue(this, batchPath)
+            if nargin >= 2 && ~isempty(batchPath)
+                this.BatchPath = batchPath;
+            end
+            
             try
-                files = dir(fullfile(this.batchPath, this.fileTypeFilter()));
+                files = dir(fullfile(this.BatchPath, this.fileTypeFilter()));
             catch ex
                 this.logError([], ex);
-                queue = [];
+                queue = dao.DataQueue.empty();
                 return;
             end
-            files = {files.name};
-            queue = Simple.DataAccess.DataQueue(this, files);
+            filesNames = {files.name};
+            queue = this.QueueFactory.build(filesNames);
         end
         
         function filter = fileTypeFilter(this)
@@ -75,13 +74,13 @@ classdef (Abstract) FileSystemDataAccessor < Simple.DataAccess.DataAccessor
         
         function acceptData(this, key)
             try
-                destinationFile = fullfile(this.processedResultsPath, key);
+                destinationFile = fullfile(this.ProcessedResultsPath, key);
                 
                 % make sure output folder exists
-                Simple.DataAccess.ensureFolder(this.processedResultsPath);
+                dao.ensureFolder(this.ProcessedResultsPath);
 
                 if ~exist(destinationFile, 'file')
-                    [status, msg] = copyfile(fullfile(this.batchPath, key), destinationFile, 'f');
+                    [status, msg] = copyfile(fullfile(this.BatchPath, key), destinationFile, 'f');
                     if ~status
                         this.logError(key, msg);
                     end
@@ -94,7 +93,7 @@ classdef (Abstract) FileSystemDataAccessor < Simple.DataAccess.DataAccessor
         function rejectData(this, key)
             % if was previously accepted, undo that
             try
-                destinationFile = fullfile(this.processedResultsPath, key);
+                destinationFile = fullfile(this.ProcessedResultsPath, key);
                 if exist(destinationFile, 'file')
                     delete(destinationFile);
                 end
@@ -111,13 +110,13 @@ classdef (Abstract) FileSystemDataAccessor < Simple.DataAccess.DataAccessor
         function logError(this, key, err)
             if ~isempty(key)
                 try
-                    destinationFile = fullfile(this.errorLogPath, key);
+                    destinationFile = fullfile(this.ErrorLogPath, key);
                     
                     % make sure error log folder exists
-                    Simple.DataAccess.ensureFolder(this.errorLogPath);
+                    dao.ensureFolder(this.ErrorLogPath);
 
                     if ~exist(destinationFile, 'file')
-                        [status, msg] = copyfile(fullfile(this.batchPath, key), destinationFile, 'f');
+                        [status, msg] = copyfile(fullfile(this.BatchPath, key), destinationFile, 'f');
                         if ~status
                             this.logError('', msg);
                         end
@@ -126,27 +125,27 @@ classdef (Abstract) FileSystemDataAccessor < Simple.DataAccess.DataAccessor
                     this.logError('', ex);
                 end
             end
-            this.app.handleException(['something went wrong while analizing curve ' key], err, this.errorLogPath, Simple.DataAccess.processOutputIOPath('error_{timestamp}.log'));
+            this.ErrorHandler.handleException(['something went wrong while analizing curve ' key], err, this.ErrorLogPath, dao.processOutputIOPath('error_{timestamp}.log'));
         end
 
         % Saves the processed data results of a data analysis process
         function saveResults(this, data, output)
-            path = fullfile(this.processedResultsPath, 'output', ['results.' this.exporter.outputFilePostfix()]);
+            path = fullfile(this.ProcessedResultsPath, 'output', ['results.' this.Exporter.outputFilePostfix()]);
             if nargin < 3
-                this.exporter.save(data, path);
+                this.Exporter.save(data, path);
             else
-                this.exporter.save(data, output, path);
+                this.Exporter.save(data, output, path);
             end
         end
         
         % Import previously processed data results
         function data = importResults(this, importDetails)
-            data = this.exporter.load(importDetails.path);
+            data = this.Exporter.load(importDetails.path);
         end
         
         function b = equals(this, other)
-            b = equals@Simple.DataAccess.DataAccessor(this, other);
-            b = b && strcmp(this.batchPath, other.batchPath);
+            b = equals@dao.DataAccessor(this, other);
+            b = b && strcmp(this.BatchPath, other.BatchPath);
         end
     end
 end

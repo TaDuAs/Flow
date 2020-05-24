@@ -1,4 +1,4 @@
-classdef DelimiterValuesDataExporter < tiers.da.FSOutputDataExporter
+classdef DelimiterValuesDataExporter < dao.FSOutputDataExporter
     properties
         delimiter = ',';
     end
@@ -11,14 +11,7 @@ classdef DelimiterValuesDataExporter < tiers.da.FSOutputDataExporter
             end
         end
         
-        function save(this, data, a, b)
-            if nargin == 3
-                path = a;
-                output = [];
-            else
-                path = b;
-                output = a;
-            end
+        function save(this, data, path)
             properties = fields(data);
             t = table();
             for i = 1:length(properties)
@@ -27,7 +20,7 @@ classdef DelimiterValuesDataExporter < tiers.da.FSOutputDataExporter
                 t = [t table({data.(properties{i})}', 'VariableNames', properties(i))];
             end
             
-            Simple.DataAccess.ensureFolder(fileparts(path));
+            dao.ensureFolder(fileparts(path));
             writetable(t, path, 'Delimiter', this.delimiter);
             if ~isempty(output)
                 this.save(output, this.generateOutputDataFilePath(path));
