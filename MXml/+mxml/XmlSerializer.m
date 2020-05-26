@@ -3,9 +3,10 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
     properties (Access=private, Constant)
         VERSION_ATTR_NAME = '_version';
         TYPE_ATTR_NAME = '_type';
+        KEY_ATTR_NAME = '_key';
         IS_LIST_ATTR_NAME = '_isList';
         LIST_ENRTY_TAG_NAME = '_entry';
-        COMPATIBILITY_ELEMENT_NAMES = struct('TYPE_ATTR_NAME', 'type', 'IS_LIST_ATTR_NAME', 'isList', 'LIST_ENRTY_TAG_NAME', 'entry');
+        COMPATIBILITY_ELEMENT_NAMES = struct('TYPE_ATTR_NAME', 'type', KEY_ATTR_NAME', 'key', 'IS_LIST_ATTR_NAME', 'isList', 'LIST_ENRTY_TAG_NAME', 'entry');
     end
     
     properties (Access=protected, Constant)
@@ -299,7 +300,8 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
         function [attrNames, elemNames] = getReservedMetadataAttributeNames(this, version, isList)
             if this.isCompatibilityMode(version)
                 % compatibility mode attributes
-                attrNames = {this.COMPATIBILITY_ELEMENT_NAMES.TYPE_ATTR_NAME, this.COMPATIBILITY_ELEMENT_NAMES.IS_LIST_ATTR_NAME};
+                attrNames = {this.COMPATIBILITY_ELEMENT_NAMES.TYPE_ATTR_NAME, ...
+                    this.COMPATIBILITY_ELEMENT_NAMES.IS_LIST_ATTR_NAME};
                 if isList
                     elemNames = {this.COMPATIBILITY_ELEMENT_NAMES.LIST_ENRTY_TAG_NAME};
                 else
@@ -307,7 +309,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 end
             else
                 % regular meta data attributes
-                attrNames = {this.VERSION_ATTR_NAME, this.TYPE_ATTR_NAME, this.IS_LIST_ATTR_NAME};
+                attrNames = {this.VERSION_ATTR_NAME, this.TYPE_ATTR_NAME, this.KEY_ATTR_NAME, this.IS_LIST_ATTR_NAME};
                 
                 % the _entry tag name is always reserved, there can be no
                 % property with the name _entry

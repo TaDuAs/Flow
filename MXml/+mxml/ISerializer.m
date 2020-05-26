@@ -67,6 +67,8 @@ classdef (Abstract) ISerializer < handle & matlab.mixin.Heterogeneous & mfc.IDes
         function item = accessArray(this, arr, i)
             if iscell(arr)
                 item = arr{i};
+            elseif isa(arr, 'lists.IDictionary')
+                item = arr.getv(i);
             elseif isa(arr, 'lists.ICollection')
                 item = arr.getv(i);
             else

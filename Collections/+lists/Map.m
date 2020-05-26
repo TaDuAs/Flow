@@ -1,4 +1,4 @@
-classdef Map < handle & lists.IObservable
+classdef Map < handle & lists.IObservable & lists.IDictionary
     % Wrapper for containers.Map class, which implements the
     % lists.ICollection interface.
     % Implements complete containers.Map API and lists.ICollection API
@@ -67,6 +67,11 @@ classdef Map < handle & lists.IObservable
             end
         end
         
+        function clear(this)
+        % Clears the entire cache storage
+            this.Container.remove(this.keys);
+        end
+        
         function this = remove(this, i)
             this.map.remove(i);
             
@@ -98,7 +103,7 @@ classdef Map < handle & lists.IObservable
             value = this.map(i);
         end
         
-        function setVector(this, values, keys)
+        function setVector(this, keys, values)
             this.remove(this.keys);
             for i = 1:numel(keys)
                 if iscell(keys); currKey = keys{i}; else currKey = keys(i); end
