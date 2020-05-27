@@ -290,6 +290,54 @@ classdef XmlSerializationTests < matlab.mock.TestCase
             assert(strcmp(root.children.child.children.b.attr.a_type.value, 'double'));
             assert(strcmp(root.children.child.children.b.value, '1;3;5'));
         end
+        
+        function serializeSimpleObject(testCase)
+            ser = mxml.XmlSerializer();
+            
+            obj = mxml.tests.HandleModel();
+            obj.id = 'abc';
+            obj.child1 = 1;
+            obj.child2 = mxml.tests.HandleModel();
+            obj.list = 1:10;
+            
+            xml = ser.serialize(obj);
+            
+            root = mxml.tests.genDOM(xml);
+            
+            assert(strcmp(root.attr.a_version.value, '3'));
+            assert(strcmp(root.attr.a_type.value, 'mxml.tests.HandleModel'));
+            assert(strcmp(root.attr.id.value, 'abc'));
+            assert(strcmp(root.children.child1.attr.a_type.value, 'double'));
+            assert(strcmp(root.children.child1.value, '1'));
+            assert(strcmp(root.children.child2.attr.a_type.value, 'mxml.tests.HandleModel'));
+            assert(strcmp(root.children.list.attr.a_type.value, 'double'));
+            assert(strcmp(root.children.list.value, '1 2 3 4 5 6 7 8 9 10'));
+        end
+        
+        function serializeSimpleDictionary(testCase)
+            ser = mxml.XmlSerializer();
+            
+            obj = lists.Dictionary();
+            obj.setv('id', 'abc');
+            obj.setv('number', 1);
+            obj.setv('enum', mxml.tests.MyEnum.Cat);
+            
+            xml = ser.serialize(obj);
+            
+            root = mxml.tests.genDOM(xml);
+            
+            assert(strcmp(root.attr.a_version.value, '3'));
+            assert(strcmp(root.attr.a_type.value, 'lists.Dictionary'));
+            
+            listTypes = cellfun(@(e) e.attr.a_type.value, root.list, 'UniformOutput', false);
+            listKeys = cellfun(@(e) e.attr.a_key.value, root.list, 'UniformOutput', false);
+            listValues = cellfun(@(e) e.value, root.list, 'UniformOutput', false);
+            
+            assert(isequaln(sort(listTypes), sort({'char', 'double', 'mxml.tests.MyEnum'})));
+            assert(isequaln(sort(listKeys), sort({'id', 'number', 'enum'})));
+            assert(isempty(setdiff(listValues, {'abc', '1', 'Cat'})));
+            assert(isempty(setdiff({'abc', '1', 'Cat'}, listValues)));
+        end
     end
 end
 

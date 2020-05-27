@@ -185,7 +185,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             end
         end
         
-        function [element, document] = buildDOM(this, obj, tagName, document, parentElement, forceMaintainType)
+        function [element, document] = buildDOM(this, obj, tagName, document, parentElement, forceMaintainType, objectKey)
             % validate valid datatypes
             if istable(obj) || isa(obj, 'containers.Map')
                 error('tables and maps are not supported by this function yet... if your getting this, better implement it quick!');
@@ -193,6 +193,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             
             % defaults
             if nargin < 6; forceMaintainType = false; end
+            if nargin < 7; objectKey = ''; end
             
             % Set data type
             type = class(obj);
@@ -222,8 +223,16 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             elseif ~maintainType && ~isempty(obj)
                 element = parentElement;
             elseif ~isempty(obj)
+                % Generate the xml element
                 element = document.createElement(tagName);
                 element.setAttribute(this.TYPE_ATTR_NAME, type);
+                
+                % set key attribute
+                if ~isempty(objectKey)
+                    element.setAttribute(this.KEY_ATTR_NAME, objectKey);
+                end
+                
+                % append xml element to xml dom
                 parentElement.appendChild(element);
             end
             
@@ -271,7 +280,13 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 else
                     element.setAttribute(tagName, value);
                 end
-            % if obj is an array of reference types or structs
+            % if obj is an array of reference types or structs\
+            elseif isa(obj, 'lists.IDictionary')
+                element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
+                dicKeys = obj.keys();
+                for i = 1:numel(dicKeys)
+                    this.buildDOM(obj.getv(dicKeys{i}), this.LIST_ENRTY_TAG_NAME, document, element, true, dicKeys{i});
+                end
             elseif ~isscalar(obj) || iscell(obj) || isa(obj, 'lists.ICollection')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                 for i = 1:length(obj)
