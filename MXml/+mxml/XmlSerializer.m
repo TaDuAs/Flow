@@ -6,7 +6,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
         KEY_ATTR_NAME = '_key';
         IS_LIST_ATTR_NAME = '_isList';
         LIST_ENRTY_TAG_NAME = '_entry';
-        COMPATIBILITY_ELEMENT_NAMES = struct('TYPE_ATTR_NAME', 'type', KEY_ATTR_NAME', 'key', 'IS_LIST_ATTR_NAME', 'isList', 'LIST_ENRTY_TAG_NAME', 'entry');
+        COMPATIBILITY_ELEMENT_NAMES = struct('TYPE_ATTR_NAME', 'type', 'KEY_ATTR_NAME', 'key', 'IS_LIST_ATTR_NAME', 'isList', 'LIST_ENRTY_TAG_NAME', 'entry');
     end
     
     properties (Access=protected, Constant)
@@ -46,11 +46,12 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
     end
     
     methods (Hidden)
-        function obj = interpretElement(this, node, version)
+        function [obj, key] = interpretElement(this, node, version)
             metadata = this.getMetaData(node, version);
             type = metadata.type;
             isList = metadata.isList;
-            
+            key = metadata.key;
+                    
             % interpret current element according to the meta-type
             if strcmp(type, 'char')
                 if isList
@@ -91,8 +92,21 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             else
                 typeMC = meta.class.fromName(type);
                 
+                
+                % if implements lists.IDictionary
+                if typeMC <= ?lists.IDictionary
+                    % generate the list object - extract its data from xml
+                    [reservedAttrNames, reservedElemNames] = this.getReservedMetadataAttributeNames(version, true);
+                    extractor = this.ExtractorBuilder.build(this, node, version, reservedAttrNames, reservedElemNames);
+                    obj = this.Factory.construct(type, extractor);
+                    
+                    % generate the list items and inject into the list
+                    % object
+                    [valueArr, keyArr] = this.interpretCellArray(node, version);
+                    obj.setVector(keyArr, valueArr);
+                    
                 % if implements lists.ICollection
-                if typeMC <= ?lists.ICollection
+                elseif typeMC <= ?lists.ICollection
                     % generate the list object - extract its data from xml
                     [reservedAttrNames, reservedElemNames] = this.getReservedMetadataAttributeNames(version, true);
                     extractor = this.ExtractorBuilder.build(this, node, version, reservedAttrNames, reservedElemNames);
@@ -119,11 +133,12 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
         
     end
     methods (Access=protected)
-        function value = interpretCellArray(this, node, version)
+        function [value, keys] = interpretCellArray(this, node, version)
             children = node.getChildNodes();
             n = children.getLength();
             valueCell = cell(1,n);
             validValuesMask = false(1,n);
+            keys = repmat({''}, 1, n);
             
             if this.isCompatibilityMode(version)
                 entryElementNodeName = this.COMPATIBILITY_ELEMENT_NAMES.LIST_ENRTY_TAG_NAME;
@@ -137,17 +152,18 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 
                 % only parse actual elements, no text nodes, comments, etc.
                 if currEntry.getNodeType() == currEntry.ELEMENT_NODE && strcmp(char(currEntry.getNodeName()), entryElementNodeName)
-                    valueCell{i} = this.interpretElement(currEntry, version);
+                    [valueCell{i}, keys{i}] = this.interpretElement(currEntry, version);
                     validValuesMask(i) = true;
                 end
             end
             
             % trim non interpreted items from the array
             value = valueCell(validValuesMask);
+            keys = keys(validValuesMask);
         end
         
-        function value = interpretClassArray(this, node, version)
-            valueCell = this.interpretCellArray(node, version);
+        function [value, keys] = interpretClassArray(this, node, version)
+            [valueCell, keys] = this.interpretCellArray(node, version);
             
             % change to row vector
             value = [valueCell{:}];
@@ -292,6 +308,13 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             md.isList = false;
             if node.hasAttribute(elementNames.IS_LIST_ATTR_NAME)
                 md.isList = mxml.converters.str2boolean(char(node.getAttribute(elementNames.IS_LIST_ATTR_NAME)));
+            end
+            
+            % determine if theres a key
+            if node.hasAttribute(elementNames.KEY_ATTR_NAME)
+                md.key = char(node.getAttribute(elementNames.KEY_ATTR_NAME));
+            else
+                md.key = '';
             end
         end
     end

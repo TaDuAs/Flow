@@ -60,7 +60,7 @@ classdef Dictionary < lists.IDictionary
                 if iscell(values)
                     currValue = values{i};
                 else
-                    currValue = value(i);
+                    currValue = values(i);
                 end
                 
                 if iscell(keys)

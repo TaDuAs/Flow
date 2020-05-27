@@ -71,6 +71,13 @@ classdef XmlDeserializationTests < matlab.mock.TestCase
             testCase.verifyEqual(obj.list(2).id, 2);
             testCase.verifyClass(obj.list(2).child1, 'string');
             testCase.verifyEqual(obj.list(2).child1, "Jumps over the lazy dog");
+            testCase.verifyClass(obj.list(2).child2, 'lists.Dictionary');
+            testCase.verifyEqual(obj.list(2).child2.getv('string'), "Something");
+            testCase.verifyEqual(obj.list(2).child2.getv('number'), 1:4);
+            handleInDictionary = obj.list(2).child2.getv('handle');
+            testCase.verifyClass(handleInDictionary, 'mxml.tests.HandleModel');
+            testCase.verifyEqual(handleInDictionary.id, 'dictionaryHandle');
+            testCase.verifyEqual(obj.list(2).child2.getv('enum'), mxml.tests.MyEnum.Giraffe);
             testCase.verifyEqual(obj.list(2).list, single([1:5; 6:10]));
         end
     end

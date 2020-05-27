@@ -4,7 +4,7 @@ classdef (Abstract) IDictionary < lists.ICollection
         add(this, key, value);
         
         % replaces all items in the dictionary with a new key-value set
-        setVector(this, keys, vector);
+        setVector(this, keys, values);
         
         % clears the dictionary
         clear(this);
