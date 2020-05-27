@@ -1,6 +1,6 @@
 lists package contains several collection interfaces for collection classes and some implementations
 These abstractions are crucial for some of the packages in Simple framework
-including mxml and the data binding toolbox (mvvm package)
+including mxml and the data binding toolbox (mvvm framework)
 
 ***************************************************************************
 APIs
@@ -36,6 +36,29 @@ Summary: Determines whether the collection is empty
 s = size(this, [dim])
 Summary: Determines the size of the collection at the specified dimention
 
+***************************************************************************
+lists.IDictionary < lists.ICollection
+summary:
+A generic dictionary interface for storing data using key indexing
+
+Data storing and manulation methods:
+add(this, key, value)
+summary: adds a new item to the dictionary        
+        
+setVector(this, keys, vector)
+summary: replaces all items in the dictionary with a new key-value set
+        
+clear(this);
+summary: clears the dictionary
+
+keys = keys(this);
+summary: Gets all stored keys
+        
+items = values(this);
+summary: Gets all stored values
+        
+containsKey = isKey(this, key)
+summary: Determines whether the cache stores a value with the specified key
 
 ***************************************************************************
 lists.IObservable < lists.ICollection
