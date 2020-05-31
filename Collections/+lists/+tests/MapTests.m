@@ -103,8 +103,8 @@ classdef MapTests < matlab.unittest.TestCase
             assert(isequal(map.size(3), 1));
             
             map.setv('abc', 'abc');
-            map.setv('abc', 'abc2');
-            map.setv('abc', 'abc3');
+            map.setv('abc2', 'abc');
+            map.setv('abc3', 'abc');
             
             assert(isequal(map.size(), [3, 1]));
             assert(isequal(map.size(1), 3));
@@ -118,8 +118,8 @@ classdef MapTests < matlab.unittest.TestCase
             assert(isequal(map.length(), 0));
             
             map.setv('abc', 'abc');
-            map.setv('abc', 'abc2');
-            map.setv('abc', 'abc3');
+            map.setv('abc2', 'abc');
+            map.setv('abc3', 'abc');
             
             assert(isequal(map.length(), 3));
         end
@@ -147,7 +147,7 @@ classdef MapTests < matlab.unittest.TestCase
             map.setv('xyz1', 'abc1');
             map.setv('xyz2', 'abc2');
             
-            assert(isequal(map.keys(), {'abc' 'abc1' 'abc2'}));
+            assert(isequal(map.keys(), {'xyz' 'xyz1' 'xyz2'}));
         end
         
         function ValuesTest(testCase)
@@ -159,16 +159,16 @@ classdef MapTests < matlab.unittest.TestCase
             map.setv('xyz1', 'abc1');
             map.setv('xyz2', 'abc2');
             
-            assert(isequal(map.values(), {'xyz' 'xyz1' 'xyz2'}));
-            assert(isequal(map.values({'abc', 'abc1'}), {'xyz' 'xyz1'}));
+            assert(isequal(map.values(), {'abc' 'abc1' 'abc2'}));
+            assert(isequal(map.values({'xyz' 'xyz1'}), {'abc', 'abc1'}));
         end
         
         function removeTest(testCase)
             map = lists.Map();
             
-            map.setv('xyz', 'abc');
-            map.setv('xyz1', 'abc1');
-            map.setv('xyz2', 'abc2');
+            map.setv('abc', 'xyz');
+            map.setv('abc1', 'xyz1');
+            map.setv('abc2', 'xyz2');
             
             assert(map.isKey('abc'));
             assert(map.isKey('abc1'));
@@ -190,9 +190,9 @@ classdef MapTests < matlab.unittest.TestCase
         function removeAtTest(testCase)
             map = lists.Map();
             
-            map.setv('xyz', 'abc');
-            map.setv('xyz1', 'abc1');
-            map.setv('xyz2', 'abc2');
+            map.setv('abc', 'xyz');
+            map.setv('abc1', 'xyz1');
+            map.setv('abc2', 'xyz2');
             
             assert(map.isKey('abc'));
             assert(map.isKey('abc1'));
@@ -222,9 +222,9 @@ classdef MapTests < matlab.unittest.TestCase
             
             listener = map.addlistener('collectionChanged', @callback);
             
-            map.setv(1, 'abc');
+            map.setv('abc', 1);
             map('abc') = 2;
-            map.setv(3, 'abc');
+            map.setv('abc', 3);
             
             assert(isequal(x.change, 3));
             assert(isequal(x.add, 0));
@@ -265,7 +265,7 @@ classdef MapTests < matlab.unittest.TestCase
             
             listener = map.addlistener('collectionChanged', @callback);
             
-            map.setv(20, 'abc1');
+            map.setv('abc1', 20);
             map('xyz1') = 10;
             
             assert(isequal(x.change, 0));

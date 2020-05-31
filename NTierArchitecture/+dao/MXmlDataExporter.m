@@ -32,10 +32,19 @@ classdef MXmlDataExporter < dao.FSOutputDataExporter & mfc.IDescriptor
             this.Serializer = serializer;
         end
         
-        function save(this, data, output, path)
-            if nargin >= 3 && ~isempty(output)
-                exportData = struct();
-                exportData.data = data;
+        function save(this, data, varargin)
+            if nargin == 3
+                path = varargin{1};
+                output = [];
+            elseif nargin > 3
+                path = varargin{2};
+                output = varargin{1};
+            end
+            
+            exportData = struct();
+            exportData.data = data;
+            
+            if ~isempty(output)
                 exportData.output = output;
             end
             
@@ -44,15 +53,16 @@ classdef MXmlDataExporter < dao.FSOutputDataExporter & mfc.IDescriptor
         
         function [data, output] = load(this, path)
             data = this.Serializer.load(path);
+            output = [];
             
             if isstruct(data) && isfield(data, 'data')
-                data = data.data;
-                
                 if isfield(data, 'output')
                     output = data.output;
                 elseif isfield(data, 'meta')
                     output = data.meta;
                 end
+                
+                data = data.data;
             end
         end
         

@@ -1,20 +1,29 @@
-classdef (Abstract) FSOutputDataExporter < handle
+classdef (Abstract) FSOutputDataExporter < dao.IExImportDAO
+    % FSOutputDataExporter extends the dao.IExImportDAO data import export
+    % interace for specific import/export to/from files
     
     methods (Abstract)
-        % save(this, data, path) - exports data into the specified path
-        save(this, data, output, path)
+        % save(dao, data, path) - exports data with the specified key
+        % save(dao, data, results, path) - exports data and data analysis
+        %                                 results with the specified key
+        save(this, data, varargin);
         
-        [data, output] = load(this, path)
+        % data = load(dao, path) - imports data with the specified key
+        % [data, results] = load(dao, path)- imports data and data analysis
+        %                                    resuls with the specified key
+        [data, results] = load(this, path)
         
         postfix = outputFilePostfix(this)
     end
     
     methods (Access=protected)
-        function outputFilePath = generateOutputDataFilePath(this, path)
+        function resultsFilePath = generateOutputDataFilePath(~, path)
+        % generates a file path for accompanying results/output file for
+        % formats that don't support additional data
             tok = regexp(path, '^(.+)\.([a-zA-Z]+)$', 'tokens');
             pathAndName = tok{1}{1};
             postfix = tok{1}{2};
-            outputFilePath = [pathAndName '_output.' postfix];
+            resultsFilePath = [pathAndName '_output.' postfix];
         end
     end
 end

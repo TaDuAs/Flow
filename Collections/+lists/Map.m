@@ -59,7 +59,7 @@ classdef Map < handle & lists.IObservable & lists.IDictionary
                     throw(MException('lists:Map:InvalidSubs', 'lists.Map supports Only one-dimensional indexing'));
                 end
 
-                A.setv(B, S.subs{1});
+                A.setv(S.subs{1}, B);
             elseif strcmp(S.type, '.')
                 A = builtin('subsasgn', A, S, B);
             else
@@ -83,7 +83,7 @@ classdef Map < handle & lists.IObservable & lists.IDictionary
             this.remove(i);
         end
         
-        function this = setv(this, value, key)
+        function this = setv(this, key, value)
             m = this.map;
 
             if m.isKey(key)
@@ -113,8 +113,8 @@ classdef Map < handle & lists.IObservable & lists.IDictionary
             end
         end
         
-        function add(this, value, key)
-            this.setv(value, key);
+        function add(this, key, value)
+            this.setv(key, value);
         end
 
         function s = size(this, dim)

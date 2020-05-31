@@ -1,4 +1,8 @@
 classdef (Abstract) DataAccessor < handle & dao.IItemFetcher
+% DataAccessor is a data access object (dao) for batch processes - it
+% supports sequential batch processing by generating a dao.IDataQueue which
+% loads entities from the data layer in an ordered fashion
+    
     methods (Abstract)
         % Loads a batch of data items in the form of a dao.DataQueue
         queue = loadQueue(this)
@@ -19,7 +23,7 @@ classdef (Abstract) DataAccessor < handle & dao.IItemFetcher
         saveResults(this, data, output)
         
         % Import previously processed data results
-        data = importResults(this, importDetails)
+        [data, results] = importResults(this, importDetails)
     end
     
     methods

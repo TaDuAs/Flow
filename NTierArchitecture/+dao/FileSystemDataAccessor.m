@@ -1,4 +1,8 @@
 classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
+% FileSystemDataAccessor is a base class for implementations of the
+% dao.DataAccessor batch data access object for whom the data is saved as
+% files on a file system
+
     properties
         ErrorHandler mvvm.IErrorHandler = mvvm.App.empty();
         QueueFactory dao.IQueueFactory = dao.SimpleDataQueueFactory();
@@ -139,8 +143,8 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
         end
         
         % Import previously processed data results
-        function data = importResults(this, importDetails)
-            data = this.Exporter.load(importDetails.path);
+        function [data, results] = importResults(this, importDetails)
+            [data, results] = this.Exporter.load(importDetails.path);
         end
         
         function b = equals(this, other)
