@@ -15,7 +15,7 @@ function json = tojson(data, meta)
     end
     
     % Export everything to XML document
-    jsonElement = jsonize(obj);
+    jsonElement = mxml.legacy.private.jsonize(obj);
     
     % serialize to json format
     json = jsonencode(jsonElement);

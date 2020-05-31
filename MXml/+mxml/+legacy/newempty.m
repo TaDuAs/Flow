@@ -1,7 +1,7 @@
 function empty = newempty(value)
 % newempty generates a new empty instance of the same type as the specified
 % value.
-    if isPrimitiveValueType(value)
+    if mxml.legacy.private.isPrimitiveValueType(value)
         empty = cast([], class(value));
     elseif isstruct(value)
         empty = struct();

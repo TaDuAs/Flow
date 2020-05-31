@@ -14,11 +14,14 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
 % mfc.MFactory for each serialized, which will affect performance, as 
 % mfc.MFactory analyzes all non-registered classes on first use.
 
-    properties (Constant, Access=protected)
+    properties (Constant)
         VERSION_PROP_NAME = 'mxmlSerializationVersion___';
         TYPE_PROP_NAME = 'mxmlSerializationType___';
         IS_LIST_PROP_NAME = 'mxmlSerializationIsList___';
-        
+        DICTIONARY_KEY_PROP_NAME = 'mxmlSerializationKey___';
+    end
+    
+    properties (Constant, Access=protected)
         DefaultMaintainedTypes string = [];
     end
     
@@ -55,7 +58,12 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
         
         function json = serialize(this, obj)
             jsonReady = this.jsonize(obj);
-            jsonReady.(this.VERSION_PROP_NAME) = this.Version;
+            
+            % append mxml version metadata to jsonized structs
+            % * don't add metadata to primitive values
+            if isstruct(jsonReady)
+                jsonReady.(this.VERSION_PROP_NAME) = this.Version;
+            end
             json = jsonencode(jsonReady);
         end
         
@@ -68,7 +76,7 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
             end
             
             if version == this.CompatibilityVersion
-                obj = parsejsonElement(element);
+                obj = mxml.legacy.private.parsejsonElement(element);
             else
                 obj = this.dejsonize(element, version);
             end
@@ -76,10 +84,11 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
     end
     
     methods (Access={?mxml.JsonFieldExtractor, ?mxml.JsonSerializer})
-        function obj = dejsonize(this, element, version)
+        function [obj, key] = dejsonize(this, element, version)
         % unravels a jsonized object, generating instances of the correct
         % classes for all fields down the object hierarchy
         
+            key = '';
             % strings and cellstrings and primitive types
             if iscellstr(element) || isstring(element) || this.isPrimitiveValue(element)
                 if size(element, 1) > 1 && size(element, 2) == 1
@@ -89,10 +98,14 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
                 end
             % cell arrays, collections & object lists
             elseif isstruct(element) && isfield(element, this.IS_LIST_PROP_NAME) && element.(this.IS_LIST_PROP_NAME)
-                obj = this.dejsonizeList(element, version);
-                return;
+                [obj, key] = this.dejsonizeList(element, version);
             % objects & structs
             elseif isstruct(element)
+                % get the dictionary key if it exists
+                if isfield(element, this.DICTIONARY_KEY_PROP_NAME)
+                    key = element.(this.DICTIONARY_KEY_PROP_NAME);
+                end
+                
                 % structs and jsonized structs
                 if ~isfield(element, this.TYPE_PROP_NAME) || strcmp(element.(this.TYPE_PROP_NAME), 'struct')
                     obj = this.dejsonizeStruct(element, version);
@@ -101,10 +114,15 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
                     obj = this.dejsonizeValue(element, version);
                 % objects
                 else
+                    % prepare the necessary type of JIT field extractor
                     type = element.(this.TYPE_PROP_NAME);
                     if this.isenumType(type)
+                        % enums will use a JIT extractor which simply takes
+                        % the jsonized value
                         extractor = mfc.extract.ValueJitExtractor(element.value);
                     else
+                        % anything else will use a Json Field extractor
+                        % which can extract the jsonized struct fields
                         extractor = mxml.JsonFieldExtractor(this, element);
                     end
                     
@@ -121,26 +139,46 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
     end
     
     methods (Access=protected)
-        function jsonReady = jsonize(this, obj)
+        function jsonReady = jsonize(this, obj, forceMaintain)
         % prepares an onject to be encoded to JSON.
         % jsonized objects are type aware, i.e. metadata is saved alongside
         % the data, to be added into the JSON string.
         % jsonized objects can be later decoded from JSON to the original
         % data types.
             
-            % If obj is a number or a string or some other primitive value type
+            if nargin < 3; forceMaintain = false; end
+        
+            % if obj is an enum class
             if isenum(obj)
                 if numel(obj) > 1
                     jsonReady = struct(this.TYPE_PROP_NAME, class(obj), this.IS_LIST_PROP_NAME, true, 'value', {arrayfun(@char, obj, 'UniformOutput', false)});
                 else
                     jsonReady = struct(this.TYPE_PROP_NAME, class(obj), 'value', char(obj));
                 end
+            % If obj is a number or a string or some other primitive value type
             elseif this.isPrimitiveValue(obj) || iscellstr(obj) || isstring(obj)
                 type = class(obj);
-                if this.isMaintainedType(type)
+                if forceMaintain || this.isMaintainedType(type)
                     jsonReady = struct(this.TYPE_PROP_NAME, type, 'value', obj);
                 else
                     jsonReady = obj;
+                end
+            % if obj is a dictionary collection
+            elseif isa(obj, 'lists.IDictionary')
+                arraySize = length(obj);
+                jsonReady = struct(this.TYPE_PROP_NAME, class(obj), this.IS_LIST_PROP_NAME, true, 'value', {cell(1, arraySize)});
+                keys = obj.keys();
+                for i = 1:arraySize
+                    currKey = keys{i};
+
+                    % jsonize current object
+                    currJsonizedObject = this.jsonize(obj.getv(currKey), true);
+                    
+                    % add the dictionary key to the jsonized item
+                    currJsonizedObject.(this.DICTIONARY_KEY_PROP_NAME) = currKey;
+                    
+                    % add jsonized item to the struct array
+                    jsonReady.value{i} = currJsonizedObject;
                 end
             % if obj is an array of reference types or structs
             elseif (isvector(obj) && numel(obj) > 1) || iscell(obj) || isa(obj, 'lists.ICollection')
@@ -168,18 +206,25 @@ classdef JsonSerializer < mxml.ISerializer & mfc.IDescriptor
     end
     
     methods (Access=private)
-        function obj = dejsonizeList(this, element, version)
+        function [obj, key] = dejsonizeList(this, element, version)
             n = numel(element.value);
-            obj = createList(element.(this.TYPE_PROP_NAME), n);
+            obj = this.createList(element.(this.TYPE_PROP_NAME), n);
+            key = cell(1, n);
             for i = 1:n
-                inner = this.dejsonize(this.accessArray(element.value, i), version);
+                [inner, key{i}] = this.dejsonize(this.accessArray(element.value, i), version);
                 if iscell(obj)
                     obj{i} = inner;
+                elseif isa(obj, 'lists.IDictionary')
+                    if obj.isempty()
+                        obj.setVector(key, inner);
+                    else
+                        obj.add(key{i}, inner);
+                    end
                 elseif isa(obj, 'lists.ICollection')
                     if obj.isempty()
                         obj.setVector(inner);
                     else
-                        obj.set(i, inner);
+                        obj.setv(i, inner);
                     end
                 else
                     obj(i) = inner;

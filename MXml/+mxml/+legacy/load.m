@@ -38,13 +38,13 @@ function [data, metadata] = load(fileName, format)
             dom = parse(fileName);
             for i = 1:length(dom.Children)
                 if strcmp(dom.Children(i).Name, 'meta')
-                    metadata = parseElement(dom.Children(i));
+                    metadata = mxml.legacy.private.parseElement(dom.Children(i));
                 elseif strcmp(dom.Children(i).Name, 'data')
-                    data = parseElement(dom.Children(i));
+                    data = mxml.legacy.private.parseElement(dom.Children(i));
                 end
             end
         case 'json'
-            obj = parsejson(fileName);
+            obj = mxml.legacy.private.parsejson(fileName);
             if isfield(obj, 'data')
                 data = obj.data;
                 if isfield(obj, 'meta')

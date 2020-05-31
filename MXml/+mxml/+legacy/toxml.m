@@ -15,7 +15,7 @@ function xml = toxml(data, meta)
     end
     
     % Export everything to XML document
-    [~, document] = serialize(obj);
+    [~, document] = mxml.legacy.private.serialize(obj);
     
     % Write xml document
     xml = xmlwrite(document);

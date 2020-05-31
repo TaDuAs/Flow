@@ -38,13 +38,13 @@ function save(fileName, data, meta, format, showFileContents)
     switch format
         case 'xml'
             % Export everything to XML document
-            [~, document] = serialize(obj, [], [], []);
+            [~, document] = mxml.legacy.private.serialize(obj, [], [], []);
 
             % Write xml document
             xmlwrite(fileName, document);
         case 'json'
             % Export everything to XML document
-            jsonElement = jsonize(obj);
+            jsonElement = mxml.legacy.private.jsonize(obj);
 
             % serialize to json format
             json = jsonencode(jsonElement);
