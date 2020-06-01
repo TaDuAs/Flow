@@ -5,7 +5,7 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
 
     properties
         ErrorHandler mvvm.IErrorHandler = mvvm.App.empty();
-        QueueFactory dao.IQueueFactory = dao.SimpleDataQueueFactory();
+        QueueFactory dao.IQueueFactory = dao.SimpleDataQueueFactory.empty();
         BatchPath;
         Exporter dao.FSOutputDataExporter = dao.MXmlDataExporter.empty();
         StartTime;
@@ -49,6 +49,8 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
             
             if nargin >= 3 && ~isempty(queueFactory)
                 this.QueueFactory = queueFactory;
+            else
+                this.QueueFactory = dao.SimpleDataQueueFactory(this);
             end
         end
     end

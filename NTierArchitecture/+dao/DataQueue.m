@@ -6,7 +6,7 @@ classdef DataQueue < dao.IDataQueue
     % Author - TADA, 2018
     
     properties
-        DataLoader dao.IItemFetcher;
+        DataLoader dao.IItemFetcher = dao.MXmlDataAccessor.empty();
         Items;
         CurrentIndex;
         CurrentItem;

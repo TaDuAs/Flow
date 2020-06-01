@@ -10,6 +10,8 @@ function [value, foundField] = getobj(obj, fieldName, defaultValue, warnNotFound
         throw(MException('mvvm:getobj:EmptyField', 'The field path contains empty field names. FieldPath: %s', fieldName));
     elseif nargin < 4
         warnNotFound = true;
+    elseif ischar(warnNotFound) && isrow(warnNotFound) && strcmpi(warnNotFound, 'nowarn')
+        warnNotFound = false;
     elseif ~isscalar(warnNotFound) || ~islogical(warnNotFound)
         throw(MException('mvvm:getobj:WarnNotFound_Invalid', 'warnNotFound must be a logical scalar'));
     end
