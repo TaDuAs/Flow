@@ -1,4 +1,4 @@
-function [ values ] = dlgInputValues(fields, defaults, datatypes, title, lines, ids)
+function values = dlgInputValues(fields, defaults, datatypes, title, lines, ids)
             Simple.obsoleteWarning('Simple.UI');
     import Simple.*;
     defaultAnswersStrings = cell(1,length(defaults));
@@ -27,6 +27,11 @@ function [ values ] = dlgInputValues(fields, defaults, datatypes, title, lines, 
         title,... % Dialogue title
         lines,... % number of lines per input
         defaultAnswersStrings); % Default values
+    
+    if isempty(answer)
+        values = defaults;
+        return;
+    end
     
     values = cell(1,length(fields));
     for i = 1:length(answer)

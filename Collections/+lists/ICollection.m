@@ -13,5 +13,11 @@ classdef (Abstract) ICollection < handle
         removeAt(this, i)
         setVector(this, vector)
     end
+    
+    methods
+        function tf = isemptyHandle(this)
+            tf = builtin('isempty', this);
+        end
+    end
 end
 

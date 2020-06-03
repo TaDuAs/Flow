@@ -92,7 +92,6 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             else
                 typeMC = meta.class.fromName(type);
                 
-                
                 % if implements lists.IDictionary
                 if typeMC <= ?lists.IDictionary
                     % generate the list object - extract its data from xml
@@ -220,9 +219,9 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 
                 % always maintain the type of the root object
                 maintainType = true;
-            elseif ~maintainType && ~isempty(obj)
+            elseif ~maintainType && ~builtin('isempty', obj)
                 element = parentElement;
-            elseif ~isempty(obj)
+            elseif ~builtin('isempty', obj)
                 % Generate the xml element
                 element = document.createElement(tagName);
                 element.setAttribute(this.TYPE_ATTR_NAME, type);
@@ -236,7 +235,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 parentElement.appendChild(element);
             end
             
-            if isempty(obj)
+            if builtin('isempty', obj)
                 return;
             end
             
@@ -280,28 +279,32 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 else
                     element.setAttribute(tagName, value);
                 end
-            % if obj is an array of reference types or structs\
+            % if obj is an array of reference types or structs
             elseif isa(obj, 'lists.IDictionary')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
+                
+                % append all properties
+                this.buildPropertiesDOM(obj, document, element);
+                
+                % append all dictionary items
                 dicKeys = obj.keys();
                 for i = 1:numel(dicKeys)
                     this.buildDOM(obj.getv(dicKeys{i}), this.LIST_ENRTY_TAG_NAME, document, element, true, dicKeys{i});
                 end
             elseif ~isscalar(obj) || iscell(obj) || isa(obj, 'lists.ICollection')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
+                
+                % append all properties
+                this.buildPropertiesDOM(obj, document, element);
+                
+                % append all collection items
                 for i = 1:length(obj)
                     this.buildDOM(this.accessArray(obj, i), this.LIST_ENRTY_TAG_NAME, document, element, true);
                 end
             % handle ref types and structs
             elseif ~isempty(obj)
-                fields = fieldnames(obj);
-
-                % Append all properties
-                for i = 1:length(fields)
-                    fieldName = fields{i};
-                    fieldValue = obj.(fieldName);
-                    this.buildDOM(fieldValue, fieldName, document, element);
-                end
+                % append all properties
+                this.buildPropertiesDOM(obj, document, element);
             end
         end
 
@@ -335,6 +338,17 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
     end
     
     methods (Access=private)
+        function buildPropertiesDOM(this, obj, document, element)
+            fields = fieldnames(obj);
+            
+            % Append all properties
+            for i = 1:length(fields)
+                fieldName = fields{i};
+                fieldValue = obj.(fieldName);
+                this.buildDOM(fieldValue, fieldName, document, element);
+            end
+        end
+        
         function [attrNames, elemNames] = getReservedMetadataAttributeNames(this, version, isList)
             if this.isCompatibilityMode(version)
                 % compatibility mode attributes
