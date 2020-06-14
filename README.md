@@ -8,6 +8,7 @@ The highlights include:
    - Data Binding
    - View/Component
    - App-Domain
+   - Application/Session Context
 3. MXml toolbox (for exporting/importing complete object graphs to/from text files) - see mxml package
 
 Also includes several utility packages and extensions:
