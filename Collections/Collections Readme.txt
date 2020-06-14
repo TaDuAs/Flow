@@ -81,9 +81,11 @@ See Also: lists.CollectionChangedEventData
 ***************************************************************************
 Class List
 ***************************************************************************
-lists.Map < lists.IObservable
+lists.Map < lists.IObservable & lists.IDictionary
 Summary: This class is a wrapper for containers.Map which implements the 
-lists.IObservable and lists.ICollection interfaces.
+lists.IObservable, lists.IDictionary and lists.ICollection interfaces, 
+while maintaining the usual container.Map API. This class can replace
+the use of containers.Map when observability is required (e.g for data binding) 
 
 lists.ObservableArray < lists.IObservable
 Summary: This class is a wrapper for matrices and cell arrays which
@@ -92,3 +94,6 @@ implements the lists.IObservable and lists.ICollection interfaces.
 lists.Pipeline < lists.IObservable
 Summary: This class is a pipeline which operates a process defined by the
 list of contained lists.PipelineTask
+
+lists.Dictionary < list.IDictionary
+Summary: This is a simple dictionary class
