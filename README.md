@@ -5,9 +5,9 @@ The highlights include:
 
 1. Dependency Injection Toolbox - see IoC package
 2. Model-View-ViewModel Toolbox (for MVVM GUI development) - see mvvm and sub-packages
-      a. Data Binding
-      b. View/Component
-      c. App-Domain
+   - Data Binding
+   - View/Component
+   - App-Domain
 3. MXml toolbox (for exporting/importing complete object graphs to/from text files) - see mxml package
 
 Also includes several utility packages and extensions:
