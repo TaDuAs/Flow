@@ -47,8 +47,12 @@ classdef GlobalBindingManager < handle
         function ref = singletonInstance(forceNewInstance)
             persistent instance;
             
-            if nargin > 0
+            if nargin > 0 && ~isempty(instance)
                 delete(instance);
+                if ischar(forceNewInstance) && strcmp(forceNewInstance, 'terminate')
+                    instance = [];
+                    return;
+                end
             end
             
             if isempty(instance) || ~isvalid(instance)
@@ -87,6 +91,10 @@ classdef GlobalBindingManager < handle
         % simply replaced
             bm = mvvm.GlobalBindingManager.instance();
             bm.setModelProvider(container, provider);
+        end
+        
+        function terminate()
+            mvvm.GlobalBindingManager.singletonInstance('terminate');
         end
         
         function setDefaultModProv(provider)

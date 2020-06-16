@@ -37,6 +37,25 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             end
         end
         
+        function deleta(this)
+            if ~isempty(this.AppLoadingEventListener)
+                delete(this.AppLoadingEventListener);
+                this.AppLoadingEventListener = event.listener.empty();
+            end
+            if ~isempty(this.OwnerViewEventHandlers)
+                delete(this.OwnerViewEventHandlers);
+                this.OwnerViewEventHandlers = event.listener.empty();
+            end
+            
+            this.App = mvvm.App.empty();
+            this.BindingManager = mvvm.BindingManager.empty();
+            this.ViewManager = mvvm.view.ViewManager.empty();
+            this.OwnerView = mvvm.view.Window.empty();
+            this.Fig = matlab.ui.Figure.empty();
+            this.Messenger = mvvm.MessagingMediator.empty();
+            this.ModelProviderMapping = mvvm.view.ViewProviderMapping.empty();
+        end
+        
         function start(this)
             if this.Status == mvvm.view.ViewStatus.NotActivated
                 this.initiateLifecycle();
