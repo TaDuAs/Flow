@@ -1,7 +1,8 @@
-function pos = getPos(h, units)
+function pos = getPos(h, units, type)
 %GETPOS gets the position vector of a handle in the desired units and
 %changes the units of that element back to the original setting
     if nargin < 2; units = 'norm'; end
+    if nargin < 3; type = ''; end
     
     % detect original units of the handle
     originalUnits = get(h, 'Units');
@@ -14,7 +15,11 @@ function pos = getPos(h, units)
     end
 
     % get position
-    pos = get(h, 'Position');
+    if strcmpi(type, 'inner') && ~isempty(findprop(h, 'InnerPosition'))
+        pos = get(h, 'InnerPosition');
+    else
+        pos = get(h, 'Position');
+    end
     
     % chnage units back to original value
     if changeBack

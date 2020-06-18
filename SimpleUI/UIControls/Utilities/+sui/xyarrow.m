@@ -49,13 +49,11 @@ function ah = xyarrow(varargin)
     
     if isa(varargin{1}, 'matlab.graphics.axis.Axes')
         ax = varargin{1};
-        container = ancestor(ax, 'figure');
         x = varargin{2};
         y = varargin{3};
         firstArgIdx = 4;
     elseif isa(varargin{1}, 'matlab.ui.Figure')
-        container = varargin{1};
-        ax = gca(container);
+        ax = gca(varargin{1});
         x = varargin{2};
         y = varargin{3};
         firstArgIdx = 4;
@@ -64,17 +62,20 @@ function ah = xyarrow(varargin)
         y = varargin{2};
         firstArgIdx = 3;
         ax = gca();
-        container = ancestor(ax, 'figure');
     end
     
-    assert(numel(x) == 2, 'x must be a two element vector which represents the x start and end coordinates of the arrow');
-    assert(numel(y) == 2, 'y must be a two element vector which represents the y start and end coordinates of the arrow');
+    % this is the container which will be the parent of the annotation
+    % object
+    container = ax.Parent;
+    
+    assert(numel(x) == 2 && isnumeric(x), 'x must be a two element vector which represents the x start and end coordinates of the arrow');
+    assert(numel(y) == 2 && isnumeric(y), 'y must be a two element vector which represents the y start and end coordinates of the arrow');
     
     % get absolute position of axes in pixels
-    axPos = sui.getAbsPos(ax);
+    axPos = getPos(ax, 'pixels');
     
     % get size of axes in pixels
-    axSize = sui.getSize(ax, 'pixels');
+    axSize = getSize(ax, 'pixels');
     
     % get the axes x-y limits
     xlims = xlim(ax);
@@ -89,7 +90,7 @@ function ah = xyarrow(varargin)
     ypos = (y - ylims(1)) * y2pix + axPos(2);
     
     % normalize x-y positions to the size of the container
-    containerSize = sui.getSize(container, 'pixels');
+    containerSize = getSize(container, 'pixels', 'inner');
     xposNorm = xpos / containerSize(1);
     xposNorm(xposNorm > 1) = 1;
     xposNorm(xposNorm < 0) = 0;
