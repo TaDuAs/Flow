@@ -72,10 +72,10 @@ function ah = xyarrow(varargin)
     assert(numel(y) == 2 && isnumeric(y), 'y must be a two element vector which represents the y start and end coordinates of the arrow');
     
     % get absolute position of axes in pixels
-    axPos = getPos(ax, 'pixels');
+    axPos = sui.getPos(ax, 'pixels');
     
     % get size of axes in pixels
-    axSize = getSize(ax, 'pixels');
+    axSize = sui.getSize(ax, 'pixels');
     
     % get the axes x-y limits
     xlims = xlim(ax);
@@ -90,7 +90,7 @@ function ah = xyarrow(varargin)
     ypos = (y - ylims(1)) * y2pix + axPos(2);
     
     % normalize x-y positions to the size of the container
-    containerSize = getSize(container, 'pixels', 'inner');
+    containerSize = sui.getSize(container, 'pixels', 'inner');
     xposNorm = xpos / containerSize(1);
     xposNorm(xposNorm > 1) = 1;
     xposNorm(xposNorm < 0) = 0;
