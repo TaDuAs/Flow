@@ -1,4 +1,4 @@
-function [details, names] = dirfiles(path, varargin)
+function [details, names, fullPaths] = dirfiles(path, varargin)
 % lists the files in a folder.
 % 
 % listing = gen.dirfiles()
@@ -32,6 +32,16 @@ function [details, names] = dirfiles(path, varargin)
 %   names   - cell array of character vectors which contains the list of
 %       file names
 %
+% [listing, names, fullPaths] = gen.dirfiles(___)
+%   also returns a cell array of character vectors containing the list of 
+%   file full paths
+%  Output:
+%   listing   - attributes struct array for the list of files
+%   names     - cell array of character vectors which contains the list of
+%       file names
+%   fullPaths - cell array of character vectors which contains the list of
+%       file full paths
+%
 % Author: TADA 2020
 %
 
@@ -49,13 +59,22 @@ function [details, names] = dirfiles(path, varargin)
     postfixMask = ~contains(filePattern, '.') & ~cellfun('isempty', filePattern);
     filePattern(postfixMask) = strcat('*.', filePattern(postfixMask));
     
+    % get file listings
     details = dir(fullfile(path, filePattern{1}));
     for i = 2:numel(filePattern)
         details = vertcat(details, dir(fullfile(path, filePattern{i})));
     end
+    
+    % remove folders
     details = details(~[details.isdir]);
     
+    % remove duplicates
     [names, idxUniques] = unique({details.name});
     details = details(idxUniques);
+    
+    % prep list of full paths
+    if nargout >= 3
+        fullPaths = fullfile(path, names);
+    end
 end
 

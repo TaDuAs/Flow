@@ -1,4 +1,4 @@
-function [details, names] = dirfolds(path)
+function [details, names, fullPaths] = dirfolds(path)
 % lists the files in a folder.
 % 
 % listing = gen.dirfolds()
@@ -14,6 +14,10 @@ function [details, names] = dirfolds(path)
 % [listing, names] = gen.dirfolds(___)
 %   also returns a cell array of character vectors containing the list of 
 %   subfolder names
+% 
+% [listing, names, fullPaths] = gen.dirfolds(___)
+%   also returns a cell array of character vectors containing the list of 
+%   subfolder full path
 %
 % Author: TADA 2020
 %
@@ -33,6 +37,11 @@ function [details, names] = dirfolds(path)
     % prep list of names
     if nargout >= 2
         names = {details.name};
+    end
+    
+    % prep list of full paths
+    if nargout >= 3
+        fullPaths = fullfile(path, names);
     end
 end
 
