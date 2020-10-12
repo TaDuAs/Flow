@@ -43,7 +43,7 @@ classdef SessionManager < handle
         end
         
         function [key, session] = startNewSession(this)
-            key = guid();
+            key = gen.guid();
             
             % create new IoC container session and make it return current
             % session

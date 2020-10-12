@@ -171,7 +171,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
                 @(x) assert(isa(x, 'mvvm.view.IViewManager'), 'ViewManager must be a mvvm.view.ViewManager'));
             addParameter(parser, 'OwnerView', mvvm.view.Window.empty(), ...
                 @(x) assert(isa(x, 'mvvm.view.IView'), 'OwnerView must be a mvvm.view.IView'));
-            addParameter(parser, 'Id', guid(), @gen.valid.mustBeTextualScalar);
+            addParameter(parser, 'Id', gen.guid(), @gen.valid.mustBeTextualScalar);
         end
         
         function onCloseRequest(this, ~, ~)
