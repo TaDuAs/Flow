@@ -1,4 +1,5 @@
 function S = structofarrays2arrayofstructs(A)
+   % Original code taken from: https://www.mathworks.com/matlabcentral/fileexchange/40712-convert-from-a-structure-of-arrays-into-an-array-of-structures
    % structofarrays2arrayofstructs does exactly what it says.
    % USAGE: 
    %   S = structofarrays2arrayofstructs(A) assumes that A is a struct, with each field
