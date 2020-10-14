@@ -11,6 +11,7 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
         StartTime;
         ProcessedResultsPath;
         ErrorLogPath;
+        SaveAcceptedItems (1,1) logical = true;
     end
     
     methods %Property getters/setters
@@ -79,6 +80,10 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
         end
         
         function acceptData(this, key)
+            if ~this.SaveAcceptedItems
+                return;
+            end
+            
             try
                 destinationFile = fullfile(this.ProcessedResultsPath, key);
                 
