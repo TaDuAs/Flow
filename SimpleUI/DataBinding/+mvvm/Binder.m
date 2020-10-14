@@ -110,7 +110,7 @@ classdef Binder < mvvm.ModelPathObserver & mvvm.ControlObserver & mvvm.IBinderBa
             % decouple from binding manager
             if ~isempty(this.BindingManager) && isvalid(this.BindingManager)
                 this.BindingManager.clearBinder(this);
-                this.BindingManager = [];
+                this.BindingManager = mvvm.BindingManager.empty();
             end
         end
         

@@ -1,8 +1,6 @@
-classdef IRedrawable < handle
-    methods( Abstract, Access = protected )
-        
-        redraw( obj )
-        
+classdef (Abstract) IRedrawable < handle
+    methods(Abstract, Access=protected)
+        redraw(this);
     end % abstract template methods
 end
 

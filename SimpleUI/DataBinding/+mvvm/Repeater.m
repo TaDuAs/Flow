@@ -39,7 +39,7 @@ classdef Repeater < mvvm.Binder
             % terminate collection listener
             if ~isempty(this.CollectionListener)
                 delete(this.CollectionListener)
-                this.CollectionListener = [];
+                this.CollectionListener = event.listener.empty();
             end
             this.Collection = [];
             

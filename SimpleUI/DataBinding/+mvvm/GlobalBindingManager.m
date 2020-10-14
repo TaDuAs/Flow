@@ -47,12 +47,18 @@ classdef GlobalBindingManager < handle
         function ref = singletonInstance(forceNewInstance)
             persistent instance;
             
+              
+            if nargin > 0 && gen.isSingleString(forceNewInstance) && strcmp(forceNewInstance, 'terminate')
+                if ~isempty(instance)
+                    delete(instance);
+                    instance = [];
+                end
+                
+                return;
+            end
+            
             if nargin > 0 && ~isempty(instance)
                 delete(instance);
-                if ischar(forceNewInstance) && strcmp(forceNewInstance, 'terminate')
-                    instance = [];
-                    return;
-                end
             end
             
             if isempty(instance) || ~isvalid(instance)

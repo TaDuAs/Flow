@@ -229,6 +229,11 @@ classdef App < mvvm.IApp
             this.SessionManager.clearSessionContainer();
             cellfun(@delete, this.KillList);
             this.KillList = {};
+            
+            if ~isempty(this.IocContainer) && isvalid(this.IocContainer)
+                this.IocContainer.delete();
+                this.IocContainer = IoC.Container.empty();
+            end
         end
         
         function start(this)

@@ -1,4 +1,4 @@
-classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.Heterogeneous
+classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.Heterogeneous & mvvm.providers.IModelProvider
     properties (Access=private)
         AppLoadingEventListener;
         
@@ -18,7 +18,25 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         BindingManager mvvm.BindingManager;
         ModelProviderMapping mvvm.view.ViewProviderMapping;
         ViewManager mvvm.view.IViewManager = mvvm.view.ViewManager.empty();
+        ViewModel;
         Id string;
+    end
+    
+    methods % IModelProvider
+        function set.ViewModel(this, model)
+            this.ViewModel = model;           
+            notify(this, 'modelChanged');
+        end
+        
+        % Gets the model from persistence layer
+        function model = getModel(this)
+            model = this.ViewModel;
+        end
+        
+        % Sets the model in persistence layer
+        function setModel(this, model)
+            this.ViewModel = model;
+        end
     end
     
     methods
@@ -37,7 +55,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             end
         end
         
-        function deleta(this)
+        function delete(this)
             if ~isempty(this.AppLoadingEventListener)
                 delete(this.AppLoadingEventListener);
                 this.AppLoadingEventListener = event.listener.empty();
@@ -54,6 +72,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             this.Fig = matlab.ui.Figure.empty();
             this.Messenger = mvvm.MessagingMediator.empty();
             this.ModelProviderMapping = mvvm.view.ViewProviderMapping.empty();
+            this.ViewModel = [];
         end
         
         function start(this)
@@ -143,6 +162,9 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             % get data binding model provider
             if ~isempty(parser.Results.ModelProvider)
                 this.ModelProviderMapping = mvvm.view.ViewProviderMapping(this.BindingManager, this, parser.Results.ModelProvider);
+            else
+                this.ViewModel = parser.Results.ViewModel;
+                this.ModelProviderMapping = mvvm.view.ViewProviderMapping(this.BindingManager, this, this);
             end
             
             % get view manager and parent view
@@ -167,6 +189,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
                 @(x) assert(isa(x, 'mvvm.MessagingMediator'), 'Messenger must be a mvvm.MessagingMediator or derived class'));
             addParameter(parser, 'ModelProvider', [], ...
                 @(x) assert(isa(x, 'mvvm.providers.IModelProvider'), 'ModelProvider must be a mvvm.providers.IModelProvider'));
+            addParameter(parser, 'ViewModel', []);
             addParameter(parser, 'ViewManager', mvvm.view.ViewManager.empty(), ...
                 @(x) assert(isa(x, 'mvvm.view.IViewManager'), 'ViewManager must be a mvvm.view.ViewManager'));
             addParameter(parser, 'OwnerView', mvvm.view.Window.empty(), ...
