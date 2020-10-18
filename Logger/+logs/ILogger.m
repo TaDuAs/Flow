@@ -2,11 +2,13 @@ classdef (Abstract) ILogger < handle
     
     methods (Abstract) % log4m api
         
-        setFilename(self,logPath);
+        setFilename(this, logPath);
         
-        setCommandWindowLevel(self,loggerIdentifier);
+        logPath = getFilename(this);
         
-        setLogLevel(self,logLevel);
+        setCommandWindowLevel(this, loggerIdentifier);
+        
+        setLogLevel(this, logLevel);
         
         % Log a message with specified level
         %

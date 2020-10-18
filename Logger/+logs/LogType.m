@@ -1,6 +1,4 @@
 classdef LogType < uint8
-    %LOGTYPE Summary of this class goes here
-    %   Detailed explanation goes here
     enumeration
         ALL (0);
         TRACE (1);

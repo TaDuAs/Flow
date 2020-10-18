@@ -63,7 +63,8 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
             end
             
             try
-                files = dir(fullfile(this.BatchPath, this.fileTypeFilter()));
+                postFixFilter = cellstr(this.fileTypeFilter());
+                files = gen.dirfiles(this.BatchPath, postFixFilter{:});
             catch ex
                 this.logError([], ex);
                 queue = dao.DataQueue.empty();
