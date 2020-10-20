@@ -19,4 +19,4 @@ Also includes several utility packages and extensions:
 3. general utility functions - see gen package
 
 ## License
-Flow Framework is available under “Commons Clause” License Condition v1.0, see [License](https://github.com/TaDuAs/Flow/License.md) for details.
+Flow Framework is available under “Commons Clause” License Condition v1.0, see [License](https://github.com/TaDuAs/Flow/blob/master/License.md) for details.
