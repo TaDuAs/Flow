@@ -294,8 +294,12 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
             elseif ~isscalar(obj) || iscell(obj) || isa(obj, 'lists.ICollection')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                 
-                % append all properties
-                this.buildPropertiesDOM(obj, document, element);
+                % cell arrays don't have properties, other than that they
+                % should be handled similarly...
+                if ~iscell(obj)
+                    % append all properties
+                    this.buildPropertiesDOM(obj, document, element);
+                end
                 
                 % append all collection items
                 for i = 1:length(obj)
