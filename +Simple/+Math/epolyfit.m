@@ -11,8 +11,7 @@ function [p, s, mu] = epolyfit(x, y, n)
 %        For n = 0  - s = []
 %        For 1<=n<=2  - s = R^2
 %        For n > 2 - s = struct(R=[n+1xn+1], df=[1x1], normr=[1x1])
-%   mu - Fitting deviation distribution data.
-%        [mean(y_actual - y_calculated), Std(y_actual - y_calculated)]
+%   mu - mean and standard deviation of the residues
     
     Simple.obsoleteWarning('Simple.Math');
     import Simple.Math.*;
