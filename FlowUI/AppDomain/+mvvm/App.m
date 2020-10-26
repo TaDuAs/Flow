@@ -1,14 +1,16 @@
 classdef App < mvvm.IApp
     % App handles application persistence
     % Functionality includes:
-    %   singleton instance
-    %   application load status
-    %   loading of derived application classes for extended functionality
-    %   cache object
-    %   class factory, loading of custom factory initializers
-    %   controllers
-    %   Logger
-    %
+    %   IoC.Container - Dependency injection
+    %   Application Context - for application wide caching
+    %   Sessions Management - for per-session caching, also interacts with
+    %                         the IoC.Container session
+    %   App-Domain Messaging Mediator - Cross layer application event handling
+    %   App-Controllers - manage App controllers for MVC/MVVM/services
+    %   Logger - Everyone knows who you are
+    %   Kill List - List of keep-alive objects to destroy upon termination
+    %               of the app
+    %   
     
     events
         configuring;
