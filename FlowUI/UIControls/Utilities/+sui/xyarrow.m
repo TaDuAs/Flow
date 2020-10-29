@@ -64,6 +64,19 @@ function ah = xyarrow(varargin)
         ax = gca();
     end
     
+    if ismember(varargin{firstArgIdx}, {'line', 'arrow', 'doublearrow', 'textarrow'})
+        anotype = varargin{firstArgIdx};
+        firstArgIdx = firstArgIdx + 1;
+        usexywhPosition = false;
+    elseif ismember(varargin{firstArgIdx}, {'rectangle', 'ellipse', 'textbox'})
+        anotype = varargin{firstArgIdx};
+        firstArgIdx = firstArgIdx + 1;
+        usexywhPosition = true;
+    else
+        anotype = 'arrow';
+        usexywhPosition = false;
+    end
+    
     % this is the container which will be the parent of the annotation
     % object
     container = ax.Parent;
@@ -99,6 +112,12 @@ function ah = xyarrow(varargin)
     yposNorm(yposNorm < 0) = 0;
     
     % create the annotation object
-    ah = annotation(container, 'arrow', xposNorm, yposNorm, varargin{firstArgIdx:end});
+    if ~usexywhPosition
+        ah = annotation(container, anotype, xposNorm, yposNorm, varargin{firstArgIdx:end});
+    else
+        pos = [xposNorm; yposNorm];
+        pos(:,2) = pos(:,2) - pos(:,1);
+        ah = annotation(container, anotype, pos(:)', varargin{firstArgIdx:end});
+    end
 end
 
