@@ -156,6 +156,10 @@ classdef Graph < handle & matlab.mixin.SetGet & mvvm.IControl
                 h = ancestor([this.Axis], type);
             end
         end
+        
+        function h = findobj(this, varargin)
+            h = findobj(this.Axis, varargin{:});
+        end
     end
     
     methods (Access=protected)

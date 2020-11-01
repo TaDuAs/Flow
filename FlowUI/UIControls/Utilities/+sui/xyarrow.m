@@ -13,18 +13,6 @@ function ah = xyarrow(varargin)
 % Output:
 %   ah - the arrow annotation handle
 %
-% ah = xyarrow(x, y, annotationType)
-%   also takes in an argument which determines the annotation type
-% Input:
-%   x - A 2 element vector containing the x-coordinates of the arrow within
-%       the current axes object, of the form [xstart xend]
-%   y - A 2 element vector containing the y coordinates of the arrow within
-%   	the current axes object, of the form [ystart yend]
-%   annotationType - The type of annotation object to create.
-%                    ('line' | 'arrow' | 'doublearrow' | 'textarrow' | 'rectangle' | 'ellipse' | 'textbox')
-% Output:
-%   ah - the arrow annotation handle
-%
 % ah = xyarrow(axes, ___)
 %   adds an arrow annotation to the specified axes handle.
 % Input:
@@ -51,77 +39,12 @@ function ah = xyarrow(varargin)
 
     assert(nargin >= 2, 'not enough input arguments. expecting at least x and y position vectors');
     
-    if isa(varargin{1}, 'matlab.graphics.axis.Axes')
-        ax = varargin{1};
-        x = varargin{2};
-        y = varargin{3};
-        firstArgIdx = 4;
-    elseif isa(varargin{1}, 'matlab.ui.Figure')
-        ax = gca(varargin{1});
-        x = varargin{2};
-        y = varargin{3};
-        firstArgIdx = 4;
+    if isa(varargin{1}, 'matlab.graphics.axis.Axes') || isa(varargin{1}, 'matlab.ui.Figure')
+        anoinput = [varargin(1), {'arrow'}, varargin(2:end)];
     else
-        x = varargin{1};
-        y = varargin{2};
-        firstArgIdx = 3;
-        ax = gca();
+        anoinput = [{'arrow'}, varargin];
     end
     
-    if ismember(varargin{firstArgIdx}, {'line', 'arrow', 'doublearrow', 'textarrow'})
-        anotype = varargin{firstArgIdx};
-        firstArgIdx = firstArgIdx + 1;
-        usexywhPosition = false;
-    elseif ismember(varargin{firstArgIdx}, {'rectangle', 'ellipse', 'textbox'})
-        anotype = varargin{firstArgIdx};
-        firstArgIdx = firstArgIdx + 1;
-        usexywhPosition = true;
-    else
-        anotype = 'arrow';
-        usexywhPosition = false;
-    end
-    
-    % this is the container which will be the parent of the annotation
-    % object
-    container = ax.Parent;
-    
-    assert(numel(x) == 2 && isnumeric(x), 'x must be a two element vector which represents the x start and end coordinates of the arrow');
-    assert(numel(y) == 2 && isnumeric(y), 'y must be a two element vector which represents the y start and end coordinates of the arrow');
-    
-    % get absolute position of axes in pixels
-    axPos = sui.getPos(ax, 'pixels');
-    
-    % get size of axes in pixels
-    axSize = sui.getSize(ax, 'pixels');
-    
-    % get the axes x-y limits
-    xlims = xlim(ax);
-    ylims = ylim(ax);
-    
-    % calculate the conversion factor between x-y units and pixels
-    x2pix = axSize(1)/range(xlims);
-    y2pix = axSize(2)/range(ylims);
-    
-    % calculate the pixel position of the arrow
-    xpos = (x - xlims(1)) * x2pix + axPos(1);
-    ypos = (y - ylims(1)) * y2pix + axPos(2);
-    
-    % normalize x-y positions to the size of the container
-    containerSize = sui.getSize(container, 'pixels', 'inner');
-    xposNorm = xpos / containerSize(1);
-    xposNorm(xposNorm > 1) = 1;
-    xposNorm(xposNorm < 0) = 0;
-    yposNorm = ypos / containerSize(2);
-    yposNorm(yposNorm > 1) = 1;
-    yposNorm(yposNorm < 0) = 0;
-    
-    % create the annotation object
-    if ~usexywhPosition
-        ah = annotation(container, anotype, xposNorm, yposNorm, varargin{firstArgIdx:end});
-    else
-        pos = [xposNorm; yposNorm];
-        pos(:,2) = pos(:,2) - pos(:,1);
-        ah = annotation(container, anotype, pos(:)', varargin{firstArgIdx:end});
-    end
+    ah = sui.xyannotation(anoinput{:});
 end
 

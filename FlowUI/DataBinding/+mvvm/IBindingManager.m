@@ -1,5 +1,11 @@
 classdef (Abstract) IBindingManager < handle
     events
+        % Raised when the modelUpdated event is fired in one of the binders 
+        % associated with this mvvm.IBindingManager
+        %
+        % This is useful in case a specific command is required upon any
+        % model update, such as redraw of a data-panel when the
+        % configuration panel is updated
         modelUpdated;
     end
     

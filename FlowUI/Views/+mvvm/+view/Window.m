@@ -62,6 +62,10 @@ classdef Window < mvvm.view.View
         function setParent(this, parent)
             this.OwnerView = parent;
         end
+        
+        function h = findobj(this, varargin)
+            h = findobj(this.Fig, varargin{:});
+        end
     end
     
     methods (Access=protected)

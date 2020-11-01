@@ -4,6 +4,8 @@ classdef (Abstract) IControl < handle
     
     methods (Abstract)
         parent = ancestor(this, type);
+        
+        h = findobj(this, varargin);
     end
 end
 

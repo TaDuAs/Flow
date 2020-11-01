@@ -69,6 +69,10 @@ classdef ComponentView < mvvm.view.View
                 this.ContainerBox_.setParent(this.Parent_);
             end
         end
+        
+        function h = findobj(this, varargin)
+            h = findobj(this.getContainerHandle, varargin{:});
+        end
     end
     
     methods (Access=protected)

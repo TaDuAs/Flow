@@ -3,7 +3,7 @@ classdef BindingManager < mvvm.IBindingManager
     % data binding
     % Use model provider methods to manage model providers associated with
     % specified contaienrs. Generally model providers are associated with
-    % UI components (mnainly figures), but the container can be anything.
+    % UI components (mainly views or sub-views), but the container can be anything.
     % mvvm.BindingManager listens to the containers ObjectBeingDestroyed
     % event (when the container is a handle) and automatically removes its
     % associated model provider when the container is being deleted

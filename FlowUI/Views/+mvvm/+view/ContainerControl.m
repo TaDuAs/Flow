@@ -20,6 +20,10 @@ classdef ContainerControl < mvvm.view.IContainer
             end
         end
         
+        function h = findobj(this, varargin)
+            h = findobj(this.ControlHandle, varargin{:});
+        end
+        
         function addChild(this, child)
             if isa(child, 'mvvm.view.IContainer')
                 h = child.getContainerHandle();

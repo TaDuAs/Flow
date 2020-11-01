@@ -5,7 +5,7 @@ classdef AppTests < matlab.mock.TestCase
             
             assert(~isempty(app.Messenger));
             assert(~isempty(app.IocContainer));
-            assert(~isempty(app.Context));
+            assert(~builtin('isempty', app.Context));
             assert(app.Status == mvvm.AppStatus.NotAvailable);
         end
         
@@ -15,7 +15,7 @@ classdef AppTests < matlab.mock.TestCase
             app = mvvm.App(iocMock);
             
             assert(~isempty(app.Messenger));
-            assert(~isempty(app.Context));
+            assert(~builtin('isempty', app.Context));
             assert(app.IocContainer == iocMock);
             assert(app.Status == mvvm.AppStatus.NotAvailable);
         end

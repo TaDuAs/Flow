@@ -240,11 +240,6 @@ classdef App < mvvm.IApp
             end 
             cellfun(@delete, this.KillList);
             this.KillList = {};
-            
-            if ~isempty(this.IocContainer) && isvalid(this.IocContainer)
-                this.IocContainer.delete();
-                this.IocContainer = IoC.Container.empty();
-            end
         end
         
         function start(this)
@@ -265,6 +260,11 @@ classdef App < mvvm.IApp
         
         function delete(this)
             this.clear();
+            
+            if ~isempty(this.IocContainer) && isvalid(this.IocContainer)
+                this.IocContainer.delete();
+                this.IocContainer = IoC.Container.empty();
+            end
         end
     end
     
