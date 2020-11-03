@@ -187,19 +187,29 @@ classdef BindingManager < mvvm.IBindingManager
         end
         
         function activateBindersDomain(this, containerControl)
-            allBinders = this.BindersList;
-            myBindersMask = cellfun(@(b) b.isSubjectToControl(containerControl), allBinders);
-            cellfun(@start, allBinders(myBindersMask));
+            cellfun(@start, this.getChildBinders(containerControl));
         end
         
         function deactivateBindersDomain(this, containerControl)
-            allBinders = this.BindersList;
-            myBindersMask = cellfun(@(b) b.isSubjectToControl(containerControl), allBinders);
-            cellfun(@stop, allBinders(myBindersMask));
+            cellfun(@stop, this.getChildBinders(containerControl));
         end
     end
     
     methods (Access=protected)
+        function childBinders = getChildBinders(this, containerControl)
+            allBinders = this.BindersList;
+            
+            % return binders under the containers hierarchy which are still
+            % valid.
+            myBindersMask = false(size(allBinders));
+            for i = 1:numel(allBinders)
+                currBinder = allBinders{i};
+                myBindersMask(i) = isvalid(currBinder) && currBinder.isSubjectToControl(containerControl);
+            end
+            
+            childBinders = allBinders(myBindersMask);
+        end
+        
         function onBinderModelUpdate(this, binder, args)
             notify(this, 'modelUpdated', args);
         end
