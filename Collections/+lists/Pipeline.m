@@ -182,7 +182,7 @@ classdef Pipeline < lists.IObservable & lists.ISequentialKeys
         function task = findTaskByType(this, i)
             task = lists.PipelineTask.empty();
             wantedType = lower(i);
-            for j = 1:numel(this.list)
+            for j = numel(this.list):-1:1
                 curr = this.getv(j);
                 if isa(curr, i) || endsWith(lower(class(curr)), wantedType)
                     task = curr;
