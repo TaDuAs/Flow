@@ -16,6 +16,7 @@ classdef App < mvvm.IApp
         configuring;
         initializing;
         loading;
+        sessionStarted;
     end
     
     properties (Access=private)
@@ -156,6 +157,9 @@ classdef App < mvvm.IApp
             notify(this, 'loading');
         end
         
+        function onSessionStarted(this, key, session)
+        end
+        
         function parseConfig(this, args)
             parser = inputParser();
             parser.CaseSensitive = false;
@@ -275,6 +279,8 @@ classdef App < mvvm.IApp
         
         function [key, session] = startSession(this)
             [key, session] = this.SessionManager.startNewSession();
+            notify(this, 'sessionStarted', mvvm.SessionEventData(key, session));
+            this.onSessionStarted(key, session);
         end
         
         function clearAllSessions(this)
