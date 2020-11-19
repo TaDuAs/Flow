@@ -136,8 +136,8 @@ classdef DataQueue < dao.IDataQueue
             if isnumeric(where) && where > 0 && where <= this.length()
                 this.CurrentIndex = where;
                 [item, key] = this.peak();
-            elseif iscahr(where)
-                this.currentIndex = find(strcmp({this.items.path}, where));
+            elseif ischar(where)
+                this.CurrentIndex = find(strcmp({this.Items.path}, where));
                 [item, key] = this.peak();
             else
                 error('Huh? specified data item identifier should be either string name or index.');
