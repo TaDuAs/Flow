@@ -35,25 +35,25 @@ classdef GuiApp < mvvm.App
         end
         
         function loadPreferences(this)
-            if this.IocContainer.hasDependency('mxml.JsonSerializer')
-                prefSerializer = this.IocContainer.get('mxml.JsonSerializer');
+            if this.IocContainer.hasDependency('mxml.XmlSerializer')
+                prefSerializer = this.IocContainer.get('mxml.XmlSerializer');
             else
-                prefSerializer = mxml.JsonSerializer();
+                prefSerializer = mxml.XmlSerializer();
             end
-            prefPath = fullfile(this.ResourcePath, 'preferences.json');
+            prefPath = fullfile(this.ResourcePath, 'preferences.xml');
             if exist(prefPath, 'file')
                 this.Preferences = prefSerializer.load(prefPath);
             end
         end
         
         function savePreferences(this)
-            if this.IocContainer.hasDependency('mxml.JsonSerializer')
-                prefSerializer = this.IocContainer.get('mxml.JsonSerializer');
+            if this.IocContainer.hasDependency('mxml.XmlSerializer')
+                prefSerializer = this.IocContainer.get('mxml.XmlSerializer');
             else
-                prefSerializer = mxml.JsonSerializer();
+                prefSerializer = mxml.XmlSerializer();
             end
             
-            prefPath = fullfile(this.ResourcePath, 'preferences.json');
+            prefPath = fullfile(this.ResourcePath, 'preferences.xml');
             
             try
                 prefSerializer.save(this.Preferences, prefPath);
