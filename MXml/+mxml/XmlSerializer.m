@@ -190,6 +190,10 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 error('tables and maps are not supported by this function yet... if your getting this, better implement it quick!');
             end
             
+            if any(metaclass(obj) < mxml.TypeIgnoreList.Values)
+                return;
+            end
+            
             % defaults
             if nargin < 6; forceMaintainType = false; end
             if nargin < 7; objectKey = ''; end
