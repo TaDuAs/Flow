@@ -30,6 +30,10 @@ classdef GuiApp < mvvm.App
             this.IocContainer.setSingleton("BindingManager", @mvvm.BindingManager.instance);
             this.IocContainer.setPerSession("ViewManager", @mvvm.view.ViewManager, 'App', '$ViewManager');
             this.IocContainer.set("PreferencesProvider", @mvvm.providers.PreferencesProvider, 'App');
+        end
+        
+        function postConfigSetup(this)
+            postConfigSetup@mvvm.App(this);
             
             this.loadPreferences(); 
         end

@@ -14,6 +14,7 @@ classdef App < mvvm.IApp
     
     events
         configuring;
+        settingUp;
         initializing;
         loading;
         sessionStarted;
@@ -129,6 +130,11 @@ classdef App < mvvm.IApp
             % load app configuration - IoC and stuff
             this.initConfig();
             
+            this.Status = mvvm.AppStatus.SettingUp;
+            
+            % setup after configuration is done
+            this.postConfigSetup();
+            
             this.Status = mvvm.AppStatus.Initializing;
             
             % initialize
@@ -147,6 +153,10 @@ classdef App < mvvm.IApp
             
             this.IocContainer.set('App', @() this);
             this.IocContainer.setSingleton('Messenger', @(app) app.Messenger, 'App');
+        end
+        
+        function postConfigSetup(this)
+            notify(this, 'settingUp');
         end
         
         function init(this)
