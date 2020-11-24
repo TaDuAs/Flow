@@ -137,7 +137,12 @@ classdef DataQueue < dao.IDataQueue
                 this.CurrentIndex = where;
                 [item, key] = this.peak();
             elseif ischar(where)
-                this.CurrentIndex = find(strcmp({this.Items.path}, where));
+                if iscell(this.Items)
+                    itemListToCompare = this.Items;
+                else
+                    itemListToCompare = {this.Items.path};
+                end
+                this.CurrentIndex = find(strcmp(itemListToCompare, where));
                 [item, key] = this.peak();
             else
                 error('Huh? specified data item identifier should be either string name or index.');
