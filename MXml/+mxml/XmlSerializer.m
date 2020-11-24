@@ -71,6 +71,8 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 obj = mxml.converters.str2data(char(node.getTextContent()), type);
             elseif strcmp(type, 'cell')
                 obj = this.interpretCellArray(node, version);
+            elseif strcmp(type, 'function_handle')
+                obj = str2func(char(node.getTextContent()));
             elseif strcmp(type, 'struct')
                 if isList
                     objCell = this.interpretCellArray(node, version);
@@ -243,13 +245,16 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 return;
             end
             
-            % If obj is a number or a string or some other primitive value type
-            if isenum(obj) || this.isPrimitiveValue(obj)
+            % If obj is an enum, number, string, function handle or some
+            % other primitive value type
+            if isenum(obj) || this.isPrimitiveValue(obj) || isa(obj, 'function_handle')
                 % convert data to string format
                 if isenum(obj)
                     value = char(obj);
                 elseif isnumeric(obj) || islogical(obj)
                     value = mxml.converters.mat2str(obj);
+                elseif isa(obj, 'function_handle')
+                    value = char(obj);
                 elseif ischar(obj)
                     if ~isrow(obj) && ismatrix(obj)
                         element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
@@ -283,7 +288,7 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 else
                     element.setAttribute(tagName, value);
                 end
-            % if obj is an array of reference types or structs
+            % if obj implements the lists.IDictionary interface
             elseif isa(obj, 'lists.IDictionary')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                 
@@ -295,6 +300,8 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 for i = 1:numel(dicKeys)
                     this.buildDOM(obj.getv(dicKeys{i}), this.LIST_ENRTY_TAG_NAME, document, element, true, dicKeys{i});
                 end
+            % if obj is a cell array, struct array, array of reference
+            % types or if it implements the lists.ICollection interface
             elseif ~isscalar(obj) || iscell(obj) || isa(obj, 'lists.ICollection')
                 element.setAttribute(this.IS_LIST_ATTR_NAME, 'true');
                 
@@ -348,6 +355,12 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
     methods (Access=private)
         function buildPropertiesDOM(this, obj, document, element)
             fields = fieldnames(obj);
+            
+            % exclude fields from ignore list
+            if isa(obj, 'mxml.IMXmlIgnoreFields')
+                ignoreFields = obj.getMXmlIgnoreFieldsList();
+                fields(ismember(fields, ignoreFields)) = [];
+            end
             
             % Append all properties
             for i = 1:length(fields)

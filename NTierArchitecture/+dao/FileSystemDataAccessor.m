@@ -1,4 +1,4 @@
-classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
+classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor & mxml.IMXmlIgnoreFields
 % FileSystemDataAccessor is a base class for implementations of the
 % dao.DataAccessor batch data access object for whom the data is saved as
 % files on a file system
@@ -158,6 +158,12 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor
         function b = equals(this, other)
             b = equals@dao.DataAccessor(this, other);
             b = b && strcmp(this.BatchPath, other.BatchPath);
+        end
+    end
+    
+    methods (Hidden)
+        function ignoreList = getMXmlIgnoreFieldsList(~)
+            ignoreList = {'QueueFactory', 'ErrorHandler'};
         end
     end
 end

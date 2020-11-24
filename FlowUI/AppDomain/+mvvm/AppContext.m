@@ -1,5 +1,6 @@
 classdef AppContext < gen.Cache & mvvm.IAppContext
     % mvvm.AppContext holds the context for application domains
+    %
     
     properties
         IocContainer IoC.IContainer = IoC.Container.empty();

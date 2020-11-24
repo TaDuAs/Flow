@@ -1,6 +1,10 @@
-classdef (Abstract) IApp < handle & mvvm.IErrorHandler
+classdef (Abstract) IApp < handle & mvvm.IErrorHandler & mxml.INonSerializable
     % mvvm.IApp is the interface for application domain app class
     % implementation
+    % 
+    % mvvm.IApp is mxml.INonSerializable because it generates problems with
+    % circular references.
+    % 
     
     properties (Abstract, GetAccess=public, SetAccess=protected)
         % Application status
