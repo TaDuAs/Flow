@@ -57,6 +57,7 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor & mxml.IMXmlIgnore
     end
 
     methods
+        
         function queue = loadQueue(this, batchPath)
             if nargin >= 2 && ~isempty(batchPath)
                 this.BatchPath = batchPath;
@@ -163,7 +164,7 @@ classdef (Abstract) FileSystemDataAccessor < dao.DataAccessor & mxml.IMXmlIgnore
     
     methods (Hidden)
         function ignoreList = getMXmlIgnoreFieldsList(~)
-            ignoreList = {'QueueFactory', 'ErrorHandler'};
+            ignoreList = {'QueueFactory', 'ErrorHandler', 'ProcessedResultsPath', 'ErrorLogPath'};
         end
     end
 end
