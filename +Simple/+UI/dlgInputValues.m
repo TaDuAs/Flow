@@ -12,9 +12,17 @@ function values = dlgInputValues(fields, defaults, datatypes, title, lines, ids)
     end
     for i = 1:length(defaults)
         if strcmp(datatypes{i}, 'bool')
-            defaultAnswersStrings{i} = cond(defaults{i}, 'true', 'false');
+            if defaults{i}
+                defaultAnswersStrings{i} = 'true';
+            else
+                defaultAnswersStrings{i} = 'false';
+            end
         elseif strcmp(datatypes{i}, '{string}')
-            defaultAnswersStrings{i} = cond(isempty(defaults{i}), '', @() strjoin(defaults{i}));
+            if isempty(defaults{i})
+                defaultAnswersStrings{i} = '';
+            else
+                defaultAnswersStrings{i} = strjoin(defaults{i});
+            end
         elseif isnumeric(defaults{i})
             defaultAnswersStrings{i} = num2str(defaults{i});
         elseif ischar(defaults{i})
