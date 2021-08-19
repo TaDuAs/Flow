@@ -1,4 +1,4 @@
-function path = localPath(varargin)
+function lpath = localPath(varargin)
 % localPath returns the full file system path of the calling file
 % can append more parts to the path by sending strings or character vectors
 % as input
@@ -19,13 +19,13 @@ function path = localPath(varargin)
         % this means it was most likely called from the command line
         % in that case, the local path should be current Matlab working
         % directory
-        path = pwd();
+        lpath = pwd();
     else
-        path = fileparts(dbs(2).file);
+        lpath = fileparts(dbs(2).file);
     end
     
     % also append added folders
     if nargin >= 1
-        path = fullfile(path, varargin{:});
+        lpath = fullfile(lpath, varargin{:});
     end
 end
