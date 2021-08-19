@@ -27,9 +27,6 @@ classdef (Abstract) IView < mvvm.view.IContainer
         
         % Parent view
         OwnerView mvvm.view.IView;
-        
-        % The Id of the current view
-        Id string;
     end
     
     events % view lifecycle events

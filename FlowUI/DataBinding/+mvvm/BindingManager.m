@@ -17,10 +17,12 @@ classdef BindingManager < mvvm.IBindingManager
         MPDestroyedListeners event.listener = event.listener.empty();
         BinderListeners event.listener = event.listener.empty();
         BindersList;
+        Id string;
     end
     
     methods % ctor dtor
         function this = BindingManager()
+            this.Id = gen.guid();
             this.ModelProvidersList = struct('container', {}, 'provider', {});
             this.BindersList = {};
             this.setDefaultModelProvider(this.generateDefaultModelProvider());
@@ -245,14 +247,20 @@ classdef BindingManager < mvvm.IBindingManager
             end
             ctlMask = false(size(registeredContainers));
             while ~isempty(ctl)
-                ctlMask = eq(ctl, registeredContainers);
+                iCtlFlag = isa(ctl, 'mvvm.IControl');
+                
+                if iCtlFlag
+                    ctlMask = ctl.isEqualTo(registeredContainers);
+                else
+                    ctlMask = eq(ctl, registeredContainers);
+                end
                 if any(ctlMask)
                     break;
                 end
                 
                 if isprop(ctl, 'Parent')
                     ctl = ctl.Parent;
-                elseif isa(ctl, 'mvvm.IControl')
+                elseif iCtlFlag
                     ctl = ancestor(ctl);
                 else
                     throw(MException('mvvm:BindingManager:UnbindableControlType', ...

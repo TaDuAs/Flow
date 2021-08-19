@@ -1,4 +1,4 @@
-classdef Graph < handle & matlab.mixin.SetGet & mvvm.IControl
+classdef Graph < handle & matlab.mixin.SetGet & sui.IUIControl
     % Graph is a wrapper class for graphics elements such as lines, scatter
     % plots, bar charts, etc.
     % Use this class to allow graphics data bining

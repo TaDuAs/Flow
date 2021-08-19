@@ -28,5 +28,16 @@ classdef (Abstract) IContainer < mvvm.IControl
         parent = getParent(this);
         setParent(this, parent);
     end
+    
+    methods
+        function tf = isEqualTo(this, arr)
+            h = this.getContainerHandle();
+            tf = false(size(arr));
+            for i = 1:numel(arr)
+                compareTo = arr(i);
+                tf(i) = isequal(h, compareTo) || isequal(this, compareTo);
+            end
+        end
+    end
 end
 

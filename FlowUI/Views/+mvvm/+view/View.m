@@ -4,6 +4,10 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         
         % parent lifecycle event handlers
         OwnerViewEventHandlers event.listener;
+        
+        % Tracks the status of properties attached to GUI components when
+        % they are set before the view components are initialized
+        TagDirty logical;
     end
     
     properties (GetAccess=public,SetAccess=private)
@@ -15,11 +19,10 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         OwnerView mvvm.view.IView = mvvm.view.Window.empty();
         Fig matlab.ui.Figure;
         Messenger mvvm.MessagingMediator;
-        BindingManager mvvm.BindingManager;
+        BindingManager mvvm.BindingManager = mvvm.BindingManager.empty();
         ModelProviderMapping mvvm.view.ViewProviderMapping;
         ViewManager mvvm.view.IViewManager = mvvm.view.ViewManager.empty();
         ViewModel;
-        Id string;
     end
     
     methods % IModelProvider
@@ -31,6 +34,11 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         % Gets the model from persistence layer
         function model = getModel(this)
             model = this.ViewModel;
+            
+            if isempty(model)
+                parentMP = this.BindingManager.getModelProvider(this.Parent);
+                model = parentMP.getModel();
+            end
         end
         
         % Sets the model in persistence layer
@@ -143,6 +151,16 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
         function extractParserParameters(this, parser)
             this.App = parser.Results.App;
             
+            % get view manager and parent view
+            this.ViewManager = parser.Results.ViewManager;
+            
+            % get owner view
+            if ~isempty(parser.Results.OwnerView)
+                this.OwnerView = parser.Results.OwnerView;
+%             elseif ~isempty(this.ViewManager)
+%                 this.OwnerView = this.ViewManager.getOwnerView(this);
+            end
+            
             % get messenger
             messenger = parser.Results.Messenger;
             if ~isempty(messenger)
@@ -157,6 +175,8 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
                 this.BindingManager = bm;
             elseif ~isempty(this.OwnerView)
                 this.BindingManager = this.OwnerView.BindingManager;
+            else
+                this.BindingManager = mvvm.GlobalBindingManager.instance;
             end
             
             % get data binding model provider
@@ -167,14 +187,6 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
                 this.ModelProviderMapping = mvvm.view.ViewProviderMapping(this.BindingManager, this, this);
             end
             
-            % get view manager and parent view
-            this.ViewManager = parser.Results.ViewManager;
-            if ~isempty(parser.Results.OwnerView)
-                this.OwnerView = parser.Results.OwnerView;
-%             elseif ~isempty(this.ViewManager)
-%                 this.OwnerView = this.ViewManager.getOwnerView(this);
-            end
-            
             % get view id
             this.Id = parser.Results.Id;
         end
@@ -183,7 +195,7 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             % define parameters
             addParameter(parser, 'App', mvvm.App.empty(),...
                 @(x) assert(isa(x, 'mvvm.IApp'), 'App must be mvvm.IApp or convertible type'));
-            addParameter(parser, 'BindingManager', mvvm.GlobalBindingManager.instance(),...
+            addParameter(parser, 'BindingManager', mvvm.BindingManager.empty(),...
                 @(x) assert(isa(x, 'mvvm.BindingManager'), 'Binding manager must be a valid mvvm.BindingManager'));
             addParameter(parser, 'Messenger', mvvm.MessagingMediator.empty(), ...
                 @(x) assert(isa(x, 'mvvm.MessagingMediator'), 'Messenger must be a mvvm.MessagingMediator or derived class'));
@@ -274,6 +286,14 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
 
             % fire component initialization lifecycle event
             this.Status = mvvm.view.ViewStatus.ComponentsInitialized;
+            
+            % set GUI properties now that the gui is initialized
+            if this.TagDirty
+                this.TagDirty = false;
+                h = this.getContainerHandle();
+                h.Tag = this.Id;
+            end
+            
             notify(this, 'componentsInitialized');
         end
         
@@ -301,6 +321,24 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             this.start();
             delete(this.AppLoadingEventListener);
             this.AppLoadingEventListener = [];
+        end
+    end
+    
+    methods (Access=protected)
+        % id property is duplicated.
+        % we save it on the View.Id property and once the container handle
+        % is initialized, we also copy it to the Tag property of the
+        % container handle
+        
+        function setControlId(this, id)
+            setControlId@mvvm.view.IView(this, id);
+            
+            if this.Status >= mvvm.view.ViewStatus.ComponentsInitialized
+                h = this.getContainerHandle();
+                h.Tag = id;
+            else
+                this.TagDirty = true;
+            end
         end
     end
 end

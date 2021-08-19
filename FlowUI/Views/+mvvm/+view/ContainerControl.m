@@ -58,5 +58,17 @@ classdef ContainerControl < mvvm.view.IContainer
             end
         end
     end
+    
+    methods (Access=protected)
+        function id = getControlId(this)
+            h = this.getContainerHandle();
+            id = h.Tag;
+        end
+        
+        function setControlId(this, id)
+            h = this.getContainerHandle();
+            h.Tag = id;
+        end
+    end
 end
 

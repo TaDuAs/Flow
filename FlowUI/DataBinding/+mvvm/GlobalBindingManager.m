@@ -89,6 +89,8 @@ classdef GlobalBindingManager < handle
         function ref = instance()
         % gets the global instance of mvvm.IBindingManager
             ref = mvvm.GlobalBindingManager.singletonInstance();
+            
+            warning('mvvm:view:GlobalBindingManagerUsed', 'The static instance of binding manager is used. If you used non-static binding manager elsewhere this may cause unexpected bugs later on.');
         end
         
         function setModProv(container, provider)
