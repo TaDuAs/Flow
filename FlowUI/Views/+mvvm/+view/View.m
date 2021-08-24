@@ -36,8 +36,19 @@ classdef (Abstract) View < mvvm.view.IView & matlab.mixin.SetGet & matlab.mixin.
             model = this.ViewModel;
             
             if isempty(model)
-                parentMP = this.BindingManager.getModelProvider(this.Parent);
-                model = parentMP.getModel();
+                % try to get the model provider registered for this view
+                mp = this.BindingManager.getModelProvider(this.getContainerHandle());
+                
+                % if this view was registered as the model provider for
+                % this view (confusing...), yet there was no viewmodel set
+                % for this view, try to get the model provider set for the
+                % parent of this view
+                if this == mp
+                    mp = this.BindingManager.getModelProvider(this.Parent);
+                end
+                
+                % get the current model from the registered model provider
+                model = mp.getModel();
             end
         end
         
