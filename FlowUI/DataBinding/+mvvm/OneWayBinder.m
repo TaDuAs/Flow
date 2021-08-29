@@ -24,7 +24,7 @@ classdef OneWayBinder < mvvm.AdaptationBinder
         end
         
         function stop(this, what)
-            if strcmp(what, 'control')
+            if nargin >= 2 && strcmp(what, 'control')
                 stop@mvvm.AdaptationBinder(this, 'control');
             else
                 stop@mvvm.AdaptationBinder(this, 'all');

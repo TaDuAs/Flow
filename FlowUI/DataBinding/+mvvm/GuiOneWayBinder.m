@@ -32,7 +32,7 @@ classdef GuiOneWayBinder < mvvm.AdaptationBinder
         end
         
         function stop(this, what)
-            if strcmp(what, 'model')
+            if nargin >= 2 && strcmp(what, 'model')
                 stop@mvvm.AdaptationBinder(this, 'model');
             else
                 stop@mvvm.AdaptationBinder(this, 'all');
