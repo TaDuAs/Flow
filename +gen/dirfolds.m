@@ -1,4 +1,4 @@
-function [details, names, fullPaths] = dirfolds(path)
+function [details, names, fullPaths] = dirfolds(path, varargin)
 % lists the files in a folder.
 % 
 % listing = gen.dirfolds()
@@ -25,8 +25,18 @@ function [details, names, fullPaths] = dirfolds(path)
     if nargin < 1 || isempty(path)
         path = pwd();
     end
+    searchStrings = varargin;
+    if nargin < 2 || isempty(searchStrings)
+        searchStrings = {''};
+    elseif isstring(searchStrings) || ischar(searchStrings)
+        searchStrings = cellstr(searchStrings);
+    end
     
-    details = dir(path);
+    % apply search strings to the path
+    details = dir(fullfile(path, searchStrings{1}));
+    for i = 2:numel(searchStrings)
+        details = vertcat(details, dir(fullfile(path, searchStrings{i})));
+    end
     
     % only keep folders
     details = details([details.isdir]);
