@@ -25,6 +25,16 @@ classdef ZipArchive < handle
         MustUseDocumentedExtraction (1,1) logical = false;
     end
     
+    properties (Dependent)
+        UseExtractedArchive (1,1) logical;
+    end
+    
+    methods % dependent props
+        function tf = UseExtractedArchive.get(this)
+            tf = this.MustUseDocumentedExtraction || this.ArchiveUnzipped;
+        end
+    end
+    
     methods
         function this = ZipArchive(archivepath, tempDirPath)
             this.ArchivePath = archivepath;
@@ -39,20 +49,40 @@ classdef ZipArchive < handle
         end
         
         function delete(this)
-            if ~isvalid(this)
-                return;
-            end
-            
             % remove temporary files
             if exist(this.TempDirPath, 'dir')
-                rmdir(this.TempDirPath);
+                rmdir(this.TempDirPath, 's');
+            end
+        end
+        
+        function list = listFiles(this)
+            % list the file entries in the archive
+            
+            if this.UseExtractedArchive
+                % count file entries in the extracted archive
+                list = this.listFilesInArchiveExtractAll();
+            else
+                % count file entries in the zip archive
+                list = this.listFilesInArchiveWithJava();
+            end
+        end
+        
+        function n = getCount(this)
+            % counts the number of file entries in the archive
+            
+            if this.UseExtractedArchive
+                % count file entries in the extracted archive
+                n = this.countFilesInArchiveExtractAll();
+            else
+                % count file entries in the zip archive
+                n = this.countFilesInArchiveWithJava();
             end
         end
         
         function putFile(this, files)
             % adds or replaces a list of files in the zip archive.
             
-            if this.MustUseDocumentedExtraction
+            if this.UseExtractedArchive
                 this.extractAllArchiveAndPutFiles(files);
             else
                 try
@@ -75,8 +105,8 @@ classdef ZipArchive < handle
                     % the next extractions as well
                     this.MustUseDocumentedExtraction = true;
                      
-                    % extract the file
-                    this.compressFilesOneByOne(files);
+                    % add the file to archive
+                    this.putFile(files);
                 end
             end
             
@@ -99,7 +129,7 @@ classdef ZipArchive < handle
                 outPath = this.TempDirPath;
                 this.ensureArchiveTempExtraction();
             else
-                unzip(this.ArchivePath, this.TempDirPath);
+                unzip(this.ArchivePath, outPath);
             end
         end
         
@@ -137,7 +167,7 @@ classdef ZipArchive < handle
             end
             
             % check if undocumented single file extraction already failed
-            if this.MustUseDocumentedExtraction
+            if this.UseExtractedArchive
                 % if undocumented functionality already failed, skip to
                 % fallback functionality and extract the full archive to 
                 % retrive the file
@@ -325,6 +355,13 @@ classdef ZipArchive < handle
             % copy all desired files into the temporary archive folder
             for i = 1:numel(files)
                 currPath = files{i};
+                
+                % ignore files that are already in the archive temp folder
+                if startsWith(currPath, this.TempDirPath)
+                    continue;
+                end
+                
+                % copy file into the archive temp folder
                 copyfile(currPath, this.TempDirPath, 'f');
             end
             
@@ -335,6 +372,93 @@ classdef ZipArchive < handle
             
             % compress the contents of the temporary archive folder
             zip(this.ArchivePath, [tempSubdirNames, tempFileNames]);
+        end
+        
+        function n = countFilesInArchiveExtractAll(this)
+            % ensure the archive was extracted
+            this.ensureArchiveTempExtraction();
+
+            entries = gen.dirfiles(this.TempDirPath, '**');
+            n = numel(entries);
+        end
+        
+        function n = countFilesInArchiveWithJava(this)
+            zipArchivePath = this.ArchivePath;
+            n = 0;
+            
+            % Create a Java zipFile object and obtain the entries.
+            try
+                % Create a Java file of the Zip filename.
+                zipJavaFile = java.io.File(zipArchivePath);
+
+                % Create a java ZipFile and validate it.
+                zipFile = org.apache.tools.zip.ZipFile(zipJavaFile);
+                
+                % list entries in archive
+                entries = zipFile.getEntries();
+
+                % count all entries in the archive which are actual files
+                while (entries.hasMoreElements())
+                    currEntry = entries.nextElement();
+                    if (~currEntry.isDirectory())
+                        n = n + 1;
+                    end
+                end
+                
+                zipFile.close;
+            catch exception
+                if ~isempty(zipFile)
+                    zipFile.close;
+                end
+                ex = MException('Flow:gen:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
+                ex = ex.addCause(exception);
+                throw(ex);
+            end
+        end
+        
+        function list = listFilesInArchiveExtractAll(this)
+            % ensure the archive was extracted
+            this.ensureArchiveTempExtraction();
+
+            [~, list] = gen.dirfiles(this.TempDirPath, '**');
+        end
+        
+        function list = listFilesInArchiveWithJava(this)
+            zipArchivePath = this.ArchivePath;
+            list = cell(1, 20);
+            n = 0;
+            
+            % Create a Java zipFile object and obtain the entries.
+            try
+                % Create a Java file of the Zip filename.
+                zipJavaFile = java.io.File(zipArchivePath);
+
+                % Create a java ZipFile and validate it.
+                zipFile = org.apache.tools.zip.ZipFile(zipJavaFile);
+                
+                % list entries in archive
+                entries = zipFile.getEntries();
+
+                % count all entries in the archive which are actual files
+                while (entries.hasMoreElements())
+                    currEntry = entries.nextElement();
+                    if (~currEntry.isDirectory())
+                        n = n+1;
+                        list{n} = char(currEntry.getName());
+                    end
+                end
+                
+                zipFile.close;
+            catch exception
+                if ~isempty(zipFile)
+                    zipFile.close;
+                end
+                ex = MException('Flow:gen:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
+                ex = ex.addCause(exception);
+                throw(ex);
+            end
+            
+            list = list(1:n);
         end
         
         function compressFilesOneByOne(this, files)
