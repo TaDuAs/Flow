@@ -15,9 +15,10 @@ function [details, names, fullPaths] = dirfiles(path, varargin)
 %   lists the files under the specified path whose name or suffix match 
 %   either of the included patterns.
 %  Input:
-%   filePatterni - string scalar or character vector containing pattern for
+%   filePattern - string scalar or character vector containing pattern for
 %       matching file name. If the pattern contains a dot (.), then that
-%       pattern is used as is, but if no dot is included, the pattern is
+%       pattern is used as is, if the pattern is '**', it is used as is, to 
+%       allow dir to drill down into subfolders, otherwise, the pattern is
 %       considered a file suffix, and a *. is appended at the start of the
 %       pattern:
 %           gen.dirfiles(path,'m') is the same as gen.dirfiles(path,'*.m')
@@ -56,7 +57,7 @@ function [details, names, fullPaths] = dirfiles(path, varargin)
     end
     
     % append *. to all postfixes
-    postfixMask = ~contains(filePattern, '.') & ~cellfun('isempty', filePattern);
+    postfixMask = ~contains(filePattern, '.') & ~strcmp('**', filePattern) & ~cellfun('isempty', filePattern);
     filePattern(postfixMask) = strcat('*.', filePattern(postfixMask));
     
     % get file listings
