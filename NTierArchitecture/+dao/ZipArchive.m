@@ -1,5 +1,5 @@
-classdef ZipArchive < handle
-    % gen.ZipArchive allows access to single files inside a zip archive and
+classdef ZipArchive < dao.IArchive
+    % dao.ZipArchive allows access to single files inside a zip archive and
     % manages temporary archive as needed
     % 
     % Class written by TADA, 2021
@@ -82,6 +82,11 @@ classdef ZipArchive < handle
         function putFile(this, files)
             % adds or replaces a list of files in the zip archive.
             
+            % ATM - extraction is mandatory before adding files to the
+            % archive, addition of single file to the archive is not yet
+            % implemented unfortunately.
+            this.MustUseDocumentedExtraction = true;
+            
             if this.UseExtractedArchive
                 this.extractAllArchiveAndPutFiles(files);
             else
@@ -91,7 +96,7 @@ classdef ZipArchive < handle
                     this.compressFilesOneByOne(files);
                 catch ex
                     % if the error is a managed error, rethrow
-                    if startsWith(ex.identifier, 'Flow:gen:ZipArchive:Managed')
+                    if startsWith(ex.identifier, 'Flow:dao:ZipArchive:Managed')
                         ex.rethrow();
                     end
 
@@ -112,7 +117,7 @@ classdef ZipArchive < handle
             
         end
         
-        function outPath = extract(this, outPath)
+        function outPath = extractAll(this, outPath)
             % extracts the entire archive and returns the output folder
             % path.
             % 
@@ -179,7 +184,7 @@ classdef ZipArchive < handle
                     outputName = this.extractSingleFile(fileName, outPath);
                 catch ex
                     % if the error is a managed error, rethrow
-                    if startsWith(ex.identifier, 'Flow:gen:ZipArchive:Managed')
+                    if startsWith(ex.identifier, 'Flow:dao:ZipArchive:Managed')
                         ex.rethrow();
                     end
 
@@ -202,7 +207,7 @@ classdef ZipArchive < handle
     
     methods (Access=private)
         function raiseFallbackToDocumentedBehaviorWarning(this, ex)
-            warning('Flow:gen:ZipArchive:FallbackToDocumentedFunctionality',...
+            warning('Flow:dao:ZipArchive:FallbackToDocumentedFunctionality',...
                 ['Extraction or compression of singe file from zip archive failed. ',...
                  'Falling back to documented unzipping of full archive.', ...
                  newline, newline, getReport(ex, 'extended', 'hyperlinks', 'on')]);
@@ -268,7 +273,7 @@ classdef ZipArchive < handle
                 if ~isempty(zipFile)
                     zipFile.close;
                 end
-                ex = MException('Flow:gen:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
+                ex = MException('Flow:dao:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
                 ex = ex.addCause(exception);
                 throw(ex);
             end
@@ -288,10 +293,10 @@ classdef ZipArchive < handle
             catch exception
                 overwriteExistingFile = file.isFile && ~file.canWrite;
                 if overwriteExistingFile
-                    ex = MException('Flow:gen:ZipArchive:Managed:UnableToOverwrite',...
+                    ex = MException('Flow:dao:ZipArchive:Managed:UnableToOverwrite',...
                         'Unable to overwrite file %s', outputName);
                 else
-                    ex = MException('Flow:gen:ZipArchive:Managed:UnableToCreate', ...
+                    ex = MException('Flow:dao:ZipArchive:Managed:UnableToCreate', ...
                         'Unable to create file %s', outputName);
                 end
                 ex = ex.addCause(exception);
@@ -330,7 +335,7 @@ classdef ZipArchive < handle
             
             % make sure temp file exists
             if ~exist(tempfilePath, 'file')
-                throw(MException('Flow:gen:ZipArchive:Managed:FileMissing',...
+                throw(MException('Flow:dao:ZipArchive:Managed:FileMissing',...
                     'The requested file %s was not found in the archive %s', fileName, this.ArchivePath));
             end
             
@@ -410,7 +415,7 @@ classdef ZipArchive < handle
                 if ~isempty(zipFile)
                     zipFile.close;
                 end
-                ex = MException('Flow:gen:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
+                ex = MException('Flow:dao:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
                 ex = ex.addCause(exception);
                 throw(ex);
             end
@@ -453,7 +458,7 @@ classdef ZipArchive < handle
                 if ~isempty(zipFile)
                     zipFile.close;
                 end
-                ex = MException('Flow:gen:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
+                ex = MException('Flow:dao:ZipArchive:Intenrnal:InvalidZipFile', 'Invalid ZIP file %s', zipArchivePath);
                 ex = ex.addCause(exception);
                 throw(ex);
             end
@@ -470,7 +475,7 @@ classdef ZipArchive < handle
 %                zipOutputStream = org.apache.tools.zip.ZipOutputStream(fileOutputStream);
 %                zipOutputStream.setEncoding('UTF-8');
 %             catch ex
-%                err = MException('Flow:gen:ZipArchive:Managed:OpenWriteError', ...
+%                err = MException('Flow:dao:ZipArchive:Managed:OpenWriteError', ...
 %                    'Could not open %s for writing.', this.ArchivePath);
 %                err.addCause(ex);
 %                throw(err);
