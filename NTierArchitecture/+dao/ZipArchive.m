@@ -134,7 +134,9 @@ classdef ZipArchive < dao.IArchive
                 outPath = this.TempDirPath;
                 this.ensureArchiveTempExtraction();
             else
-                unzip(this.ArchivePath, outPath);
+                if exist(this.ArchivePath, 'file')
+                    unzip(this.ArchivePath, outPath);
+                end
             end
         end
         
@@ -227,8 +229,10 @@ classdef ZipArchive < dao.IArchive
             % create the temporary folder
             this.ensureTempDir();
             
-            % unzip the full archive into the temporary folder
-            unzip(this.ArchivePath, this.TempDirPath);
+            if exist(this.ArchivePath, 'file')
+                % unzip the full archive into the temporary folder
+                unzip(this.ArchivePath, this.TempDirPath);
+            end
             
             % mark archive extracted
             this.ArchiveUnzipped = true;
