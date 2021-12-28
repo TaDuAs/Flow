@@ -150,7 +150,11 @@ classdef DataQueue < dao.IDataQueue
         end
         
         function names = getDataNameList(this)
-            names = {this.Items.path};
+            if iscellstr(this.Items) || isstring(this.Items)
+                names = this.Items;
+            else
+                names = {this.Items.path};
+            end
         end
         
         function len = length(this)

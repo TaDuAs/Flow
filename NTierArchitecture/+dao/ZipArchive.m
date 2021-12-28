@@ -30,7 +30,7 @@ classdef ZipArchive < dao.IArchive
     end
     
     methods % dependent props
-        function tf = UseExtractedArchive.get(this)
+        function tf = get.UseExtractedArchive(this)
             tf = this.MustUseDocumentedExtraction || this.ArchiveUnzipped;
         end
     end
