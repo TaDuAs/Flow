@@ -1,9 +1,16 @@
-classdef Injectable
+classdef Injectable < mfc.IDescriptor
     %INJECTABLE Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
         DependencyName string;
+    end
+    
+    methods (Hidden)
+        function [ctorParams, defaultValues] = getMfcInitializationDescription(~)
+            ctorParams = "&DependencyName";
+            defaultValues = {};
+        end
     end
     
     methods
