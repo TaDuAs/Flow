@@ -1,4 +1,4 @@
-classdef ZipArchive < dao.IArchive
+classdef ZipArchive < dao.IArchive & mxml.INonSerializable
     % dao.ZipArchive allows access to single files inside a zip archive and
     % manages temporary archive as needed
     % 
