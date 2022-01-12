@@ -307,7 +307,31 @@ classdef XmlSerializer < mxml.ISerializer & mxml.IXmlInterpreter
                 
                 % cell arrays don't have properties, other than that they
                 % should be handled similarly...
-                if ~iscell(obj)
+                % *********************** Bug Fix ************************
+                % Previous if statement:
+                %
+                % if ~iscell(obj)
+                % 
+                % ***
+                % Essence of the bug:
+                % any object/struct array was correctly serialized into a 
+                % list xml element with the proper child entries, however, 
+                % the properties of the first element in the array were 
+                % also serialized as attributes and child elements in list 
+                % xml element. The list element should have no properties
+                % other than mxml metadata properties. This did not affect
+                % deserialization as these properties were simply ignored
+                % by the serializer/mfc. But this bug does result in
+                % bloated xml files, and also affects IO operations.
+                % ***
+                % Bug Fix:
+                % lists.ICollection object should have properties that can
+                % be saved in the serialized mxml. This condition should
+                % only test for list object types tha do require
+                % serialization of properties.
+                % *********************** Bug Fix ************************
+                if isa(obj, 'lists.ICollection')
+
                     % append all properties
                     this.buildPropertiesDOM(obj, document, element);
                 end
