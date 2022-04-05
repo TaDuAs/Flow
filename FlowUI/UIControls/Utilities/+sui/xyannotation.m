@@ -85,8 +85,8 @@ function ah = xyannotation(varargin)
     axSize = sui.getSize(ax, 'pixels');
     
     % get the axes x-y limits
-    xlims = xlim(ax);
-    ylims = ylim(ax);
+    xlims = double(xlim(ax));
+    ylims = double(ylim(ax));
     
     % calculate the conversion factor between x-y units and pixels
     x2pix = axSize(1)/range(xlims);
