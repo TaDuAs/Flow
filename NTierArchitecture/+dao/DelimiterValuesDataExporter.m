@@ -59,7 +59,7 @@ classdef DelimiterValuesDataExporter < dao.FSOutputDataExporter
         
     end
     
-    methods (Access=private)
+    methods (Access=protected)
         function validateDelimiter(this, delimiter)
             switch delimiter
                 case ','; return;
