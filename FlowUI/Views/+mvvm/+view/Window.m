@@ -92,7 +92,7 @@ classdef Window < mvvm.view.View
         function extractParserParameters(this, parser)
             extractParserParameters@mvvm.view.View(this, parser);
             
-            % first of all, get binding manager
+            % first of all, get figure type
             this.FigType = parser.Results.FigType;
         end
         

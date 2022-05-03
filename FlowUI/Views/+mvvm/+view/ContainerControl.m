@@ -25,12 +25,7 @@ classdef ContainerControl < mvvm.view.IContainer
         end
         
         function addChild(this, child)
-            if isa(child, 'mvvm.view.IContainer')
-                h = child.getContainerHandle();
-            else
-                h = child;
-            end
-            
+            h = this.getControlHandle(child);
             h.Parent = this.ControlHandle;
         end
         
@@ -43,12 +38,7 @@ classdef ContainerControl < mvvm.view.IContainer
         end
         
         function setParent(this, parent)
-            if isa(parent, 'mvvm.view.IContainer')
-                h = parent.getContainerHandle();
-            else
-                h = parent;
-            end
-            
+            h = this.getControlHandle(parent);
             this.ControlHandle.Parent = h;
         end
         
@@ -60,6 +50,18 @@ classdef ContainerControl < mvvm.view.IContainer
     end
     
     methods (Access=protected)
+        function h = getControlHandle(~, control)
+        % Gets the control handle from a control object when it is not
+        % known whether the object is an actual matlab control handle or a 
+        % mvvm.view.IContainer wrapper object
+        
+            if isa(control, 'mvvm.view.IContainer')
+                h = control.getContainerHandle();
+            else
+                h = control;
+            end
+        end
+        
         function id = getControlId(this)
             h = this.getContainerHandle();
             id = h.Tag;

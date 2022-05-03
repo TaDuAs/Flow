@@ -6,7 +6,7 @@ classdef FigureType
         Classic,
         
         % New GUI elements (like in app designer) and uifigure
-        AppDesigner
+        UiFigure
     end
 end
 
