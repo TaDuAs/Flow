@@ -41,10 +41,10 @@ classdef (Abstract) ModelPathObserver < handle
         end
         
         function validPath = checkModelPathValidity(~, modelPath)
-            if ischar(modelPath)
-                validPath = strsplit(modelPath, '.');
-            elseif iscellstr(modelPath)
-                validPath = modelPath;
+            if ischar(modelPath) || isStringScalar(modelPath)
+                validPath = cellstr(strsplit(modelPath, '.'));
+            elseif iscellstr(modelPath) || isstring(modelPath)
+                validPath = cellstr(modelPath);
             else
                 throw(MException('mvvm:ModelPathObserver:InvalidModelPath', ...
                     'ModelPath must be a list of property names as a cell array of character vectors or as a character vector separated by ''.'''));

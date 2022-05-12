@@ -72,8 +72,8 @@ classdef BindingManager < mvvm.IBindingManager
         % sets the model provider associated with the specified container
         % If one is already associated with it, replace it with the new one
             
-            if ~ishandle(container)
-                throw(MException('mvvm:BindingManager:InvalidContainer', 'Model provider containers must be valid gui handles'));
+            if ~ishandle(container) && ~isa(container, 'mvvm.IControl')
+                throw(MException('mvvm:BindingManager:InvalidContainer', 'Model provider containers must be valid gui handles or implement the mvvm.IControl interface'));
             end
             
             [hasMP, ~, i] = this.tryGetModelProvider(container);
@@ -251,6 +251,12 @@ classdef BindingManager < mvvm.IBindingManager
                 
                 if iCtlFlag
                     ctlMask = ctl.isEqualTo(registeredContainers);
+                    
+                    % if the abstract container isn't in the list, try its
+                    % actual gui component
+                    if ~any(ctlMask) && isa(ctl, 'mvvm.view.IContainer')
+                        ctlMask = eq(ctl.getContainerHandle(), registeredContainers);
+                    end
                 else
                     ctlMask = eq(ctl, registeredContainers);
                 end

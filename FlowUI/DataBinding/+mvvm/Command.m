@@ -100,10 +100,10 @@ classdef Command < mvvm.ControlObserver & mvvm.IBinderBase
         end
         
         function init(this, actionModelPath, control, event)
-            if ischar(actionModelPath)
-                this.ActionModelPath = strsplit(actionModelPath, '.');
-            elseif iscellstr(actionModelPath)
-                this.ActionModelPath = actionModelPath;
+            if ischar(actionModelPath) || isStringScalar(actionModelPath)
+                this.ActionModelPath = cellstr(strsplit(actionModelPath, '.'));
+            elseif iscellstr(actionModelPath) || isstring(actionModelPath)
+                this.ActionModelPath = cellstr(actionModelPath);
             else
                 throw(MException('mvvm:Command:InvalidActionModelPath', ...
                     'ActionModelPath must be a list of property names as a cell array of character vectors or as a character vector separated by ''.'' with the last being the name of the method or property holding a function handle'));

@@ -3,7 +3,7 @@ classdef (Abstract) IControl < handle
     % bound using mvvm toolbox
     
     properties (GetAccess=private, SetAccess=private)
-        Id_;
+        Id_;f
     end
     
     properties (Dependent)
