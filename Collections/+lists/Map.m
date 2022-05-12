@@ -1,9 +1,12 @@
 classdef Map < handle & lists.IObservable & lists.IDictionary
     % Wrapper for containers.Map class, which implements the
-    % lists.ICollection interface.
-    % Implements complete containers.Map API and lists.ICollection API
-    % 
-    % identifies as containers.Map with isa(map, 'containers.Map')
+    % lists.IDictionary and lists.ICollection APIs to support mxml 
+    % deserialization and mvvm data binding. The lists.IObservable is also
+    % implemented to support data binding. This class also fully implements 
+    % the containers.Map API for backwards compatibility making it easier
+    % to replace. As part of the containers.Map API, this class also 
+    % identifies as containers.Map using the isa(map, 'containers.Map')
+    % function call.
     %
     % Author: TADA
     
