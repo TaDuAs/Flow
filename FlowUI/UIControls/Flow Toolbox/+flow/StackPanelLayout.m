@@ -1,6 +1,7 @@
 classdef StackPanelLayout < mvvm.view.ContainerControl
-    %FLOWGRIDLAYOUT Summary of this class goes here
-    %   Detailed explanation goes here
+    % flow.StackPanelLayout wraps a matlab.ui.container.GridLayout and
+    % changes its functionality to a stack panel. I.E. all children are
+    % stacked vertically in a Top-First to Bottom-Last order.
     
     properties (Access=private)
         AddChildEventListener event.listener;
