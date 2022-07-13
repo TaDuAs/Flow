@@ -8,8 +8,12 @@ classdef PermissionMessage < handle
         PermissionGranted (1,1) logical;
     end
     
+    properties (Access=private)
+        Forbidden (1,1) logical;
+    end
+    
     methods
-        function this = RelayMessage(id, data)
+        function this = PermissionMessage(id, data)
             this.Id = id;
             
             if nargin >= 2
@@ -19,10 +23,16 @@ classdef PermissionMessage < handle
             end
             
             this.PermissionGranted = true;
+            this.Forbidden = false;
         end
         
         function forbid(this)
+            this.Forbidden = true;
             this.PermissionGranted = false;
+        end
+        
+        function allow(this)
+            this.PermissionGranted = ~this.Forbidden;
         end
     end
 end
