@@ -32,8 +32,20 @@ classdef SessionManager < handle
         end
         
         function clearSessionContainer(this)
-            if isempty(this); return; end
+            if isempty(this) || ~isvalid(this)
+                return; 
+            end
+            
             if ~isempty(this.SessionDictionary)
+                % clear all sessions by triggering their session
+                % termination sequence
+                allSessionKeys = this.SessionDictionary.allKeys();
+                for i = 1:numel(allSessionKeys)
+                    key = allSessionKeys{i};
+                    this.clearSession(key);
+                end
+                
+                % completely clear the session dictionary
                 this.SessionDictionary.clearCache();
             end
         end
@@ -74,9 +86,10 @@ classdef SessionManager < handle
                 return;
             end
             
-            session = this.SessionDictionary.get(key).context;
-            session.clearCache();
-            this.SessionDictionary.removeEntry(key);
+            % Trigger session destruction sequence
+            % This will in turn also call clear session context
+            session = this.getSession(key);
+            session.kill();
         end
         
         function clearExpiredSessions(this)
@@ -100,6 +113,21 @@ classdef SessionManager < handle
             else
                 this.raiseSessionExpiredError(key)
             end
+        end
+        
+    end
+    
+    methods (Access={?mvvm.AppSession})
+        
+        function clearSesssionContext(this, key)
+            if ~this.validateSessionKey(key)
+                return;
+            end
+            
+            % clear the context of a specific session key
+            session = this.SessionDictionary.get(key).context;
+            session.clearCache();
+            this.SessionDictionary.removeEntry(key);
         end
         
     end

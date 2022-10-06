@@ -4,6 +4,7 @@ classdef ReloadableContext < mvvm.IAppContext
         Context mvvm.IAppContext = mvvm.AppContext.empty();
         DataAccessObject dao.FSOutputDataExporter = dao.MXmlDataExporter.empty();
         Messenger mvvm.MessagingMediator;
+        AppClosingListener;
     end
     
     properties (Dependent)
@@ -16,7 +17,7 @@ classdef ReloadableContext < mvvm.IAppContext
             this.DataAccessObject = dao;
             this.Messenger = messenger;
             
-            messenger.register('AppClosing', @this.onAppClosing)
+            this.AppClosingListener = messenger.register('AppClosing', @this.onAppClosing);
         end
         
         function ioc = get.IocContainer(this)

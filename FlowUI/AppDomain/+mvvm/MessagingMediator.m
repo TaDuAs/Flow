@@ -1,4 +1,4 @@
-classdef MessagingMediator < handle
+classdef MessagingMediator < handle & mvvm.IMessagingMediator
     % MessagingMediator encapsulates the communication between objects.
     %
     % The MessagingMediator is loosely based on the MVVM Light Messenger
@@ -41,22 +41,24 @@ classdef MessagingMediator < handle
             this.Listeners = containers.Map();
         end
         
-        function register(this, messageId, messageHandler)
+        function listener = register(this, messageId, messageHandler)
+            listener = mvvm.MessageListener(this, messageId, messageHandler);
+            
             if this.Listeners.isKey(messageId)
-                this.Listeners(messageId) = [this.Listeners(messageId), {messageHandler}];
+                this.Listeners(messageId) = [this.Listeners(messageId), {listener}];
             else
-                this.Listeners(messageId) = {messageHandler};
+                this.Listeners(messageId) = {listener};
             end
         end
         
-        function unregister(this, messageId, messageHandler)
+        function unregister(this, messageId, listener)
             if ~this.Listeners.isKey(messageId)
                 return;
             end
             handlers = this.Listeners(messageId);
             
             % find current message handler function in the listeners array
-            mask = cellfun(@(fh) ~isequal(fh,messageHandler), handlers);
+            mask = cellfun(@(ml) ~isequal(ml, listener), handlers);
             
             % remove it from the listeners array
             this.Listeners(messageId) = handlers(mask);
@@ -69,9 +71,27 @@ classdef MessagingMediator < handle
             msgId = message.Id;
             if this.Listeners.isKey(msgId)
                 msgListenesrs = this.Listeners(msgId);
-                cellfun(@(mh) mh(message),msgListenesrs);
+                cellfun(@(listener) listener.fire(message), msgListenesrs);
             end
         end
+        
+        function delete(this)
+            this.clear();
+            this.Listeners = containers.Map.empty();
+        end
+        
+        function clear(this)
+            allMessageIds = this.Listeners.keys();
+            for i = 1:numel(allMessageIds)
+                messageId = allMessageIds{i};
+                handlers = this.Listeners(messageId);
+                
+                cellfun(@delete, handlers);
+            end
+            
+            this.Listeners.remove(allMessageIds);
+        end
+        
     end
 end
 

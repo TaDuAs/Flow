@@ -1,4 +1,4 @@
-classdef AppSession < mvvm.IApp
+classdef AppSession < handle & mvvm.IApp
     % App class decorator.
     % Implement a session persistence on the Application by overriding the
     % Context property, and returning a session-key based instance
@@ -28,7 +28,7 @@ classdef AppSession < mvvm.IApp
         % Dependency injection container
         IocContainer IoC.IContainer = IoC.Container.empty();
         
-        % Application context object - for application-wide state management
+        % Application context object - for session state management
         Context mvvm.AppContext;
         
         % Application-wide mediator class
@@ -81,7 +81,11 @@ classdef AppSession < mvvm.IApp
         end
         
         function m = get.Messenger(this)
-            m = this.App.Messenger;
+            if ~this.Context.hasEntry('SessionMessengerSubset')
+                messenger = mvvm.MessagingMediatorSession(this.App.Messenger);
+                this.Context.setv('SessionMessengerSubset', messenger);
+            end
+            m = this.Context.getv('SessionMessengerSubset');
         end
         function set.Messenger(~, ~)
             throw(MException('AppSession:InvalidOperation', 'Can''t set Messenger property of mvvm.AppSession'));
@@ -135,13 +139,31 @@ classdef AppSession < mvvm.IApp
         end
         
         function delete(this)
-            this.clear();
+            this.SessionManager = mvvm.SessionManager.empty();
+            this.App = mvvm.App.empty();
+            
+            delete@handle(this);
         end
         
         function clear(this)
-            % delete functionality
-            this.SessionManager = mvvm.SessionManager.empty();
-            this.App = mvvm.App.empty();
+            if this.Status == mvvm.AppStatus.Terminated
+                return;
+            end
+            
+            % label session as dead
+            this.Status = mvvm.AppStatus.Terminated;
+            
+            % clear all messages registered by the current session
+            this.Messenger.clear();
+            
+            % clear session context
+            %%%%%%%%%%%%%%%%%%%%%%%%% IMPORTANT!! %%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%% Do not call this.SessionManager.clearSession:
+            %%%% it generates an appsession object and terminates it,
+            %%%% resulting in a circular reference and a stack overflow 
+            %%%% exception!!!
+            %%%%%%%%%%%%%%%%%%%%%%%%% IMPORTANT!! %%%%%%%%%%%%%%%%%%%%%%%%%
+            this.SessionManager.clearSesssionContext(this.SessionKey);
         end
         
         function start(this)
@@ -153,6 +175,7 @@ classdef AppSession < mvvm.IApp
         end
         
         function kill(this)
+            this.clear();
             delete(this);
         end
         
@@ -194,7 +217,11 @@ classdef AppSession < mvvm.IApp
         end
         
         function clearSessionState(this)
-            this.SessionManager.clearSession(this.SessionKey);
+            % kills an active session
+            
+            % deletting the session calls session.clear which actually
+            % already clears the session state in the session manager
+%             this.SessionManager.clearSession(this.SessionKey);
             this.delete();
         end
         
@@ -214,7 +241,7 @@ classdef AppSession < mvvm.IApp
         end
         
         function m = getMessenger(this)
-            m = this.App.Messenger;
+            m = this.Messenger;
         end
     end
     

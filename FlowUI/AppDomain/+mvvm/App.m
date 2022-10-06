@@ -1,4 +1,4 @@
-classdef App < mvvm.IApp
+classdef App < handle & mvvm.IApp
     % App handles application persistence
     % Functionality includes:
     %   IoC.Container - Dependency injection
@@ -21,7 +21,7 @@ classdef App < mvvm.IApp
     end
     
     properties (Access=private)
-        ControllerBuilders = [];
+        ControllerBuilders struct = struct();
         Context_ mvvm.AppContext;
         KillList = {};
         Messenger_ mvvm.MessagingMediator;
@@ -241,17 +241,41 @@ classdef App < mvvm.IApp
         end
         
         function clear(this)
+            % clear context, forcefully end all live sessions and destroy
+            % registered stuff (I.E "Kill List", "Messenger Listeners" and "Controller Builders")
+            
+            % naturally, a dead app doesn't need cleaning anymore...
             if this.Status == mvvm.AppStatus.Terminated
                 return;
             end
+            
+            % Is clearing an mvvm.App is the same as killing it?
+            % At the moment it doesn't delete any of the handles, only 
+            % clears all the context and registered stuff...
+            % Can the app be rebooted later on, and rerun the lifecycle?
             this.Status = mvvm.AppStatus.Terminated;
+            
+            % clear the cache
             this.Context.clearCache();
             
-            this.ControllerBuilders = [];
+            % clear the controller builders list
+            controllerBuilderIds = fieldnames(this.ControllerBuilders);
+            for i = 1:numel(controllerBuilderIds)
+                builderId = controllerBuilderIds{i};
+                builder = this.ControllerBuilders.(builderId);
+                delete(builder);
+            end
+            this.ControllerBuilders = struct();
             
+            % remove all app-wide message listeners
+            this.Messenger.clear();
+            
+            % clear all in/active sessions
             if ~isempty(this.SessionManager)
                 this.SessionManager.clearSessionContainer();
             end 
+            
+            % clear the kill list
             cellfun(@delete, this.KillList);
             this.KillList = {};
         end
@@ -279,6 +303,8 @@ classdef App < mvvm.IApp
                 this.IocContainer.delete();
                 this.IocContainer = IoC.Container.empty();
             end
+            
+            delete@handle(this);
         end
     end
     

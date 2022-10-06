@@ -1,6 +1,4 @@
 classdef IoCControllerBuilder < mvvm.AppControllerBuilder
-    %IOCCONTROLLERBUILDER Summary of this class goes here
-    %   Detailed explanation goes here
     
     properties
         Container IoC.IContainerGetter = IoC.ContainerGetter.empty();
@@ -19,6 +17,11 @@ classdef IoCControllerBuilder < mvvm.AppControllerBuilder
         
         function builder = copy(this, app)
             builder = mvvm.IoCControllerBuilder(this.ControllerName, app.IocContainer.get('IoC'));
+        end
+        
+        function this = delete(this)
+            this.Container = IoC.ContainerGetter.empty();
+            delete@mvvm.AppControllerBuilder(this);
         end
     end
 end

@@ -20,6 +20,10 @@ classdef AppControllerBuilder
         function builder = copy(this, app)
             builder = this;
         end
+        
+        function this = delete(this)
+            this.FactoryMethod = function_handle.empty();
+        end
     end
 end
 
